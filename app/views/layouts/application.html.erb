@@ -15,11 +15,13 @@
         <h1 class="h1"><%= link_to "Kids Milestones", root_path %></h1>
         <nav>
           <% if user_signed_in? %>
-            <span style="color:#7b6f69;font-size:.9rem;margin-right:.5rem;">
-              ようこそ、
-              <%= (current_user.respond_to?(:name) && current_user.name.present?) ? current_user.name : current_user.email %>
+            <span class="nav-email" style="color:#7b6f69;font-size:.9rem;margin-right:.5rem;">
+              <%= current_user.email %>
             </span>
-            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
+            <%= button_to "ログアウト",
+                  destroy_user_session_path,
+                  method: :delete,
+                  class: "btn btn-secondary" %>
           <% else %>
             <%= link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
             <%= link_to "新規登録", new_user_registration_path, class: "btn btn-secondary", style: "margin-left:.5rem" %>

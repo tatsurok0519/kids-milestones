@@ -1,8 +1,9 @@
 <div class="card">
-  <h2 class="h2">ようこそ</h2>
   <% if user_signed_in? %>
-    <p>ログインしています</p>
+    <h2 class="h2">ようこそ <%= display_user_name %> さん</h2>
+    <p>ログインしています。</p>
   <% else %>
+    <h2 class="h2">ようこそ ゲストさん</h2>
     <p>ログインまたは新規登録をしてください。</p>
   <% end %>
 </div>
