@@ -12,6 +12,11 @@
   </head>
 
   <body>
-    <%= yield %>
+    <% flash.each do |k, v| %>
+    <div class="flash <%= k %>" style="padding:.5rem 1rem; margin:.5rem 0; border-radius:.5rem; background:#eef;">
+      <%= v %>
+    </div>
+  <% end %>
+  <%= yield %>
   </body>
 </html>

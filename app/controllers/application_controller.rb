@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   before_action :basic_auth, if: :basic_auth_applicable?
+  before_action :authenticate_user! 
 
   private
 
