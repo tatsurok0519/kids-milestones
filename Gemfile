@@ -74,3 +74,6 @@ end
 group :production do
   gem "pg", "~> 1.5"
 end
+
+
+gem "importmap-rails", "~> 2.2"
