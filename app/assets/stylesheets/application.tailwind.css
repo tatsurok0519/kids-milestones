@@ -92,3 +92,29 @@ input[type="url"],input[type="number"],input[type="date"],textarea,select{
 /* 小物 */
 .divider{height:1px;background:var(--border);border:0;margin:1rem 0}
 .footer{color:var(--muted);font-size:.85rem;padding:1.25rem 0}
+
+/* ==== フォームがカードからはみ出す問題の修正 ==== */
+
+/* 1) 全要素を border-box にして、ボーダー込みで幅100%に */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2) 入力系は幅を親にフィットさせる（Safari等のはみ出し対策も） */
+.input,
+input[type="text"], input[type="email"], input[type="password"],
+input[type="search"], input[type="url"], input[type="number"], input[type="date"],
+input:not([type]), textarea, select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box; /* 念のため個別にも明記 */
+}
+
+/* 3) （任意）フォーカス時のグローがカード外に出るのが気になるならクリップ */
+.card {
+  overflow: hidden; /* フォーカスの光が外に出るのを隠す。外したい場合は削除 */
+}
+
+/* 4) （見栄え）フィールド間の余白を一定に */
+.card .field { margin-top: .75rem; }
+.card .actions { margin-top: 1rem; }
