@@ -12,11 +12,39 @@
   </head>
 
   <body>
-    <% flash.each do |k, v| %>
-    <div class="flash <%= k %>" style="padding:.5rem 1rem; margin:.5rem 0; border-radius:.5rem; background:#eef;">
-      <%= v %>
+    <body class="min-h-screen bg-gray-50">
+  <header class="bg-white border-b">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <h1 class="text-lg font-semibold"><%= link_to "Kids Milestones", root_path, class: "hover:underline" %></h1>
+
+      <nav class="flex items-center gap-3">
+        <% if user_signed_in? %>
+          <span class="text-sm text-gray-600">
+            ようこそ、<%= current_user.email %>
+          </span>
+          <!-- button_to は DELETE メソッドのフォームになるので Turbo/JS不要で確実に動きます -->
+          <%= button_to "ログアウト",
+                destroy_user_session_path,
+                method: :delete,
+                class: "text-sm px-3 py-1.5 bg-gray-800 text-white rounded" %>
+        <% else %>
+          <%= link_to "ログイン", new_user_session_path, class: "text-sm px-3 py-1.5 bg-gray-800 text-white rounded" %>
+          <%= link_to "新規登録", new_user_registration_path, class: "text-sm px-3 py-1.5 bg-white border rounded" %>
+        <% end %>
+      </nav>
+    </div>
+  </header>
+
+  <% flash.each do |k, v| %>
+    <div class="mx-auto max-w-5xl px-4 mt-3">
+      <div class="rounded px-3 py-2 text-sm <%= k == 'notice' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' %>">
+        <%= v %>
+      </div>
     </div>
   <% end %>
-  <%= yield %>
-  </body>
+
+  <main class="mx-auto max-w-5xl px-4 py-6">
+    <%= yield %>
+  </main>
+</body>
 </html>

@@ -1,2 +1,8 @@
-<h1>Home#index</h1>
-<p>Find me in app/views/home/index.html.erb</p>
+<div class="bg-white rounded-lg border p-6">
+  <h2 class="text-xl font-semibold mb-2">ようこそ</h2>
+  <% if user_signed_in? %>
+    <p>ログイン済みです。このまま機能実装を進めましょう。</p>
+  <% else %>
+    <p>ログインまたは新規登録をしてください。</p>
+  <% end %>
+</div>
