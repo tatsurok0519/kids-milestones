@@ -5,46 +5,39 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%# <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %> %>
     <%= javascript_importmap_tags %>
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
   </head>
-
   <body>
-    <body class="min-h-screen bg-gray-50">
-  <header class="bg-white border-b">
-    <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-      <h1 class="text-lg font-semibold"><%= link_to "Kids Milestones", root_path, class: "hover:underline" %></h1>
-
-      <nav class="flex items-center gap-3">
-        <% if user_signed_in? %>
-          <span class="text-sm text-gray-600">
-            ようこそ、<%= current_user.email %>
-          </span>
-          <!-- button_to は DELETE メソッドのフォームになるので Turbo/JS不要で確実に動きます -->
-          <%= button_to "ログアウト",
-                destroy_user_session_path,
-                method: :delete,
-                class: "text-sm px-3 py-1.5 bg-gray-800 text-white rounded" %>
-        <% else %>
-          <%= link_to "ログイン", new_user_session_path, class: "text-sm px-3 py-1.5 bg-gray-800 text-white rounded" %>
-          <%= link_to "新規登録", new_user_registration_path, class: "text-sm px-3 py-1.5 bg-white border rounded" %>
-        <% end %>
-      </nav>
-    </div>
-  </header>
-
-  <% flash.each do |k, v| %>
-    <div class="mx-auto max-w-5xl px-4 mt-3">
-      <div class="rounded px-3 py-2 text-sm <%= k == 'notice' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' %>">
-        <%= v %>
+    <header class="header-bar">
+      <div class="container header-inner">
+        <h1 class="h1"><%= link_to "Kids Milestones", root_path %></h1>
+        <nav>
+          <% if user_signed_in? %>
+            <span style="color:#7b6f69;font-size:.9rem;margin-right:.5rem;">
+              ようこそ、
+              <%= (current_user.respond_to?(:name) && current_user.name.present?) ? current_user.name : current_user.email %>
+            </span>
+            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
+          <% else %>
+            <%= link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
+            <%= link_to "新規登録", new_user_registration_path, class: "btn btn-secondary", style: "margin-left:.5rem" %>
+          <% end %>
+        </nav>
       </div>
-    </div>
-  <% end %>
+    </header>
 
-  <main class="mx-auto max-w-5xl px-4 py-6">
-    <%= yield %>
-  </main>
-</body>
+    <% flash.each do |k, v| %>
+      <div class="container" style="margin-top:1rem">
+        <div class="flash <%= k %>"><%= v %></div>
+      </div>
+    <% end %>
+
+    <main class="container" style="padding:1.5rem 0">
+      <%= yield %>
+    </main>
+
+    <footer class="container footer">© Kids Milestones</footer>
+  </body>
 </html>
