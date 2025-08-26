@@ -5,8 +5,13 @@
     <%= render "devise/shared/error_messages", resource: resource %>
 
     <div class="field">
+      <label class="label" for="user_name">お名前</label>
+      <%= f.text_field :name, autocomplete: "name", class: "input", placeholder: "よしえ" %>
+    </div>
+
+    <div class="field" style="margin-top:.75rem;">
       <label class="label" for="user_email">メールアドレス</label>
-      <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input" %>
+      <%= f.email_field :email, autocomplete: "email", class: "input", placeholder: "example@example.com" %>
     </div>
 
     <div class="field" style="margin-top:.75rem;">
