@@ -1,26 +1,24 @@
 # config/routes.rb
 Rails.application.routes.draw do
-  get 'tasks/index'
-  devise_for :users
+  # Devise は1回だけ
   devise_for :users, controllers: { registrations: "users/registrations" }
 
+  # 未ログインでも見せたいページ（体験導線）
+  get "/tasks",  to: "tasks#index"
+  get "/chat",   to: "pages#chat"
+  get "/report", to: "pages#report"
+
+  # ログイン後のルート
   authenticated :user do
-    root "dashboard#show", as: :authenticated_root
+    root to: "dashboard#show", as: :authenticated_root
     get "/dashboard", to: "dashboard#show", as: :dashboard
   end
 
-  # 未ログインはまず「できるかな」を見せる
+  # 未ログイン時のルート（体験トップ）
   unauthenticated do
-    root "tasks#index", as: :unauthenticated_root
+    root to: "tasks#index", as: :unauthenticated_root
   end
 
-  if Rails.env.development?
-    mount LetterOpenerWeb::Engine, at: "/letter_opener"
-  end
-
-  get "/tasks",  to: "tasks#index"   # だれでもOK
-  get "/chat",   to: "pages#chat"    # だれでもOK
-  get "/report", to: "pages#report"  # 将来: 要ログインに戻す
-
+  # ヘルスチェック
   get "up" => "rails/health#show", as: :rails_health_check
 end
