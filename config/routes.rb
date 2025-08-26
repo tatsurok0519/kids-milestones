@@ -2,6 +2,7 @@
 Rails.application.routes.draw do
   get 'tasks/index'
   devise_for :users
+  devise_for :users, controllers: { registrations: "users/registrations" }
 
   authenticated :user do
     root "dashboard#show", as: :authenticated_root

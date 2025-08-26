@@ -18,7 +18,7 @@ ja:
       signed_up: "新規登録が完了しました！"
       signed_up_but_unconfirmed: "確認メールを送信しました。メール内のリンクを開いて有効化してください。"
       updated: "アカウント情報を更新しました。"
-      destroyed: "アカウントを削除しました。"
+      destroyed: "アカウントを削除しました。ご利用ありがとうございました。"
     passwords:
       send_instructions: "パスワード再設定の案内をメールで送信しました。"
       updated: "パスワードを変更しました。"
