@@ -1,41 +1,44 @@
-/* ===== warm, soft UI theme (plain CSS) ===== */
+/* ===== sunny, warm UI theme (plain CSS) ===== */
 :root{
-  /* 色（やわらかいコーラル × クリーム × ミント） */
-  --bg:#fff8f3;          /* クリーム系の背景 */
+  /* やわらかいクリーム × サニーオレンジ × はちみつ色 */
+  --bg:#fff7e6;          /* クリーム背景 */
   --surface:#ffffff;
-  --text:#3f3a37;        /* 暖かいグレイッシュブラウン */
-  --muted:#7b6f69;
-  --border:#f1e3da;
+  --text:#3b2a18;        /* こげ茶で読みやすく */
+  --muted:#7a6b5a;
+  --border:#f2e5c6;
 
-  --pri:#e98a7a;         /* コーラル（主） */
-  --pri-600:#df6f5a;
-  --pri-700:#c85b47;
+  --pri:#f29f05;         /* 主ボタン：オレンジ */
+  --pri-600:#e88f00;
+  --pri-700:#d07c00;
 
-  --accent:#7fb8a7;      /* やさしいミント（OK/フォーカス） */
-  --accent-600:#5da392;
+  --accent:#ffd369;      /* フォーカスや強調に使う“はちみつ色” */
+  --accent-600:#f0c24d;
 
-  --ok-bg:#eaf7f2;  --ok-text:#2f6d5c;  --ok-border:#cce9df;
-  --err-bg:#fdeeee; --err-text:#9f2d2d; --err-border:#f8c9c9;
+  /* 成功/エラー：やさしめの色味 */
+  --ok-bg:#f2f8e9;  --ok-text:#3f6b2a;  --ok-border:#d6ebc0;
+  --err-bg:#fff1ec; --err-text:#9b2c10; --err-border:#f7c4b3;
 
   --radius-lg: 1rem;
   --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md: 0 10px 20px rgba(200,120,90,.08);
+  --shadow-md: 0 10px 20px rgba(240,160,60,.12);
 }
 
 /* ベース */
 html{scroll-behavior:smooth}
 body{
-  min-height:100vh;background:linear-gradient(180deg,#fffaf6 0%, var(--bg) 100%);
-  color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  font-family: "Hiragino Kaku Gothic ProN","Yu Gothic","游ゴシック体",Meiryo,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP",sans-serif;
+  min-height:100vh;
+  background:linear-gradient(180deg,#fffbed 0%, var(--bg) 100%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","游ゴシック体",Meiryo,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP",sans-serif;
 }
-a{color:#b06055;text-underline-offset:2px}
-a:hover{color:#8f4e45;text-decoration:underline}
+a{color:#c17400;text-underline-offset:2px}
+a:hover{color:#9f5f00;text-decoration:underline}
 
 /* レイアウト */
 .container{max-width:64rem;margin:0 auto;padding:0 1rem}
 .header-bar{
-  background:linear-gradient(180deg,#fffdf9 0%, #fff3ec 100%);
+  background:linear-gradient(180deg,#fffaf0 0%, #ffe7b8 100%);
   border-bottom:1px solid var(--border);
   box-shadow: var(--shadow-sm);
 }
@@ -56,14 +59,14 @@ a:hover{color:#8f4e45;text-decoration:underline}
   border:1px solid transparent;text-decoration:none;transition:.15s;cursor:pointer;
   box-shadow:0 1px 1px rgba(0,0,0,.04);
 }
-.btn:focus{outline: none; box-shadow:0 0 0 3px rgba(127,184,167,.25)} /* ミントのフォーカス */
+.btn:focus{outline:none; box-shadow:0 0 0 3px rgba(255,211,105,.35)} /* はちみつ色のフォーカス */
 .btn-primary{background:var(--pri);color:#fff}
 .btn-primary:hover{background:var(--pri-600)}
 .btn-secondary{background:#fff;color:var(--text);border-color:var(--border)}
-.btn-secondary:hover{background:#fff5ef}
+.btn-secondary:hover{background:#fff8e0}
 
 /* フォーム */
-.label{display:block;font-size:.9rem;font-weight:700;color:#5b514b;margin-bottom:.35rem}
+.label{display:block;font-size:.9rem;font-weight:700;color:#6a5a48;margin-bottom:.35rem}
 .input,
 input[type="text"],input[type="email"],input[type="password"],input[type="search"],
 input[type="url"],input[type="number"],input[type="date"],textarea,select{
@@ -71,7 +74,7 @@ input[type="url"],input[type="number"],input[type="date"],textarea,select{
   padding:.6rem .8rem;font-size:.95rem;outline:none;transition:.15s;
 }
 .input:focus,input:focus,textarea:focus,select:focus{
-  border-color:var(--accent-600); box-shadow:0 0 0 3px rgba(127,184,167,.25);
+  border-color:var(--accent-600); box-shadow:0 0 0 3px rgba(255,211,105,.35);
 }
 .field_with_errors input,.field_with_errors textarea,.field_with_errors select{
   border-color:#f19999; box-shadow:0 0 0 3px rgba(241,153,153,.25)
@@ -94,27 +97,23 @@ input[type="url"],input[type="number"],input[type="date"],textarea,select{
 .footer{color:var(--muted);font-size:.85rem;padding:1.25rem 0}
 
 /* ==== フォームがカードからはみ出す問題の修正 ==== */
-
-/* 1) 全要素を border-box にして、ボーダー込みで幅100%に */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-/* 2) 入力系は幅を親にフィットさせる（Safari等のはみ出し対策も） */
+*, *::before, *::after { box-sizing: border-box; }
 .input,
 input[type="text"], input[type="email"], input[type="password"],
 input[type="search"], input[type="url"], input[type="number"], input[type="date"],
 input:not([type]), textarea, select {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box; /* 念のため個別にも明記 */
+  width:100%; max-width:100%; box-sizing:border-box;
 }
+.card { overflow:hidden; }
+.card .field { margin-top:.75rem; }
+.card .actions { margin-top:1rem; }
 
-/* 3) （任意）フォーカス時のグローがカード外に出るのが気になるならクリップ */
-.card {
-  overflow: hidden; /* フォーカスの光が外に出るのを隠す。外したい場合は削除 */
+/* ===== ページの装飾イラスト（サニー調） ===== */
+/* z-index は -1 だと見えない環境があるので 0 に。クリックを邪魔しないよう pointer-events:none */
+.sun-illustration,
+.watering-illustration{
+  position:absolute; z-index:0; pointer-events:none; opacity:.9;
+  filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
 }
-
-/* 4) （見栄え）フィールド間の余白を一定に */
-.card .field { margin-top: .75rem; }
-.card .actions { margin-top: 1rem; }
+.sun-illustration   { top:20px;   right:20px;  width:120px; }
+.watering-illustration { bottom:20px; left:20px; width:100px; }
