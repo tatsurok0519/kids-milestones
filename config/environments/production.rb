@@ -72,6 +72,9 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "kids_milestones_production"
 
   config.action_mailer.perform_caching = false
+  # 本番ではまだメール送らない（後でSMTPに切替）
+  config.action_mailer.perform_deliveries = false
+  # ← letter_opener の行は一切書かない（delivery_method の指定も不要）
 
   config.action_mailer.default_url_options = {
     host: ENV.fetch("APP_HOST", "example.com"),
