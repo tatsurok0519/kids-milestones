@@ -12,7 +12,10 @@
   <body>
     <header class="header-bar">
       <div class="container header-inner">
-        <h1 class="h1"><%= link_to "こどもすくすくカード", root_path %></h1>
+        <h1 class="h1">
+          <%= link_to "こどもすくすくカード",
+              (user_signed_in? ? authenticated_root_path : unauthenticated_root_path) %>
+        </h1>
         <nav>
           <% if user_signed_in? %>
             <span class="nav-email" style="color:#7b6f69;font-size:.9rem;margin-right:.5rem;">

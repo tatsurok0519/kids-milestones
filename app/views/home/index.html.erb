@@ -1,9 +1,8 @@
-<div class="card">
-  <% if user_signed_in? %>
-    <h2 class="h2">ようこそ <%= display_user_name %> さん</h2>
-    <p>ログインしています。</p>
-  <% else %>
-    <h2 class="h2">ようこそ ゲストさん</h2>
-    <p>ログインまたは新規登録をしてください。</p>
-  <% end %>
+<div class="card" style="max-width:28rem;margin:0 auto;">
+  <h2 class="h2">ようこそ</h2>
+  <p>ログインするとダッシュボードが表示されます。</p>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;">
+    <%= link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
+    <%= link_to "新規登録", new_user_registration_path, class: "btn btn-secondary" %>
+  </div>
 </div>

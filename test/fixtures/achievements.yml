@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  child: one
+  milestone: one
+  achieved: false
+  working: false
+  achieved_at: 2025-08-26 15:07:36
+
+two:
+  child: two
+  milestone: two
+  achieved: false
+  working: false
+  achieved_at: 2025-08-26 15:07:36

@@ -142,3 +142,55 @@ input:not([type]), textarea, select {
   right: 20px;    /* ← 左下から右下へ */
   width: 110px;
 }
+
+/* ======== Mobile-first polish (スマホ最適化の上乗せ) ======== */
+
+/* タップしやすさ（ボタン/入力の最小高さ） */
+.btn,
+input[type="text"], input[type="email"], input[type="password"],
+input[type="search"], input[type="url"], input[type="number"], input[type="date"],
+input:not([type]), textarea, select {
+  min-height: 44px;              /* iOS推奨タップ領域 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* 画像は親幅にフィット */
+img { max-width: 100%; height: auto; }
+
+/* 共通カードグリッド用（HTMLで .cards-grid を付けると使えます） */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; }
+
+/* ヘッダーのナビゲーションが狭い幅で折り返せるように */
+.header-inner { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.header-inner nav { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:flex-end; }
+
+/* 余白と文字サイズを小さめ画面で調整 */
+@media (max-width: 640px) {
+  .container { padding: 0 1rem; }
+  .card { padding: 1rem; }
+  .h1 { font-size: 1rem; text-align: center; }
+  .h2 { font-size: 1.1rem; }
+
+  /* ヘッダーは縦積みにして詰まりを防ぐ */
+  .header-inner { flex-direction: column; align-items: stretch; }
+  .header-inner nav { justify-content: center; }
+
+  /* カードの最小幅を少し小さくして1列になりにくく */
+  .cards-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  /* イラストの当たりを弱める＆位置をスマホ用に微調整 */
+  .sun-illustration {
+    position: absolute; top: 12px; left: 12px; right: auto;
+    width: 88px; opacity: .9; z-index: -1;
+  }
+  .watering-illustration {
+    position: absolute; right: 12px; bottom: 12px; left: auto;
+    width: 90px; opacity: .9; z-index: -1;
+  }
+}
+
+/* とても狭い幅ではイラストを非表示（被り防止） */
+@media (max-width: 360px) {
+  .sun-illustration, .watering-illustration { display: none; }
+}

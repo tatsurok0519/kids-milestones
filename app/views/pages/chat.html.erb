@@ -1,0 +1,57 @@
+<!-- app/views/pages/chat.html.erb -->
+<div class="container">
+  <div class="card" style="max-width: 720px; margin:0 auto;">
+    <h2 class="h2">チャットでそうだん（デモ）</h2>
+    <p style="margin-top:.25rem;">
+      かんたんな相談のサンプルです。ログインすると会話履歴を残せるようにする予定です。
+      <% unless user_signed_in? %>
+        <%= link_to "保存したい方は登録", new_user_registration_path, class: "btn btn-primary", style:"margin-left:.5rem;" %>
+      <% end %>
+    </p>
+
+    <div id="chat-log" style="border:1px solid var(--border);border-radius:.8rem;padding:.75rem;height:300px;overflow:auto;background:#fff;margin-top:.75rem;">
+      <div><strong>アシスタント:</strong> こんにちは。きょうのお子さんの様子はどうでしたか？</div>
+    </div>
+
+    <div style="display:flex;gap:.5rem;margin-top:.75rem;">
+      <input id="chat-input" class="input" type="text" placeholder="例）なわとびのコツを知りたい" />
+      <button id="chat-send" class="btn btn-primary" type="button">送信</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const log = document.getElementById("chat-log");
+  const input = document.getElementById("chat-input");
+  document.getElementById("chat-send").addEventListener("click", send);
+  input.addEventListener("keydown", e => { if(e.key==="Enter") send(); });
+
+  function send(){
+    const text = (input.value || "").trim();
+    if(!text) return;
+    append("あなた", text);
+    input.value = "";
+
+    // デモ応答（将来: サーバ連携）
+    setTimeout(() => {
+      const reply = demoReply(text);
+      append("アシスタント", reply);
+    }, 400);
+  }
+  function append(who, text){
+    const div = document.createElement("div");
+    div.innerHTML = `<strong>${who}:</strong> ${escapeHtml(text)}`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function demoReply(q){
+    if(q.includes("なわとび")) return "最初はリズムづくりから。ロープを回さずに『ぴょん・ぴょん』のリズム練習→腕回しを加える、の順がおすすめです。";
+    if(q.includes("はさみ")) return "厚紙ではなくコピー用紙から、直線→ゆるい曲線の順で。安全に配慮し、丸先のはさみを使いましょう。";
+    return "なるほど。少し詳しく教えてください。どんな場面で困りましたか？";
+  }
+})();
+</script>
