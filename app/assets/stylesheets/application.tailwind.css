@@ -108,12 +108,36 @@ input:not([type]), textarea, select {
 .card .field { margin-top:.75rem; }
 .card .actions { margin-top:1rem; }
 
-/* ===== ページの装飾イラスト（サニー調） ===== */
-/* z-index は -1 だと見えない環境があるので 0 に。クリックを邪魔しないよう pointer-events:none */
+/* === 背景デコ用の共通レイヤー === */
+.page-decorations{
+  position: fixed; /* 画面に固定（スクロールしても付いてくる）*/
+  inset: 0;        /* 画面いっぱい */
+  pointer-events: none; /* クリックを邪魔しない */
+  z-index: 0;      /* 背面に固定 */
+}
+
+/* 重なり制御：ヘッダー/メインはデコより手前に */
+.header-bar{ position: relative; z-index: 2; }
+.main{ position: relative; z-index: 1; }
+
+/* === イラスト個別：配置と影 === */
 .sun-illustration,
 .watering-illustration{
-  position:absolute; z-index:0; pointer-events:none; opacity:.9;
+  position: absolute;
+  opacity: .9;
   filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
 }
-.sun-illustration   { top:20px;   right:20px;  width:120px; }
-.watering-illustration { bottom:20px; left:20px; width:100px; }
+
+/* お日様：ログインボタンに被らないよう「右から220px」に調整 */
+.sun-illustration{
+  top: 20px;
+  right: 220px;   /* ← ここを広げるほど左に寄ります（例: 260px） */
+  width: 120px;
+}
+
+/* 水やり：右下に変更 */
+.watering-illustration{
+  bottom: 20px;
+  right: 20px;    /* ← 左下から右下へ */
+  width: 110px;
+}

@@ -28,7 +28,22 @@
           <% end %>
         </nav>
       </div>
+      <div class="illustrations">
+        <img src="images/sun.png" alt="お日様のイラスト" class="sun-illustration">
+        <img src="images/hatsuga-mizumaki_9726.png" alt="水やりのイラスト" class="watering-illustration">
+      </div>
     </header>
+
+    <!-- 背景デコ用レイヤー（クリックを邪魔しない＋常に背面） -->
+    <div class="page-decorations" aria-hidden="true">
+      <%= image_tag "illustrations/sun.png",
+          alt: "",
+          class: "sun-illustration" %>
+
+      <%= image_tag "illustrations/watering.png",
+          alt: "",
+          class: "watering-illustration" %>
+    </div>
 
     <% flash.each do |k, v| %>
       <div class="container" style="margin-top:1rem">
@@ -36,7 +51,7 @@
       </div>
     <% end %>
 
-    <main class="container" style="padding:1.5rem 0">
+    <main class="container main" style="padding:1.5rem 0">
       <%= yield %>
     </main>
 
