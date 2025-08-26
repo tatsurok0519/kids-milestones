@@ -124,6 +124,7 @@ input:not([type]), textarea, select {
 .sun-illustration,
 .watering-illustration{
   position: absolute;
+  pointer-events: none; /* クリックを邪魔しない */
   opacity: .9;
   filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
 }

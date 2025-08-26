@@ -28,17 +28,14 @@
           <% end %>
         </nav>
       </div>
-      <div class="illustrations">
-        <img src="images/sun.png" alt="お日様のイラスト" class="sun-illustration">
-        <img src="images/hatsuga-mizumaki_9726.png" alt="水やりのイラスト" class="watering-illustration">
-      </div>
+      <!-- お日様イラスト（ヘッダーに配置して前面に表示） -->
+      <%= image_tag "illustrations/sun.png",
+          alt: "",
+          class: "sun-illustration" %>
     </header>
 
     <!-- 背景デコ用レイヤー（クリックを邪魔しない＋常に背面） -->
     <div class="page-decorations" aria-hidden="true">
-      <%= image_tag "illustrations/sun.png",
-          alt: "",
-          class: "sun-illustration" %>
 
       <%= image_tag "illustrations/watering.png",
           alt: "",
