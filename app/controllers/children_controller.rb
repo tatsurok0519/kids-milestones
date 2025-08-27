@@ -31,15 +31,19 @@ class ChildrenController < ApplicationController
     end
   end
 
+  def select
+    child = current_user.children.find(params[:id])  # 自分の子か確認
+    session[:current_child_id] = child.id
+    redirect_back fallback_location: dashboard_path,
+                  notice: "#{child.name}を選択しました。",
+                  status: :see_other
+  end
+  
   def destroy
+    @child = current_user.children.find(params[:id])
     name = @child.name
-    # Child は has_one_attached :photo なので、destroy で添付も自動的に purge_later されます
-    # Achievements は dependent: :destroy のため、関連の達成履歴も一緒に削除されます
-    if @child.destroy
-      redirect_to children_path, notice: "#{name} のカードを削除しました（写真・達成履歴も削除されました）。"
-    else
-      redirect_to children_path, alert: "削除に失敗しました。もう一度お試しください。"
-    end
+    @child.destroy
+    redirect_to children_path, notice: "#{name}を削除しました。", status: :see_other
   end
 
   private

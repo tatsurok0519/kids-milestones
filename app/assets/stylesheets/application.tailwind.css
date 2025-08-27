@@ -184,3 +184,45 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px){
   .sun-inline{ width: 80px; margin-left: 8px; }
 }
+
+/* ===== 子ども切替UI ===== */
+.kid-scroll{
+  overflow:auto; white-space:nowrap; padding-bottom:.25rem;
+  display:flex; gap:.5rem;
+}
+.kid-chip{
+  display:inline-flex; align-items:center; gap:.6rem;
+  background:#fff; border:1px solid var(--border);
+  padding:.5rem .7rem; border-radius:.9rem; text-decoration:none; color:var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.kid-chip:hover{ background:#fff8e0; }
+.kid-chip--active{
+  border-color: var(--accent-600);
+  box-shadow: 0 0 0 3px rgba(255,211,105,.25);
+  background: #fffdf4;
+}
+.kid-avatar-fallback{
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:#fff3d1; color:#9a7b35; font-weight:700;
+  border:1px solid var(--border);
+}
+.kid-meta .kid-name{ font-weight:700; line-height:1.1; }
+.kid-meta .kid-age{ font-size:.8rem; color:#7a6b5a; }
+
+/* 表示切り替え（PC/スマホ） */
+.only-mobile{ display:none; }
+@media (max-width: 640px){
+  .only-desktop{ display:none; }
+  .only-mobile{ display:block; }
+}
+
+.kid-chip.is-active {
+  outline: 3px solid rgba(255,211,105,.35); /* はちみつ色のハイライト */
+  border-color: var(--pri-600);
+}
+
+/* 画面幅で出し分け（PCは横スクロール、スマホはドロップダウン） */
+@media (min-width: 641px) { .child-switcher .dropdown-sm { display: none; } }
+@media (max-width: 640px) { .child-switcher .row { display: none; } }

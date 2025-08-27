@@ -1,25 +1,31 @@
 class DashboardController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_user_object
 
   def show
-    @children = current_user.children.with_attached_photo.order(:created_at)
-    @selected_child = @children.find_by(id: params[:child_id]) || @children.first
-
-    if @selected_child
-      @age_label     = @selected_child.age_label   # ← これをビューで使う
-      @flower_count  = @selected_child.achievements.count
-      @recommendations = RecommendationPicker.for_child(@selected_child, k: 3)
-    else
-      @age_label = nil
+    # /dashboard?child_id=xxx で来たら、選択を更新してセッションに保存
+    if params[:child_id].present?
+      if (kid = current_user.children.find_by(id: params[:child_id]))
+        session[:current_child_id] = kid.id
+        @current_child   = kid
+        @selected_child  = kid
+      end
     end
+
+    # 念のため（他ページから単独で呼ばれても崩れないよう補強）
+    @children       ||= current_user.children.with_attached_photo.order(:created_at)
+    @selected_child ||= @current_child
+
+    return if @selected_child.blank?
+
+    # 表示用
+    @child       = @selected_child
+    @age_label   = @selected_child.age_years_and_months
+    @flower_count = @selected_child.achievements.count
+    @recommendations = RecommendationPicker.for_child(@selected_child, k: 3)
   end
 
-  private
-
   def ensure_user_object
-    # Deviseのセッション復元に問題がある場合、current_userがArrayになることがある
-    # この場合、ユーザーを強制的にサインアウトさせて再ログインを促す
+    # 既存のまま
     return if current_user.is_a?(User)
 
     sign_out

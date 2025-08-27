@@ -2,7 +2,7 @@ class Child < ApplicationRecord
   belongs_to :user
   has_many :achievements, dependent: :destroy
   has_many :milestones, through: :achievements
-  has_one_attached :photo
+  has_one_attached :photo, dependent: :purge_later
 
   validates :name, presence: true
   validates :birthday, presence: true
@@ -39,6 +39,7 @@ class Child < ApplicationRecord
     end
     [years, months]
   end
+  alias_method :age_years_months, :age_years_and_months
 
   def age_label
     y, m = age_years_and_months
