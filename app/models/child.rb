@@ -7,6 +7,16 @@ class Child < ApplicationRecord
   validates :name, presence: true
   validates :birthday, presence: true
 
+  validate :photo_must_be_image
+
+  # 画像形式の軽いチェック（PNG/JPEG/GIF）
+  def photo_must_be_image
+    return unless photo.attached?
+    unless photo.content_type.in?(%w[image/png image/jpeg image/jpg image/gif])
+      errors.add(:photo, "はPNG/JPEG/GIFの画像を選んでください")
+    end
+  end
+
   # 生後月齢（必要なら使用）
   def age_in_months
     return nil unless birthday

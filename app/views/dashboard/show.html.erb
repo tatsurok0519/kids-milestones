@@ -2,7 +2,7 @@
   <% if @children.blank? %>
     <div class="card" style="text-align:center">
       <h2 class="h2">まずはお子さまカードを作成しましょう</h2>
-      <p>名前とお誕生日を登録すると、月齢・週数や「きょうのおすすめ」が表示されます。</p>
+      <p>名前とお誕生日を登録すると、月齢や「きょうのおすすめ」が表示されます。</p>
       <%= link_to "子どもを追加", new_child_path, class: "btn btn-primary" %>
     </div>
 
@@ -37,6 +37,7 @@
       <!-- 選択中の子どものカード -->
       <div class="card" style="margin-top:1rem;">
         <h2 class="h2"><%= @selected_child.name %> さんのカード</h2>
+        <%= link_to "プロフィール編集", edit_child_path(@selected_child), class: "btn btn-secondary" %>
 
         <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
           <% if @age_label %><div class="pill"><%= @age_label %></div><% end %>

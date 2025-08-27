@@ -14,38 +14,22 @@
       <div class="container header-inner">
         <h1 class="h1">
           <%= link_to "こどもすくすくカード",
-              (user_signed_in? ? authenticated_root_path : unauthenticated_root_path) %>
+                (user_signed_in? ? authenticated_root_path : unauthenticated_root_path) %>
+          <%= image_tag "illustrations/sun.png", alt: "お日さま", class: "sun-inline" %>
         </h1>
+
         <nav>
           <% if user_signed_in? %>
-            <span class="nav-email" style="color:#7b6f69;font-size:.9rem;margin-right:.5rem;">
-              <%= current_user.email %>
-            </span>
-            <%= link_to "お子さま", children_path, class: "btn btn-secondary" %>
-            <%= link_to "アカウント設定", edit_user_registration_path, class: "btn btn-secondary" %>
-            <%= button_to "ログアウト",
-                  destroy_user_session_path,
-                  method: :delete,
-                  class: "btn btn-secondary" %>
+            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
           <% else %>
             <%= link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
-            <%= link_to "新規登録", new_user_registration_path, class: "btn btn-secondary", style: "margin-left:.5rem" %>
+            <%= link_to "新規登録", new_user_registration_path, class: "btn btn-secondary" %>
           <% end %>
         </nav>
       </div>
-      <!-- お日様イラスト（ヘッダーに配置して前面に表示） -->
-      <%= image_tag "illustrations/sun.png",
-          alt: "",
-          class: "sun-illustration" %>
     </header>
 
-    <!-- 背景デコ用レイヤー（クリックを邪魔しない＋常に背面） -->
-    <div class="page-decorations" aria-hidden="true">
-
-      <%= image_tag "illustrations/watering.png",
-          alt: "",
-          class: "watering-illustration" %>
-    </div>
+<%= image_tag "illustrations/watering.png", alt: "水やり", class: "watering-illustration" %>
 
     <% flash.each do |k, v| %>
       <div class="container" style="margin-top:1rem">

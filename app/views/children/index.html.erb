@@ -14,6 +14,7 @@
         <div>
           <div style="font-weight:700;"><%= child.name %></div>
           <div class="text-muted"><%= child.age_label %>（誕生日 <%= child.birthday.strftime('%Y-%m-%d') %>）</div>
+          <%= link_to "編集", edit_child_path(child), class: "btn btn-secondary" %>
         </div>
       </li>
     <% end %>

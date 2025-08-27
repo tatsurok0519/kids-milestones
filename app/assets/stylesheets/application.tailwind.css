@@ -42,8 +42,15 @@ a:hover{color:#9f5f00;text-decoration:underline}
   border-bottom:1px solid var(--border);
   box-shadow: var(--shadow-sm);
 }
-.header-inner{display:flex;align-items:center;justify-content:space-between;padding:.85rem 0}
-.h1{font-size:1.1rem;font-weight:700;margin:0;letter-spacing:.02em}
+.header-inner{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  padding:.85rem 0
+}
+/* タイトルはアイコンを横並びに添える */
+.h1{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:1.1rem;font-weight:700;margin:0;letter-spacing:.02em;
+}
 
 /* セクション & カード */
 .h2{font-size:1.25rem;font-weight:700;margin:.25rem 0 .75rem}
@@ -80,7 +87,7 @@ input[type="url"],input[type="number"],input[type="date"],textarea,select{
   border-color:#f19999; box-shadow:0 0 0 3px rgba(241,153,153,.25)
 }
 
-/* ピル/タグ（将来の難易度タグ等に） */
+/* ピル/タグ */
 .pill{
   display:inline-flex;align-items:center;gap:.35rem;
   padding:.25rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700;
@@ -108,39 +115,18 @@ input:not([type]), textarea, select {
 .card .field { margin-top:.75rem; }
 .card .actions { margin-top:1rem; }
 
-/* === 背景デコ用の共通レイヤー === */
-.page-decorations{
-  position: fixed; /* 画面に固定（スクロールしても付いてくる）*/
-  inset: 0;        /* 画面いっぱい */
-  pointer-events: none; /* クリックを邪魔しない */
-  z-index: 0;      /* 背面に固定 */
+/* === 装飾イラスト === */
+/* お日さまはタイトル内にインライン配置 */
+.sun-inline{
+  width:36px;height:auto;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 3px 4px rgba(255,170,0,.25));
 }
-
-/* 重なり制御：ヘッダー/メインはデコより手前に */
-.header-bar{ position: relative; z-index: 2; }
-.main{ position: relative; z-index: 1; }
-
-/* === イラスト個別：配置と影 === */
-.sun-illustration,
+/* 水やりは画面右下に固定 */
 .watering-illustration{
-  position: absolute;
-  pointer-events: none; /* クリックを邪魔しない */
-  opacity: .9;
+  position: fixed; right: 20px; bottom: 20px;
+  width: 110px; z-index: 0; opacity: .9;
   filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
-}
-
-/* お日様：ログインボタンに被らないよう「右から220px」に調整 */
-.sun-illustration{
-  top: 20px;
-  right: 220px;   /* ← ここを広げるほど左に寄ります（例: 260px） */
-  width: 120px;
-}
-
-/* 水やり：右下に変更 */
-.watering-illustration{
-  bottom: 20px;
-  right: 20px;    /* ← 左下から右下へ */
-  width: 110px;
 }
 
 /* ======== Mobile-first polish (スマホ最適化の上乗せ) ======== */
@@ -158,11 +144,10 @@ input:not([type]), textarea, select {
 /* 画像は親幅にフィット */
 img { max-width: 100%; height: auto; }
 
-/* 共通カードグリッド用（HTMLで .cards-grid を付けると使えます） */
+/* 共通カードグリッド用 */
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; }
 
-/* ヘッダーのナビゲーションが狭い幅で折り返せるように */
-.header-inner { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+/* ヘッダーのナビが狭い幅で折り返せるように */
 .header-inner nav { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:flex-end; }
 
 /* 余白と文字サイズを小さめ画面で調整 */
@@ -178,19 +163,24 @@ img { max-width: 100%; height: auto; }
 
   /* カードの最小幅を少し小さくして1列になりにくく */
   .cards-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-
-  /* イラストの当たりを弱める＆位置をスマホ用に微調整 */
-  .sun-illustration {
-    position: absolute; top: 12px; left: 12px; right: auto;
-    width: 88px; opacity: .9; z-index: -1;
-  }
-  .watering-illustration {
-    position: absolute; right: 12px; bottom: 12px; left: auto;
-    width: 90px; opacity: .9; z-index: -1;
-  }
 }
 
-/* とても狭い幅ではイラストを非表示（被り防止） */
+/* とても狭い幅ではお日さまは非表示（被り防止） */
 @media (max-width: 360px) {
-  .sun-illustration, .watering-illustration { display: none; }
+  .sun-inline{ display: none; }
+}
+
+/* タイトル横の太陽（大きめ） */
+.sun-inline{
+  width: 110px;         /* ← デスクトップは大きめ（例: 110〜120px） */
+  height: auto;
+  margin-left: 10px;
+  vertical-align: middle;
+  opacity: .9;
+  filter: drop-shadow(0 4px 8px rgba(240,160,60,.18));
+}
+
+/* スマホでは少しだけ小さく */
+@media (max-width: 640px){
+  .sun-inline{ width: 80px; margin-left: 8px; }
 }
