@@ -19,13 +19,15 @@ Rails.application.routes.draw do
     resources :children, only: [:index, :new, :create, :edit, :update, :destroy]
   end
 
-  # ログイン状態で root を切り替える
+  # ログイン後のトップ
   authenticated :user do
-    root "dashboard#show", as: :authenticated_root
-  end
-  unauthenticated do
-    root "home#index", as: :unauthenticated_root
+    root to: "dashboard#show", as: :authenticated_root
   end
 
-  get "up" => "rails/health#show", as: :rails_health_check
+  # 未ログインのトップ（公開用）
+  unauthenticated do
+    root to: "pages#landing", as: :unauthenticated_root
+  end
+
+  # get "up" => "rails/health#show", as: :rails_health_check
 end

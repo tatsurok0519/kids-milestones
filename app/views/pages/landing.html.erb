@@ -1,0 +1,66 @@
+<div class="min-h-screen bg-orange-50/40">
+  <div class="mx-auto max-w-5xl px-4 py-12">
+
+    <!-- ヒーロー -->
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-orange-600 tracking-tight">
+          こどもすくすくカード
+        </h1>
+        <p class="mt-3 text-gray-700 leading-relaxed">
+          お子さまの「できた！」を、かわいく・かんたんに記録。<br>
+          写真付きプロフィール、今日のおすすめ、花丸（達成）で成長を見える化します。
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <%= link_to "ログイン", new_user_session_path,
+                class: "px-5 py-2.5 rounded-xl bg-orange-600 text-white font-semibold shadow hover:opacity-95" %>
+          <%= link_to "新規登録", new_user_registration_path,
+                class: "px-5 py-2.5 rounded-xl bg-white border border-orange-300 text-orange-700 font-semibold hover:bg-orange-100" %>
+          <%= link_to "できるかな体験", tasks_path,
+                class: "px-5 py-2.5 rounded-xl bg-white border text-gray-700 hover:bg-gray-50" %>
+        </div>
+
+        <div class="mt-4 text-xs text-gray-500">
+          ※ ログイン後はダッシュボードで「選択中の子ども」を切り替えられます。
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="rounded-2xl bg-white shadow p-6 border">
+          <div class="flex items-center gap-4">
+            <div>
+              <div class="text-sm text-gray-500">サンプル</div>
+              <div class="text-lg font-semibold text-gray-800">今日のおすすめ（3件）</div>
+            </div>
+          </div>
+          <ul class="mt-4 space-y-2 text-sm text-gray-700">
+            <li>・つかまり立ちに挑戦</li>
+            <li>・つみきを2個重ねる</li>
+            <li>・手をつないで10歩おさんぽ</li>
+          </ul>
+          <div class="mt-4">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-orange-100 text-orange-700">かんたん / おうちでOK</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 機能ダイジェスト -->
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <div class="rounded-2xl bg-white border p-5 shadow-sm">
+        <div class="font-semibold text-gray-800">写真つきプロフィール</div>
+        <p class="mt-2 text-sm text-gray-600">お子さまの写真をアップロードして、年齢は「◯歳◯か月」を自動表示。</p>
+      </div>
+      <div class="rounded-2xl bg-white border p-5 shadow-sm">
+        <div class="font-semibold text-gray-800">今日のおすすめ</div>
+        <p class="mt-2 text-sm text-gray-600">未達成から多様性を意識して3件をピックアップ（毎日切り替わります）。</p>
+      </div>
+      <div class="rounded-2xl bg-white border p-5 shadow-sm">
+        <div class="font-semibold text-gray-800">花丸（達成）</div>
+        <p class="mt-2 text-sm text-gray-600">「できた！」をワンタップで記録。レポート画面は印刷にも対応。</p>
+      </div>
+    </div>
+
+  </div>
+</div>
