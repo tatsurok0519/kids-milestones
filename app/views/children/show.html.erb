@@ -2,7 +2,9 @@
   <h2 class="h2"><%= @child.name %> のプロフィール</h2>
   <div style="display:flex;gap:1rem;align-items:center;">
     <% if @child.photo.attached? %>
-      <%= image_tag(@child.photo.variant(resize_to_fill: [120,120])) rescue image_tag(@child.photo, size: "120x120") %>
+      <%= image_tag @child.photo_card,
+            alt: "#{@child.name}の写真",
+            style: "width:400px;height:300px;object-fit:cover;border-radius:12px;" %>
     <% else %>
       <%= image_tag("illustrations/sun.png", size: "120x120", alt: "") rescue "" %>
     <% end %>

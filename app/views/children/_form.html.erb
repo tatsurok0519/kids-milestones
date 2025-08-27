@@ -25,18 +25,33 @@
   <div class="field">
     <label class="label">写真（任意）</label>
 
-    <% if child.photo.attached? %>
-      <div style="display:flex; gap:1rem; align-items:center; margin-bottom:.5rem;">
-        <%= image_tag child.photo, alt: "#{child.name}の写真",
-              style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
-        <label class="pill" style="cursor:pointer;">
-          <%= f.check_box :remove_photo, {}, "1", "0" %> 写真を削除
-        </label>
-      </div>
-      <small class="text-muted">新しい写真を選ぶと置き換わります。</small>
-    <% end %>
+    <div style="display:flex; gap:1rem; align-items:center; margin-bottom:.5rem;">
+      <%# プレビュー枠（既存があればサムネで表示） %>
+      <% if child.photo.attached? %>
+        <%= image_tag(child.photo_thumb, alt: "#{child.name}の写真",
+              id: "photo-preview",
+              style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" ) %>
+      <% else %>
+        <img id="photo-preview" alt="プレビュー"
+             style="width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;">
+      <% end %>
 
-    <%= f.file_field :photo, class: "input" %>
+      <div style="display:flex; flex-direction:column; gap:.5rem;">
+        <%= f.file_field :photo,
+              class: "input",
+              accept: "image/png,image/jpg,image/jpeg,image/gif",
+              direct_upload: true,
+              onchange: "previewSelectedImage(this, 'photo-preview')" %>
+
+        <% if child.photo.attached? %>
+          <label class="pill" style="cursor:pointer; user-select:none;">
+            <%= f.check_box :remove_photo, {}, "1", "0" %> 写真を削除（新しい写真を選ぶと上書きされます）
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <small class="text-muted">※ PNG/JPG/GIF、5MBまで。表示時は枠に合わせてトリミングされます。</small>
   </div>
 
   <div class="actions">

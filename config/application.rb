@@ -28,3 +28,10 @@ module KidsMilestones
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end
+
+module YourAppName
+  class Application < Rails::Application
+    # ... 既存の設定
+    config.active_storage.variant_processor = :mini_magick
+  end
+end

@@ -8,6 +8,7 @@ class Child < ApplicationRecord
   validates :birthday, presence: true
 
   validate :photo_must_be_image
+  validate :photo_size_limit
 
   # 画像形式の軽いチェック（PNG/JPEG/GIF）
   def photo_must_be_image
@@ -15,6 +16,25 @@ class Child < ApplicationRecord
     unless photo.content_type.in?(%w[image/png image/jpeg image/jpg image/gif])
       errors.add(:photo, "はPNG/JPEG/GIFの画像を選んでください")
     end
+  end
+
+  # サイズ制限（例：5MB）
+  def photo_size_limit
+    return unless photo.attached?
+    if photo.blob.byte_size > 5.megabytes
+      errors.add(:photo, "は5MB以下にしてください")
+    end
+  end
+
+  # ===== リサイズ用ヘルパ =====
+  def photo_thumb
+    return unless photo.attached?
+    photo.variant(resize_to_fill: [80, 80]).processed
+  end
+
+  def photo_card
+    return unless photo.attached?
+    photo.variant(resize_to_fill: [400, 300]).processed
   end
 
   # 生後月齢（必要なら使用）

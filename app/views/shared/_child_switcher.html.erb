@@ -12,7 +12,7 @@
                   style: "display:inline-flex;align-items:center;gap:.6rem;padding:.55rem .8rem;border:1px solid var(--border);border-radius:.8rem;background:#fff;text-decoration:none;color:var(--text);white-space:nowrap;#{'background:#fff7ed;border-color:#fb923c;box-shadow:0 0 0 4px rgba(251,146,60,.25);' if active}" do %>
 
         <% if kid.photo.attached? %>
-          <%= image_tag kid.photo, alt: "#{kid.name}の写真",
+          <%= image_tag kid.photo_thumb, alt: "#{kid.name}の写真",
                 style: "width:40px;height:40px;object-fit:cover;border-radius:50%;" %>
         <% end %>
 

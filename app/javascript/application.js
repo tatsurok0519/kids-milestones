@@ -2,6 +2,10 @@
 
 import "@hotwired/turbo-rails"
 
+// これが無いと direct_upload が動きません
+import * as ActiveStorage from "@rails/activestorage"
+ActiveStorage.start()
+
 document.addEventListener("turbo:load", () => {
   const sel = document.getElementById("child-switcher-select");
   if (!sel) return;

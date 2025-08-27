@@ -1,4 +1,14 @@
-<!-- app/views/tasks/index.html.erb -->
+<h1>できるかな体験</h1>
+<% if @milestones.present? %>
+  <ul>
+    <% @milestones.each do |m| %>
+      <li><%= m.title %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>公開ページです（ログイン不要）。</p>
+<% end %>
+
 <div class="container">
   <div class="card" style="margin-bottom:1rem;">
     <h2 class="h2">できるかな</h2>

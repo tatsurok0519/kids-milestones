@@ -1,7 +1,11 @@
 class ChildrenController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_child, only: [:edit, :update, :destroy]
+  before_action :set_child, only: [:show, :edit, :update, :destroy]
 
+  def show
+    # @child は set_child 済み
+  end
+  
   def index
     @children = current_user.children.with_attached_photo.order(created_at: :asc)
   end
@@ -13,9 +17,8 @@ class ChildrenController < ApplicationController
   def create
     @child = current_user.children.new(child_params)
     if @child.save
-      redirect_to children_path, notice: "#{@child.name} を登録しました。"
+      redirect_to @child, notice: "子どもを登録しました。"
     else
-      flash.now[:alert] = "入力内容を確認してください。"
       render :new, status: :unprocessable_entity
     end
   end
@@ -23,10 +26,16 @@ class ChildrenController < ApplicationController
   def edit; end
 
   def update
+    # @child は set_child 済み
+    remove_flag = ActiveModel::Type::Boolean.new.cast(params.dig(:child, :remove_photo))
+    new_upload  = params.dig(:child, :photo).present?
+
     if @child.update(child_params)
-      redirect_to children_path, notice: "#{@child.name} のプロフィールを更新しました。"
+      if remove_flag && !new_upload && @child.photo.attached?
+        @child.photo.purge_later
+      end
+      redirect_to @child, notice: "子ども情報を更新しました。"
     else
-      flash.now[:alert] = "更新に失敗しました。入力内容を確認してください。"
       render :edit, status: :unprocessable_entity
     end
   end
@@ -38,22 +47,19 @@ class ChildrenController < ApplicationController
                   notice: "#{child.name}を選択しました。",
                   status: :see_other
   end
-  
+
   def destroy
-    @child = current_user.children.find(params[:id])
     name = @child.name
     @child.destroy
     redirect_to children_path, notice: "#{name}を削除しました。", status: :see_other
   end
 
   private
-
   def set_child
-    # 所有者チェック：他ユーザーの子どもは取れない
     @child = current_user.children.find(params[:id])
   end
 
   def child_params
-    params.require(:child).permit(:name, :birthday, :photo)
+    params.require(:child).permit(:name, :birthday, :photo) # ← :remove_photo を削除
   end
 end
