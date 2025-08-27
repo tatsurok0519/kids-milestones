@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_26_062358) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_26_213947) do
   create_table "achievements", force: :cascade do |t|
     t.integer "child_id", null: false
     t.integer "milestone_id", null: false
@@ -55,7 +55,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_26_062358) do
   create_table "children", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "name"
-    t.date "birthdate"
+    t.date "birthday"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_children_on_user_id"

@@ -21,6 +21,7 @@
             <span class="nav-email" style="color:#7b6f69;font-size:.9rem;margin-right:.5rem;">
               <%= current_user.email %>
             </span>
+            <%= link_to "お子さま", children_path, class: "btn btn-secondary" %>
             <%= link_to "アカウント設定", edit_user_registration_path, class: "btn btn-secondary" %>
             <%= button_to "ログアウト",
                   destroy_user_session_path,

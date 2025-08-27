@@ -7,12 +7,11 @@ class DashboardController < ApplicationController
     @selected_child = @children.find_by(id: params[:child_id]) || @children.first
 
     if @selected_child
-      @months = @selected_child.age_in_months
-      @weeks  = @selected_child.age_in_weeks
-      @flower_count = @selected_child.achievements.where(achieved: true).count
+      @age_label     = @selected_child.age_label   # ← これをビューで使う
+      @flower_count  = @selected_child.achievements.count
       @recommendations = RecommendationPicker.for_child(@selected_child, k: 3)
     else
-      @recommendations = []
+      @age_label = nil
     end
   end
 

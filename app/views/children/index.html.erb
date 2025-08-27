@@ -1,0 +1,23 @@
+<h2 class="h2">お子さま一覧</h2>
+<%= link_to "＋ 新しく登録", new_child_path, class: "btn btn-primary" %>
+<hr class="divider">
+
+<% if @children.any? %>
+  <ul style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;padding:0;list-style:none;">
+    <% @children.each do |child| %>
+      <li class="card">
+        <% if child.photo.attached? %>
+          <%= image_tag child.photo.variant(resize_to_fill: [400, 250]),
+                        alt: child.name,
+                        style: "width:100%;height:auto;border-radius:.6rem;display:block;margin-bottom:.5rem;" %>
+        <% end %>
+        <div>
+          <div style="font-weight:700;"><%= child.name %></div>
+          <div class="text-muted"><%= child.age_label %>（誕生日 <%= child.birthday.strftime('%Y-%m-%d') %>）</div>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>まだ登録がありません。上の「＋ 新しく登録」から追加してください。</p>
+<% end %>

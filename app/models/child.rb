@@ -2,17 +2,37 @@ class Child < ApplicationRecord
   belongs_to :user
   has_many :achievements, dependent: :destroy
   has_many :milestones, through: :achievements
-  has_one_attached :photo # ActiveStorage（次の手順で有効化）
+  has_one_attached :photo
 
-  # 生後月齢を計算する
+  validates :name, presence: true
+  validates :birthday, presence: true
+
+  # 生後月齢（必要なら使用）
   def age_in_months
-    return nil unless birthdate
-    (Date.current.year - birthdate.year) * 12 + Date.current.month - birthdate.month - (Date.current.day < birthdate.day ? 1 : 0)
+    return nil unless birthday
+    years  = Date.current.year  - birthday.year
+    months = Date.current.month - birthday.month
+    months -= 1 if Date.current.day < birthday.day
+    years * 12 + months
   end
 
-  # 生後週数を計算する
-  def age_in_weeks
-    return nil unless birthdate
-    (Date.current - birthdate).to_i / 7
+  # 「◯歳◯か月」を返す（UI向け）
+  def age_years_and_months
+    return [nil, nil] unless birthday
+    today  = Date.current
+    years  = today.year  - birthday.year
+    months = today.month - birthday.month
+    months -= 1 if today.day < birthday.day
+    if months < 0
+      years  -= 1
+      months += 12
+    end
+    [years, months]
+  end
+
+  def age_label
+    y, m = age_years_and_months
+    return "" if y.nil?
+    "#{y}歳#{m}か月"
   end
 end
