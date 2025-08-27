@@ -29,5 +29,5 @@ Rails.application.routes.draw do
     root to: "pages#landing", as: :unauthenticated_root
   end
 
-  # get "up" => "rails/health#show", as: :rails_health_check
+  get "up" => "rails/health#show", as: :rails_health_check
 end
