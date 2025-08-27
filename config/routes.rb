@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   get "/report", to: "pages#report"
   get "/home",   to: "home#index", as: :home
 
+  get "up" => "rails/health#show", as: :rails_health_check
   # ★ 子ども管理（ログイン必須）
   authenticate :user do
     resources :children, only: [:index, :new, :create, :edit, :update, :destroy]
@@ -29,5 +30,7 @@ Rails.application.routes.draw do
     root to: "pages#landing", as: :unauthenticated_root
   end
 
-  get "up" => "rails/health#show", as: :rails_health_check
+  # ✅ マイページ（表示のみ）
+  resource :account, only: [:show]
+  
 end

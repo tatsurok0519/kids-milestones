@@ -10,12 +10,16 @@
 
     <div class="card" style="margin-top:.5rem;">
       <h2 class="h2"><%= @selected_child.name %> さんのカード</h2>
+
+      <!-- 年齢・年齢帯・花丸ピル -->
       <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-        <% if @age_label %><div class="pill"><%= @age_label %></div><% end %>
+        <div class="pill"><%= @selected_child.age_label %></div>
+        <div class="pill">対象 <%= @selected_child.age_band_label %></div>
         <div class="pill">花丸 <%= @flower_count %> 個</div>
       </div>
 
       <hr class="divider">
+
       <h3 class="h2" style="font-size:1.1rem;">きょうのおすすめ 3 件</h3>
       <% if @recommendations.present? %>
         <div class="cards-grid">
@@ -27,7 +31,10 @@
                 <span class="pill">★<%= ms.difficulty %></span>
               </div>
               <div style="margin-top:.6rem;">
-                <a href="/tasks" class="btn btn-secondary">やってみる</a>
+                <!-- ✅ “その子の年齢帯”をクエリで渡す -->
+                <%= link_to "やってみる",
+                            tasks_path(age_band: @selected_child.age_band_index),
+                            class: "btn btn-secondary" %>
               </div>
             </div>
           <% end %>
@@ -37,10 +44,14 @@
       <% end %>
 
       <hr class="divider">
+
       <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-        <a href="/tasks"  class="btn btn-primary">できるかなページへ</a>
-        <a href="/chat"   class="btn btn-secondary">チャットで相談</a>
-        <a href="/report" class="btn btn-secondary">ふりかえりレポート</a>
+        <!-- ✅ 下の導線も同様に年齢帯を付与 -->
+        <%= link_to "できるかなページへ",
+                    tasks_path(age_band: @selected_child.age_band_index),
+                    class: "btn btn-primary" %>
+        <%= link_to "チャットで相談",  "/chat",   class: "btn btn-secondary" %>
+        <%= link_to "ふりかえりレポート", "/report", class: "btn btn-secondary" %>
       </div>
     </div>
   <% end %>

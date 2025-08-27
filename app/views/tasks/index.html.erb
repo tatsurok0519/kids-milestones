@@ -9,6 +9,22 @@
   <p>公開ページです（ログイン不要）。</p>
 <% end %>
 
+<div class="card" style="padding: .75rem; margin-bottom: .75rem;">
+  <%= form_with url: tasks_path, method: :get, local: true, html: { style: "display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;" } do %>
+    <label class="label" for="age_band">年齢帯</label>
+    <%= select_tag :age_band,
+          options_for_select((0..5).map { |i| ["#{i}–#{i+1}歳", i] }, @age_band_index),
+          class: "input",
+          onchange: "this.form.submit()" %>
+
+    <% if current_user && current_child %>
+      <span class="pill" style="margin-left:.25rem;">
+        選択中：<strong><%= current_child.name %></strong>（<%= current_child.age_label %> / <%= current_child.age_band_label %>）
+      </span>
+    <% end %>
+  <% end %>
+</div>
+
 <div class="container">
   <div class="card" style="margin-bottom:1rem;">
     <h2 class="h2">できるかな</h2>

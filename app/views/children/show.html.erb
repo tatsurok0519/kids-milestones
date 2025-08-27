@@ -11,17 +11,14 @@
     <div>
       <div>誕生日：<%= @child.birthday %></div>
       <div>月齢：<%= @child.age_in_months || "-" %>か月</div>
-      <div>週数：<%= @child.age_in_weeks || "-" %>週</div>
     </div>
   </div>
 
   <div style="margin-top:1rem;display:flex;gap:.5rem;">
     <%= link_to "編集", edit_child_path(@child), class: "btn btn-secondary" %>
-    <%= button_to "子どもを削除",
-              child_path(@child),
-              method: :delete,
-              form: { data: { turbo: true, turbo_confirm: "※削除すると写真と達成履歴（花丸）も一緒に削除されます。復元はできません。よろしいですか？" } },
-              class: "inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white" %>
+    <%= link_to "削除する", @child,
+          data: { turbo_method: :delete, turbo_confirm: "※削除すると 写真（ストレージの実体） と 達成履歴（花丸） も一緒に削除されます。復元はできません。よろしいですか？" },
+          class: "btn btn-danger" %>
     <%= link_to "一覧へ戻る", children_path, class: "btn btn-primary" %>
   </div>
 </div>

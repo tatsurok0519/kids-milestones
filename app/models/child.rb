@@ -7,6 +7,8 @@ class Child < ApplicationRecord
   validates :name, presence: true
   validates :birthday, presence: true
 
+  validate :birthday_cannot_be_in_future
+
   validate :photo_must_be_image
   validate :photo_size_limit
 
@@ -66,4 +68,35 @@ class Child < ApplicationRecord
     return "" if y.nil?
     "#{y}歳#{m}か月"
   end
+
+  # 0–6歳帯のインデックス（0..5）を返す
+  # 例: 10ヶ月→0, 2歳3ヶ月→2, 7歳→5 に丸め（6歳以上は5-6歳帯に寄せる）
+  def age_band_index
+    m = age_in_months
+    return 0 if m.nil?
+    m = 0 if m < 0
+    idx = m / 12
+    idx > 5 ? 5 : idx
+  end
+
+  # UI表示用ラベル（"0–1歳" など）
+  def age_band_label
+    i = age_band_index
+    "#{i}–#{i + 1}歳"
+  end
+
+  # その帯の月齢レンジ（例: 0→0..11, 2→24..35）
+  def age_band_month_range
+    i = age_band_index
+    (i * 12)..(i * 12 + 11)
+  end
+
+  private
+  def birthday_cannot_be_in_future
+    return unless birthday.present?
+    if birthday > Date.current
+      errors.add(:birthday, "は今日以前を選んでください")
+    end
+  end
+
 end

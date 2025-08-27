@@ -40,7 +40,6 @@
         <%= f.file_field :photo,
               class: "input",
               accept: "image/png,image/jpg,image/jpeg,image/gif",
-              direct_upload: true,
               onchange: "previewSelectedImage(this, 'photo-preview')" %>
 
         <% if child.photo.attached? %>

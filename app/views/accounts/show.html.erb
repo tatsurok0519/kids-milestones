@@ -1,0 +1,28 @@
+<div class="container main">
+  <div class="card">
+    <h2 class="h2">マイページ</h2>
+
+    <div style="margin:.5rem 0 1rem;">
+      <div>表示名：<strong><%= current_user.name %></strong></div>
+      <div>メール：<%= current_user.email %></div>
+    </div>
+
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <%= link_to "プロフィール編集（メール・パスワード）",
+            edit_user_registration_path,
+            class: "btn btn-secondary" %>
+
+      <!-- ✅ 退会ボタン（Turboの確認ダイアログ） -->
+      <%= button_to "退会する（アカウント削除）",
+            user_registration_path,
+            method: :delete,
+            form: { data: { turbo_confirm: "※退会すると、登録したお子さま・写真・達成履歴（花丸）を含む全データが削除されます。復元はできません。本当に退会しますか？" } },
+            class: "btn btn-danger",
+            form_class: "inline-block" %>
+    </div>
+
+    <p class="text-muted" style="margin-top:.5rem;font-size:.9rem;">
+      ※ 退会後はログアウト状態になり、トップページに戻ります。
+    </p>
+  </div>
+</div>
