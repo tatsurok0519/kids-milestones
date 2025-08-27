@@ -1,0 +1,71 @@
+- title: ねんねで手足をバタバタ
+  category: 運動
+  difficulty: 1
+  min_months: 0
+  max_months: 2
+
+- title: はいはいで前に進む
+  category: 運動
+  difficulty: 2
+  min_months: 7
+  max_months: 10
+
+- title: つかまり立ちに挑戦
+  category: 運動
+  difficulty: 2
+  min_months: 9
+  max_months: 12
+
+- title: つみきを2個重ねる
+  category: 遊び
+  difficulty: 2
+  min_months: 12
+  max_months: 18
+
+- title: コップで上手に飲む
+  category: 生活習慣
+  difficulty: 2
+  min_months: 18
+  max_months: 30
+
+- title: 簡単な言葉をまねする
+  category: 言葉
+  difficulty: 2
+  min_months: 12
+  max_months: 24
+
+- title: 二語文で話す
+  category: 言葉
+  difficulty: 3
+  min_months: 20
+  max_months: 36
+
+- title: お片付けできた
+  category: 生活習慣
+  difficulty: 2
+  min_months: 24
+  max_months: 48
+
+- title: ジャンプして着地
+  category: 運動
+  difficulty: 3
+  min_months: 30
+  max_months: 48
+
+- title: 友だちと順番を待つ
+  category: 社会性
+  difficulty: 3
+  min_months: 36
+  max_months: 60
+
+- title: ひらがなに興味を持つ
+  category: 言葉
+  difficulty: 3
+  min_months: 48
+  max_months: 72
+
+- title: 靴ひもを結ぶ
+  category: 生活習慣
+  difficulty: 4
+  min_months: 60
+  max_months: 72

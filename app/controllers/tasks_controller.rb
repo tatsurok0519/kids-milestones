@@ -14,7 +14,20 @@ class TasksController < ApplicationController
       @age_band_index = 0
     end
 
-    @milestones     = Milestone.for_age_band(@age_band_index).order(:difficulty, :id)
+    # ▼ 追加：カテゴリ／難易度の絞り込み
+    @category   = params[:category].presence
+    @difficulty = params[:difficulty].presence
+
+    @milestones = Milestone
+                    .for_age_band(@age_band_index)
+                    .by_category(@category)
+                    .by_difficulty(@difficulty)
+                    .order(:difficulty, :id)
+
+    # プルダウン用（ビューで使う想定。今は仕込みだけ）
+    @categories   = Milestone.distinct.order(:category).pluck(:category).compact
+    @difficulties = (1..3).map { |i| ["#{'★' * i} (#{i})", i] }
+
     @age_band_label = "#{@age_band_index}–#{@age_band_index + 1}歳"
   end
 end
