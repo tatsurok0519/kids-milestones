@@ -1,19 +1,55 @@
-  <!-- ヘッダー -->
+  <!-- ヘッダー（子ども情報を表示） -->
   <div class="card" style="margin-bottom:1rem;">
-    <h2 class="h2" style="margin:0;">できるかな（標準タスク）</h2>
-    <p style="margin:.25rem 0 0;">
-      <% if user_signed_in? %>
-        ようこそ、<strong><%= current_user.name.presence || current_user.email %></strong> さん。達成状況はアカウントに保存されます。
-      <% else %>
+    <% if user_signed_in? && current_child %>
+      <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+        <%# 子どもの写真（あれば） %>
+        <% if current_child.photo.attached? %>
+          <%= image_tag current_child.photo_card,
+                alt: "#{current_child.name}の写真",
+                style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
+        <% else %>
+          <%= image_tag "illustrations/sun.png",
+                alt: "", size: "96x96",
+                style: "border-radius:12px;border:1px solid var(--border);background:#f3f4f6;" %>
+        <% end %>
+
+        <div style="min-width:200px;">
+          <h2 class="h2" style="margin:0 0 .25rem 0;">できるかな（標準タスク）</h2>
+          <div class="h2" style="font-size:1.1rem;margin:0;">
+            <strong><%= current_child.name %></strong> さん
+          </div>
+          <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.25rem;">
+            <span class="pill"><%= current_child.age_label %></span>
+            <span class="pill"><%= current_child.age_band_label %></span>
+          </div>
+        </div>
+
+        <%# 子ども切替があるなら、ここで出すことも可能 %>
+        <%#= render "shared/child_switcher" %>
+      </div>
+
+    <% elsif user_signed_in? %>
+      <h2 class="h2" style="margin:0;">できるかな（標準タスク）</h2>
+      <p style="margin:.25rem 0 0;">
+        子どもが未選択です。
+        <%= link_to "子どもを追加", new_child_path, class: "btn btn-primary" %>
+        <%= link_to "既存の子を選ぶ", children_path, class: "btn btn-secondary", style: "margin-left:.5rem;" %>
+      </p>
+
+    <% else %>
+      <h2 class="h2" style="margin:0;">できるかな（標準タスク）</h2>
+      <p style="margin:.25rem 0 0;">
         ログインなしの「おためしモード」です。進捗はこの端末（ブラウザ）のみ保存されます。
         <%= link_to "保存やレポートを使うには登録", new_user_registration_path, class: "btn btn-primary", style: "margin-left:.5rem;" %>
-      <% end %>
-    </p>
+      </p>
+    <% end %>
   </div>
 
   <!-- フィルター -->
   <div class="card" style="padding:.75rem;margin-bottom:.75rem;">
-    <%= form_with url: tasks_path, method: :get, local: true, html: { style: "display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;" } do %>
+    <%= form_with url: tasks_path, method: :get, local: true,
+          html: { style: "display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;" } do %>
+
       <label class="label" for="age_band">年齢帯</label>
       <%= select_tag :age_band,
             options_for_select((0..5).map { |i| ["#{i}–#{i+1}歳", i] }, @age_band_index),
@@ -31,6 +67,14 @@
             options_for_select([["すべて", ""]] + @difficulties, params[:difficulty].to_s),
             class: "input",
             onchange: "this.form.submit()" %>
+
+      <%# ★ 未達成のみ（ログイン＆子選択時のみ有効。未ログインではdisabled） %>
+      <label class="label" for="only_unachieved" style="display:flex;align-items:center;gap:.35rem;">
+        <%= check_box_tag :only_unachieved, "1", @only_unachieved,
+              onchange: "this.form.submit()",
+              disabled: !(user_signed_in? && current_child) %>
+        未達成のみ
+      </label>
 
       <% if current_user && current_child %>
         <span class="pill" style="margin-left:.25rem;">

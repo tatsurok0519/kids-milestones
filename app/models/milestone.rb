@@ -1,4 +1,7 @@
 class Milestone < ApplicationRecord
+  # 関連（あると便利）
+  has_many :achievements, dependent: :destroy
+
   # months が nil のときは全年齢対象
   scope :for_age, ->(months) {
     where("(min_months IS NULL OR min_months <= ?) AND (max_months IS NULL OR max_months >= ?)", months, months)
@@ -18,6 +21,15 @@ class Milestone < ApplicationRecord
   # ▼ 追加：カテゴリ・難易度フィルタ
   scope :by_category,   ->(cat) { cat.present? ? where(category: cat) : all }
   scope :by_difficulty, ->(dif) { dif.present? ? where(difficulty: dif) : all }
+
+  # ▼ 追加：未達成のみ（指定の child で「achieved=true」が付いていないタスク）
+  scope :unachieved_for, ->(child) {
+    if child.present?
+      where.not(id: child.achievements.where(achieved: true).select(:milestone_id))
+    else
+      all
+    end
+  }
 
   # ▼ 既存仕様に合わせて 1..3 を許可
   validates :difficulty, inclusion: { in: 1..3 }
@@ -46,7 +58,7 @@ class Milestone < ApplicationRecord
 
     "#{base} #{step}"
   end
-  
+
   # ===== 表示ヘルパ =====
 
   # ★を返す（例: 難易度2 → "★★"）
