@@ -1,6 +1,12 @@
-<div class="container">
-  <div class="card">
-    <h2 class="h2">子どもプロフィールを編集</h2>
+<turbo-frame id="edit_child_<%= @child.id %>">
+  <div class="card" style="margin-top:.75rem;">
+    <h3 class="h2" style="margin:0 0 .5rem 0;">「<%= @child.name %>」を編集</h3>
+
     <%= render "form", child: @child %>
+
+    <div style="margin-top:.5rem;">
+      <a href="#" class="btn"
+         onclick="this.closest('turbo-frame').innerHTML=''; return false;">閉じる</a>
+    </div>
   </div>
-</div>
+</turbo-frame>

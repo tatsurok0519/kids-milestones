@@ -1,0 +1,61 @@
+<div class="card" style="margin-top:1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;">
+    <h2 class="h2" style="margin:0;">子ども</h2>
+    <%= link_to "＋ 子どもを追加", new_child_path, class: "btn btn-primary" %>
+  </div>
+
+  <hr class="divider">
+
+  <% if @children.blank? %>
+    <div style="text-align:center; padding:.5rem 0;">
+      <p style="margin:.5rem 0 1rem;">まだ子どもが登録されていません。</p>
+      <%= link_to "子どもを追加", new_child_path, class: "btn btn-primary" %>
+    </div>
+  <% else %>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;">
+      <% @children.each do |child| %>
+        <div class="card" style="padding:.9rem;">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <% if child.photo.attached? %>
+              <%= image_tag child.photo_thumb,
+                    alt: "#{child.name}の写真",
+                    style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
+            <% else %>
+              <%= image_tag "illustrations/sun.png",
+                    alt: "", size: "96x96",
+                    style: "border-radius:12px;border:1px solid var(--border);background:#f3f4f6;" %>
+            <% end %>
+
+            <div style="min-width:0;">
+              <div class="h2" style="font-size:1.1rem;margin:0 0 .25rem 0;"><strong><%= child.name %></strong></div>
+              <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                <span class="pill"><%= child.age_label %></span>
+                <span class="pill"><%= child.age_band_label %></span>
+                <% if defined?(current_child) && current_child && current_child.id == child.id %>
+                  <span class="pill" style="background:#e7f7ef;color:#116149;">選択中</span>
+                <% end %>
+              </div>
+              <div style="margin-top:.25rem;">誕生日：<%= child.birthday %></div>
+            </div>
+          </div>
+
+          <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            <%= link_to "編集",
+                  edit_child_path(child),
+                  data: { turbo_frame: "edit_child_#{child.id}" },
+                  class: "btn btn-secondary" %>
+
+            <%= button_to "削除する",
+                  child_path(child),
+                  method: :delete,
+                  form: { data: { turbo_confirm: "本当に削除しますか？（写真や達成状況も消えます）" } },
+                  class: "btn btn-danger" %>
+          </div>
+
+          <!-- 編集フォームを差し込む場所（最初は空） -->
+          <turbo-frame id="edit_child_<%= child.id %>"></turbo-frame>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

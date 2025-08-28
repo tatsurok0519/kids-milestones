@@ -1,8 +1,8 @@
+<div class="container main">
   <!-- ヘッダー（子ども情報を表示） -->
   <div class="card" style="margin-bottom:1rem;">
     <% if user_signed_in? && current_child %>
       <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-        <%# 子どもの写真（あれば） %>
         <% if current_child.photo.attached? %>
           <%= image_tag current_child.photo_card,
                 alt: "#{current_child.name}の写真",
@@ -23,9 +23,6 @@
             <span class="pill"><%= current_child.age_band_label %></span>
           </div>
         </div>
-
-        <%# 子ども切替があるなら、ここで出すことも可能 %>
-        <%#= render "shared/child_switcher" %>
       </div>
 
     <% elsif user_signed_in? %>
@@ -68,7 +65,7 @@
             class: "input",
             onchange: "this.form.submit()" %>
 
-      <%# ★ 未達成のみ（ログイン＆子選択時のみ有効。未ログインではdisabled） %>
+      <!-- 未達成のみ（ログイン＆子選択時のみ有効） -->
       <label class="label" for="only_unachieved" style="display:flex;align-items:center;gap:.35rem;">
         <%= check_box_tag :only_unachieved, "1", @only_unachieved,
               onchange: "this.form.submit()",
@@ -113,12 +110,12 @@
             </div>
 
             <% if user_signed_in? && current_child %>
-              <!-- ★ ログイン時：Turbo Frame でコントロールをラップ -->
+              <!-- ログイン時：Turbo Frame でコントロールをラップ -->
               <turbo-frame id="<%= dom_id(ms, :controls) %>">
                 <%= render "tasks/controls", milestone: ms, achievement: ach %>
               </turbo-frame>
             <% else %>
-              <!-- ★ 未ログイン時：右上バッジは常設してCSSで切替（JSが is-* を付け外し） -->
+              <!-- 未ログイン時：右上バッジは常設してCSSで切替（JSが is-* を付け外し） -->
               <div class="badge-group" aria-hidden="true"
                    style="position:absolute; top:8px; right:8px; pointer-events:none;">
                 <%= image_tag 'icons/try.png',      alt: '', class: 'badge badge-try',  width: 44, height: 44 %>
@@ -146,7 +143,7 @@
       <p>該当タスクがありません。フィルター条件を変更してください。</p>
     <% end %>
   </div>
-
+</div>
 
 <%# 未ログイン時のみ、おためし保存用のインラインJSとCSSを読み込む %>
 <% unless user_signed_in? %>
