@@ -1,83 +1,705 @@
-- title: ねんねで手足をバタバタ
-  category: 運動
+# 0〜1歳（0–11ヶ月）— 16件
+- title: 目で物を追う（トラッキング）
+  category: 認知
   difficulty: 1
   min_months: 0
   max_months: 2
-  hint_text: "仰向けの時間に、カラフルなおもちゃを足元や手元に置いてあげると、自然と手足を動かすきっかけになります。"
+  description: "顔の20–30cm前でおもちゃをゆっくり左右に動かして目で追ってもらう。数秒でOK。"
 
-- title: はいはいで前に進む
+- title: うつ伏せで首を上げる（タミータイム）
+  category: 運動
+  difficulty: 1
+  min_months: 2
+  max_months: 5
+  description: "胸の下に丸めたタオルで支え、正面に親の顔や音の出るおもちゃ。無理せず短時間から。"
+
+- title: ガラガラを握る
+  category: 手先
+  difficulty: 1
+  min_months: 3
+  max_months: 6
+  description: "軽いガラガラを手に触れさせ、握れたら褒める。左右の手に交互に触れさせる。"
+
+- title: 寝返り（仰向け→うつ伏せ）
+  category: 運動
+  difficulty: 2
+  min_months: 4
+  max_months: 7
+  description: "側方にお気に入りを置き、見たい方向へ自然に体をひねりたくなる環境を作る。"
+
+- title: おすわり（補助あり）
+  category: 運動
+  difficulty: 2
+  min_months: 5
+  max_months: 8
+  description: "腰の後ろにクッション、両手で前を支えやすく低いテーブルを用意。短時間で切り上げる。"
+
+- title: 両手で持ち替える
+  category: 手先
+  difficulty: 1
+  min_months: 5
+  max_months: 9
+  description: "握りやすい大きさのおもちゃを渡し、もう一つを見せて両手で触れさせる。重すぎない物を選ぶ。"
+
+- title: 名前を呼ばれて振り向く
+  category: 言語
+  difficulty: 2
+  min_months: 6
+  max_months: 9
+  description: "静かな環境で名前→笑顔→優しい語りかけを繰り返す。テレビなどの音は一時オフに。"
+
+- title: バブリング（ばばば等）
+  category: 言語
+  difficulty: 2
+  min_months: 6
+  max_months: 10
+  description: "発声に合わせて同じ音を返す“まねっこ遊び”。テンポ良くやり取りして育てる。"
+
+- title: 手を口に運ぶ
+  category: 手先
+  difficulty: 1
+  min_months: 2
+  max_months: 5
+  description: "清潔な手で遊べるようにして、口元に自然と手が届く姿勢を整える。"
+
+- title: 足をつかむ
+  category: 運動
+  difficulty: 1
+  min_months: 5
+  max_months: 8
+  description: "仰向けで足元にカラフルな靴下を履かせ、興味を引きやすくする。"
+
+- title: おもちゃを叩く・鳴らす
+  category: 手先
+  difficulty: 1
+  min_months: 7
+  max_months: 10
+  description: "軽いおもちゃを両手に持たせ、テーブルでトントン。音が出たら一緒に喜ぶ。"
+
+- title: 親の表情をまねる
+  category: 社会性
+  difficulty: 1
+  min_months: 4
+  max_months: 8
+  description: "笑顔・舌を出すなど真似しやすい表情をゆっくり見せる。"
+
+- title: いないいないばあに反応する
+  category: 認知
+  difficulty: 1
+  min_months: 7
+  max_months: 10
+  description: "布を顔に当てて“いないいない”→外して“ばあ！”を繰り返す。"
+
+- title: 自分の名前を理解する
+  category: 言語
+  difficulty: 2
+  min_months: 8
+  max_months: 11
+  description: "名前を呼んだ直後に微笑みや抱っこなどポジティブな反応を返す。"
+
+- title: 小さな物に手を伸ばす
+  category: 手先
+  difficulty: 2
+  min_months: 8
+  max_months: 11
+  description: "ビー玉サイズは誤飲危険なので使わない。安全な小物でつまみ動作を誘う。"
+
+- title: おすわり（手放しで数秒）
   category: 運動
   difficulty: 2
   min_months: 7
-  max_months: 10
-  hint_text: "赤ちゃんの少し先に好きなおもちゃを置いて、「おいでー」と声をかけてあげましょう。前に進もうとする意欲を引き出します。"
+  max_months: 11
+  description: "周囲にクッションを置き、倒れても安全な環境で短い成功体験を重ねる。"
 
-- title: つかまり立ちに挑戦
+# 1〜2歳（12–23ヶ月）— 17件
+- title: ひとり歩き（数歩〜）
   category: 運動
-  difficulty: 2
-  min_months: 9
-  max_months: 12
-  hint_text: "安定感のある低い家具（ソファやローテーブルなど）のそばで遊ばせてあげると、自然とつかまり立ちを試すようになります。"
-
-- title: つみきを2個重ねる
-  category: 遊び
   difficulty: 2
   min_months: 12
   max_months: 18
-  hint_text: "まずはママやパパが積み重ねて見せてあげましょう。「カッチャン」など楽しい音をつけながらやると、興味を持ちやすくなります。"
+  description: "親子で向かい合い短い距離を手を離して歩く。成功したらすぐ抱きしめて褒める。"
 
-- title: コップで上手に飲む
-  category: 生活習慣
-  difficulty: 2
-  min_months: 18
-  max_months: 30
-  hint_text: "最初は少量のお水やお茶から始めましょう。取っ手付きのトレーニングマグや、倒れにくい底の広いコップがおすすめです。"
-
-- title: 簡単な言葉をまねする
-  category: 言葉
+- title: コップで飲む
+  category: 生活
   difficulty: 2
   min_months: 12
-  max_months: 24
-  hint_text: "「ワンワン」「ブーブー」など、赤ちゃんが発音しやすい擬音語をたくさん使って話しかけてあげましょう。"
+  max_months: 20
+  description: "少量から。こぼれてもOKの環境を作り、両手で持てる軽いコップを使う。"
 
-- title: 二語文で話す
-  category: 言葉
-  difficulty: 3
-  min_months: 20
-  max_months: 36
-  hint_text: "「マンマ、ちょうだい」「ワンワン、いた」など、子どもの言いたいことを代弁して二語文のモデルを見せてあげることが効果的です。"
+- title: スプーンで食べる
+  category: 生活
+  difficulty: 2
+  min_months: 14
+  max_months: 22
+  description: "粘度のある食べ物で成功体験。短い持ち手・浅めスプーンを選ぶ。"
 
-- title: お片付けできた
-  category: 生活習慣
+- title: 積み木を2–4個積む
+  category: 手先
+  difficulty: 1
+  min_months: 15
+  max_months: 20
+  description: "親が2個積んで見せてから交代。崩れても“もう一回！”で楽しく。"
+
+- title: 型はめパズル（丸・三角・四角）
+  category: 認知
+  difficulty: 2
+  min_months: 16
+  max_months: 22
+  description: "1形だけから始め、入らない時は向きを少し補助して“自分で出来た感”を。"
+
+- title: 指差しで伝える（欲しい物）
+  category: 言語
+  difficulty: 2
+  min_months: 12
+  max_months: 18
+  description: "“○○どれ？”と指差し→指で示せたらすぐ渡す。伝わる体験を何度も作る。"
+
+- title: 簡単な指示に従う（ちょうだい）
+  category: 言語
+  difficulty: 2
+  min_months: 15
+  max_months: 20
+  description: "“ちょうだい”と手を差し出し、渡せたら大げさに褒める。"
+
+- title: なぐり書きスタート
+  category: 手先
+  difficulty: 1
+  min_months: 16
+  max_months: 22
+  description: "太めのクレヨンと大判紙。“ぐるぐる”“しゅっしゅ”の擬音で楽しく。"
+
+- title: ボールを転がして返す
+  category: 運動
+  difficulty: 1
+  min_months: 14
+  max_months: 20
+  description: "近距離で座ってコロコロ。相手に届いたら拍手。"
+
+- title: 絵本のページをめくる
+  category: 認知
+  difficulty: 1
+  min_months: 14
+  max_months: 20
+  description: "厚手の絵本で1枚ずつ。めくれたら次のページを指差して促す。"
+
+- title: 服を脱ぐのを手伝う
+  category: 生活
+  difficulty: 2
+  min_months: 18
+  max_months: 23
+  description: "袖口を見せ“ここ！”で手を引き抜く練習。成功箇所を一つに絞る。"
+
+- title: 靴や靴下を持ってくる
+  category: 生活
+  difficulty: 1
+  min_months: 16
+  max_months: 22
+  description: "“靴はどこ？”と促し、持って来られたらすぐ履かせて完了感。"
+
+- title: 短い言葉をまねる
+  category: 言語
+  difficulty: 1
+  min_months: 16
+  max_months: 22
+  description: "大人が“ワンワン”“ブーブー”など言い、真似できたら即リアクション。"
+
+- title: 絵を指示で探す（犬どれ？）
+  category: 認知
+  difficulty: 2
+  min_months: 18
+  max_months: 23
+  description: "絵本の絵を“どれ？”で指差し。見つけたら褒めて交代。"
+
+- title: ブロックを入れて出す
+  category: 手先
+  difficulty: 1
+  min_months: 12
+  max_months: 18
+  description: "容器に入れる→ひっくり返す遊びで因果を体感。"
+
+- title: お片付けを一緒にする
+  category: 生活
+  difficulty: 1
+  min_months: 18
+  max_months: 23
+  description: "“おうちに帰ろう”の声かけで箱に戻す。短時間で成功体験を。"
+
+- title: 両手でコップを持つ
+  category: 生活
+  difficulty: 1
+  min_months: 12
+  max_months: 16
+  description: "取っ手付きの軽いコップで両手保持を練習。"
+
+# 2〜3歳（24–35ヶ月）— 17件
+- title: 両足ジャンプ（その場）
+  category: 運動
   difficulty: 2
   min_months: 24
-  max_months: 48
-  hint_text: "「おもちゃさん、おうちに帰ろうね」と声をかけながら、お片付けの歌を歌ったりすると、遊びの延長として楽しく取り組めます。"
+  max_months: 30
+  description: "床に線を置き“ぴょん”の合図。着地は膝を曲げる声かけ。"
 
-- title: ジャンプして着地
+- title: 階段を手すりで上り下り
   category: 運動
-  difficulty: 3
-  min_months: 30
-  max_months: 48
-  hint_text: "低い段差からジャンプしたり、手をつないで一緒に「せーの！」でジャンプしたりするところから始めると安心です。"
+  difficulty: 2
+  min_months: 26
+  max_months: 34
+  description: "必ず手すり。ゆっくり一段ずつ、リズム言葉で覚えやすく。"
 
-- title: 友だちと順番を待つ
+- title: なぐり書き（線・丸）
+  category: 手先
+  difficulty: 1
+  min_months: 24
+  max_months: 30
+  description: "太めのクレヨンで大きく。机と椅子は足裏がつく高さに。"
+
+- title: 2語文で伝える（ママ来て）
+  category: 言語
+  difficulty: 2
+  min_months: 26
+  max_months: 32
+  description: "大人が“○○、ちょうだい”など2語モデルを多用。言えたら即反応。"
+
+- title: ごっこ遊び（ままごと）
+  category: 社会性
+  difficulty: 2
+  min_months: 28
+  max_months: 35
+  description: "“どうぞ/ありがとう”のやり取り。親が役になり簡単なシナリオで広げる。"
+
+- title: 手洗い（泡立て→すすぎ）
+  category: 生活
+  difficulty: 2
+  min_months: 28
+  max_months: 35
+  description: "踏み台で高さ調整。歌に合わせて順番洗い。"
+
+- title: 3–6ピースのパズル
+  category: 認知
+  difficulty: 2
+  min_months: 28
+  max_months: 35
+  description: "枠付きから。角→辺→内側の順で誘導。"
+
+- title: 服の着脱の一部（袖）
+  category: 生活
+  difficulty: 2
+  min_months: 28
+  max_months: 35
+  description: "大人が首元を広げ、袖口を見せ“ここ！”で手を出す。"
+
+- title: ボールを蹴る
+  category: 運動
+  difficulty: 1
+  min_months: 24
+  max_months: 30
+  description: "止まっているボールを“えいっ”の掛け声で蹴る。"
+
+- title: 大きなボールを受ける
+  category: 運動
+  difficulty: 1
+  min_months: 28
+  max_months: 35
+  description: "1–2mで胸の所に優しく投げ、抱えるキャッチから。"
+
+- title: 色で分類する
+  category: 認知
+  difficulty: 2
+  min_months: 30
+  max_months: 35
+  description: "赤い物だけ箱に入れる等のルールで遊ぶ。"
+
+- title: 順番を待つ
+  category: 社会性
+  difficulty: 2
+  min_months: 30
+  max_months: 35
+  description: "短い列で練習。待てたらすぐ番が来る体験を。"
+
+- title: フォークを使う
+  category: 生活
+  difficulty: 2
+  min_months: 28
+  max_months: 34
+  description: "柔らかい食材で刺す→口まで運ぶ。成功をすぐ褒める。"
+
+- title: ふた付き容器を開け閉め
+  category: 手先
+  difficulty: 1
+  min_months: 26
+  max_months: 34
+  description: "ねじ式/はめ式を見せてから交代。"
+
+- title: 歯みがき（大人と一緒に）
+  category: 生活
+  difficulty: 1
+  min_months: 24
+  max_months: 35
+  description: "仕上げ磨きと鏡での確認を習慣化。"
+
+- title: 登場人物を指差しで説明
+  category: 言語
+  difficulty: 2
+  min_months: 30
+  max_months: 35
+  description: "“誰が何をしてる？”を絵本で。正解を一緒に言葉にする。"
+
+- title: 自分の名前を言う
+  category: 言語
+  difficulty: 2
+  min_months: 30
+  max_months: 35
+  description: "“お名前は？”に答える練習。言えたら拍手。"
+
+# 3〜4歳（36–47ヶ月）— 17件
+- title: 片足立ち（2–3秒）
+  category: 運動
+  difficulty: 2
+  min_months: 36
+  max_months: 44
+  description: "壁や椅子の背で軽く支えながら。足形マークで位置意識。"
+
+- title: ボールを投げて受ける（近距離）
+  category: 運動
+  difficulty: 2
+  min_months: 38
+  max_months: 46
+  description: "胸の高さへゆっくり投げる→両手で受ける。"
+
+- title: はさみで直線を切れる
+  category: 手先
+  difficulty: 2
+  min_months: 40
+  max_months: 48
+  description: "幼児用はさみと厚手の折り紙。線は太め短めから。親指が上になる持ち方。"
+
+- title: 丸・十字を描く
+  category: 手先
+  difficulty: 2
+  min_months: 40
+  max_months: 48
+  description: "大きな丸から。十字は“たて→よこ”の順。"
+
+- title: 3–4語で説明する（誰が何を）
+  category: 言語
+  difficulty: 2
+  min_months: 40
+  max_months: 48
+  description: "絵を見て“大人が文を言い切り、最後の1語だけ子が言う”空欄法。"
+
+- title: トイレのサインを伝える
+  category: 生活
+  difficulty: 2
+  min_months: 36
+  max_months: 46
+  description: "起床後・食後など決まったタイミングで座る。出なくても座れたら成功。"
+
+- title: 役割を決めて遊ぶ（店員さん）
+  category: 社会性
+  difficulty: 2
+  min_months: 42
+  max_months: 48
+  description: "“お客さん/店員さん”で交代。簡単なルールを少しずつ追加。"
+
+- title: 片付けのルールを守る（種類別）
+  category: 生活
+  difficulty: 2
+  min_months: 40
+  max_months: 48
+  description: "箱にラベルを貼り“おうちに帰す”声かけ。"
+
+- title: 三輪車をこぐ
+  category: 運動
+  difficulty: 2
+  min_months: 36
+  max_months: 47
+  description: "短い直線でペダル→止まる→曲がるの順に練習。"
+
+- title: 1〜5を数える
+  category: 認知
+  difficulty: 2
+  min_months: 40
+  max_months: 48
+  description: "実物を指でなぞりながらゆっくり数える。"
+
+- title: 小さなピースをつまむ
+  category: 手先
+  difficulty: 2
+  min_months: 36
+  max_months: 44
+  description: "ビーズやボタンは誤飲に注意。大きめ素材から。"
+
+- title: まっすぐの線をなぞる
+  category: 手先
+  difficulty: 1
+  min_months: 36
+  max_months: 44
+  description: "太い見本線の上を“ゆっくり”でなぞる。"
+
+- title: あいさつが言える
+  category: 社会性
+  difficulty: 1
+  min_months: 36
+  max_months: 42
+  description: "タイミングを大人が合図。“ありがとう/ごめんね”もセットで。"
+
+- title: 短いお話を最後まで聞く
+  category: 認知
+  difficulty: 1
+  min_months: 40
+  max_months: 48
+  description: "短編を選び、終わったら内容を1つだけ質問。"
+
+- title: ねんどで形を作れる
+  category: 手先
+  difficulty: 2
+  min_months: 40
+  max_months: 60
+  description: "柔らかい粘土で丸・棒・平らを作る。型抜きで成功体験を積む。"
+
+- title: 小さな水差しで水を注ぐ
+  category: 生活
+  difficulty: 2
+  min_months: 42
+  max_months: 48
+  description: "少量の水でコップに注ぐ。こぼれてもOKの環境で。"
+
+- title: ひも通し準備（太いひも）
+  category: 手先
+  difficulty: 1
+  min_months: 44
+  max_months: 48
+  description: "穴が大きく厚紙のカードで練習。"
+
+# 4〜5歳（48–59ヶ月）— 16件
+- title: ケンケン（片足で連続）
+  category: 運動
+  difficulty: 2
+  min_months: 48
+  max_months: 56
+  description: "地面に輪を置き1–2回から。靴はかかと固定の物を。"
+
+- title: はさみで曲線を切る
+  category: 手先
+  difficulty: 3
+  min_months: 50
+  max_months: 59
+  description: "曲線は太め緩やかから。紙を回す手を大人が軽く手添え。"
+
+- title: ひも通し・ビーズ通し
+  category: 手先
+  difficulty: 2
+  min_months: 48
+  max_months: 56
+  description: "穴が大きめのビーズから。片手でひも、片手でビーズ。"
+
+- title: 10–20ピースのパズル
+  category: 認知
+  difficulty: 2
+  min_months: 50
+  max_months: 59
+  description: "完成図を見える所に置き、角→辺→内側の順。"
+
+- title: 自分の名前を書くまね
+  category: 言語
+  difficulty: 2
+  min_months: 54
+  max_months: 59
+  description: "点つなぎ方式でなぞり書き。鉛筆は三角軸など持ちやすい物。"
+
+- title: 気持ちを言葉で伝える
+  category: 社会性
+  difficulty: 2
+  min_months: 50
+  max_months: 59
+  description: "絵カードで感情言葉を増やす。言えたら共感→解決案を一緒に。"
+
+- title: 簡単なお手伝い（テーブル拭き）
+  category: 生活
+  difficulty: 1
+  min_months: 48
+  max_months: 56
+  description: "布巾のしぼり方を見せ、端から一方向に拭く。"
+
+- title: ルールのある遊び（神経衰弱）
   category: 社会性
   difficulty: 3
-  min_months: 36
-  max_months: 60
-  hint_text: "「〇〇ちゃんの次だよ」「あと3回数えたら交代ね」など、見通しが立つような声かけをしてあげると、順番を待つ練習になります。"
+  min_months: 54
+  max_months: 59
+  description: "“順番を待つ/負けても次がある”を約束。時間は短め設定。"
 
-- title: ひらがなに興味を持つ
-  category: 言葉
-  difficulty: 3
+- title: けんけんで5歩進める
+  category: 運動
+  difficulty: 2
   min_months: 48
-  max_months: 72
-  hint_text: "絵本を読み聞かせるときに文字を指で追いかけたり、自分の名前の文字を探したりすることから始めると、自然と興味が湧きます。"
+  max_months: 59
+  description: "足形マークを5つ並べて目標化。疲れたら休憩。"
 
-- title: 靴ひもを結ぶ
-  category: 生活習慣
+- title: 時計やタイマーで待つ
+  category: 認知
+  difficulty: 2
+  min_months: 52
+  max_months: 59
+  description: "砂時計やタイマーで“あと◯分”を視覚化。"
+
+- title: ひらがなをいくつか読む
+  category: 言語
+  difficulty: 3
+  min_months: 54
+  max_months: 59
+  description: "生活の中の文字（名前/看板）から始める。"
+
+- title: おはしの準備（練習箸）
+  category: 手先
+  difficulty: 3
+  min_months: 56
+  max_months: 59
+  description: "練習箸で正しい持ち方の型を体験。"
+
+- title: 図形をなぞって描く
+  category: 認知
+  difficulty: 2
+  min_months: 48
+  max_months: 56
+  description: "四角・三角の枠線をゆっくりなぞる。"
+
+- title: 砂山でトンネルを作れる
+  category: 認知
+  difficulty: 2
+  min_months: 48
+  max_months: 71
+  description: "湿った砂で山→トンネル。崩れない厚みと水加減を一緒に確認。"
+
+- title: 友だちと役割分担して遊ぶ
+  category: 社会性
+  difficulty: 2
+  min_months: 52
+  max_months: 59
+  description: "“係”を決めて交代。終わりに労いの言葉を言い合う。"
+
+- title: 簡単な迷路をなぞる
+  category: 認知
+  difficulty: 2
+  min_months: 50
+  max_months: 58
+  description: "太い道幅の迷路で鉛筆を離さずゴールへ。"
+
+# 5〜6歳（60–71ヶ月）— 17件
+- title: なわとび（1–3回連続）
+  category: 運動
   difficulty: 3
   min_months: 60
-  max_months: 72
-  hint_text: "「うさぎさんの耳を作って…」など、物語仕立てで教えたり、練習用のボードを使ったりすると、楽しく覚えられます。最初は蝶々結びの最後の輪を引っ張るだけでもOKです。"
+  max_months: 70
+  description: "縄は身長に合わせて調整。“回す→跳ぶ”を手拍子でリズム化。"
+
+- title: 自転車（補助輪あり）
+  category: 運動
+  difficulty: 2
+  min_months: 60
+  max_months: 71
+  description: "平坦で広い場所。ブレーキの握りから練習。ヘルメット必須。"
+
+- title: ひも結びの手順を知る（蝶結び前段）
+  category: 手先
+  difficulty: 3
+  min_months: 62
+  max_months: 71
+  description: "幅広のリボンで“うさぎの耳2つ→交差→穴に通す”を分解して練習。"
+
+- title: ひらがなを数文字読む/書く
+  category: 言語
+  difficulty: 3
+  min_months: 60
+  max_months: 71
+  description: "読みは生活の文字から。書きは点つなぎ→なぞり→自力の順。"
+
+- title: 時間の見通しを立てる（あと5分）
+  category: 認知
+  difficulty: 2
+  min_months: 60
+  max_months: 71
+  description: "タイマーを見える所に。“終わったら次は○○”で切り替えを助ける。"
+
+- title: お金のやりとりごっこ
+  category: 認知
+  difficulty: 2
+  min_months: 60
+  max_months: 71
+  description: "紙のお金と値札で“買う→渡す→受け取る”の流れを体験。"
+
+- title: 簡単な料理を手伝う（ちぎりサラダ）
+  category: 生活
+  difficulty: 2
+  min_months: 60
+  max_months: 71
+  description: "レタスを洗ってひと口サイズにちぎる。衛生確認と片付けまで担当。"
+
+- title: 集団でのルールを理解（整列/順番）
+  category: 社会性
+  difficulty: 2
+  min_months: 60
+  max_months: 71
+  description: "並ぶ位置を床マークで視覚化。待つ時間は短めに区切る。"
+
+- title: スキップができる
+  category: 運動
+  difficulty: 3
+  min_months: 54
+  max_months: 71
+  description: "“右でけんけん→左でけんけん”のリズム言葉で交互に。"
+
+- title: 前まわりができる
+  category: 運動
+  difficulty: 3
+  min_months: 54
+  max_months: 71
+  description: "やわらかいマットで顎を引く姿勢から。両手で床を押す。"
+
+- title: 側転ができる
+  category: 運動
+  difficulty: 3
+  min_months: 60
+  max_months: 71
+  description: "手→手→足→足の順に着くイメージ。最初は線の上で方向を一定に。"
+
+- title: 逆上がりができる
+  category: 運動
+  difficulty: 3
+  min_months: 60
+  max_months: 71
+  description: "低めの鉄棒で“けり上げ→腕を引く”。補助ベルトや踏み台で段階化。"
+
+- title: 縄跳びで10回跳べる
+  category: 運動
+  difficulty: 3
+  min_months: 60
+  max_months: 71
+  description: "1–3回が安定したら10回に挑戦。疲れたらこまめに休憩。"
+
+- title: レゴ等を見本通りに組む
+  category: 認知
+  difficulty: 2
+  min_months: 60
+  max_months: 71
+  description: "図を1工程ずつ確認しながら進める。完成したら写真に撮って記録。"
+
+- title: 1〜20を数え簡単な加算
+  category: 認知
+  difficulty: 3
+  min_months: 60
+  max_months: 71
+  description: "実物を使って“10にいくつ足すと？”の合成を体験。"
+
+- title: 植物の世話を続ける
+  category: 生活
+  difficulty: 1
+  min_months: 60
+  max_months: 71
+  description: "水やり当番と観察記録。しおれたら原因を一緒に考える。"
+
+- title: ボードゲームのルールを守る
+  category: 社会性
+  difficulty: 3
+  min_months: 60
+  max_months: 71
+  description: "サイコロやカードの順番を守る。勝っても負けてもよく頑張ったを共有。"

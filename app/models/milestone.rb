@@ -1,6 +1,8 @@
 class Milestone < ApplicationRecord
-  # 関連（あると便利）
+  # 関連
   has_many :achievements, dependent: :destroy
+
+  # ===== スコープ =====
 
   # months が nil のときは全年齢対象
   scope :for_age, ->(months) {
@@ -9,20 +11,18 @@ class Milestone < ApplicationRecord
 
   # 年齢帯（0..5）のインデックスに対し、帯とミッションの月齢レンジが「重なる」ものを返す
   scope :for_age_band, ->(band_index) {
-    i   = band_index.to_i.clamp(0, 5)
-    min = i * 12
-    max = min + 11
-    where(
-      "(min_months IS NULL OR min_months <= :band_max) AND (max_months IS NULL OR max_months >= :band_min)",
-      band_min: min, band_max: max
-    )
+    i = band_index.to_i.clamp(0, 5)
+    min = i * 12; max = min + 11
+    where("(min_months IS NULL OR min_months <= :max) AND (max_months IS NULL OR max_months >= :min)",
+          min: min, max: max)
+    .where.not(min_months: nil, max_months: nil)   # ← 追加
   }
 
-  # ▼ 追加：カテゴリ・難易度フィルタ
+  # カテゴリ・難易度フィルタ
   scope :by_category,   ->(cat) { cat.present? ? where(category: cat) : all }
   scope :by_difficulty, ->(dif) { dif.present? ? where(difficulty: dif) : all }
 
-  # ▼ 追加：未達成のみ（指定の child で「achieved=true」が付いていないタスク）
+  # 未達成のみ（指定 child で achieved=true になっていないタスク）
   scope :unachieved_for, ->(child) {
     if child.present?
       where.not(id: child.achievements.where(achieved: true).select(:milestone_id))
@@ -31,20 +31,29 @@ class Milestone < ApplicationRecord
     end
   }
 
-  # ▼ 既存仕様に合わせて 1..3 を許可
+  # ===== バリデーション =====
   validates :difficulty, inclusion: { in: 1..3 }
 
+  # ===== 表示ヘルパ =====
+
+  # 個別ヒント優先。description があればそれを返し、無い場合はカテゴリ×難易度の定型を返す
   def hint_text
+    return description if description.present?
+
     base =
       case category.to_s
-      when /運動|体|歩|走|ジャンプ/
+      when "運動"
         "安全第一。足元を片づけ、転びにくい環境で短時間から。"
-      when /ことば|言葉|語|読|話|音/
-        "大人がゆっくりお手本。まねっこ遊びや繰り返しが効果的です。"
-      when /手先|指|つみき|工作|描|握|巧緻/
-        "机の高さを合わせ、材料は少なくシンプルに始めましょう。"
-      when /生活|身支度|食事|トイレ|習慣/
-        "手順を小分けにして一つずつ成功を重ねるのが近道です。"
+      when "言語"
+        "大人がゆっくりお手本。まねっこ遊びと繰り返しのやり取りが効果的。"
+      when "手先"
+        "机と椅子の高さを合わせ、材料は少なくシンプルに始める。"
+      when "生活"
+        "手順を小分けにして一つずつ成功を重ねていく。"
+      when "認知"
+        "見本→一緒に→一人での順に段階化。正解を視覚で示すと理解が進む。"
+      when "社会性"
+        "簡単なルールと役割から。出来たらすぐ共感と称賛で習慣化。"
       else
         "うまくいかない日は休憩OK。成功しやすい環境づくりがコツ。"
       end
@@ -58,8 +67,6 @@ class Milestone < ApplicationRecord
 
     "#{base} #{step}"
   end
-
-  # ===== 表示ヘルパ =====
 
   # ★を返す（例: 難易度2 → "★★"）
   def difficulty_stars
