@@ -1,5 +1,3 @@
-<!-- app/views/tasks/index.html.erb -->
-<div class="container main">
   <!-- ヘッダー -->
   <div class="card" style="margin-bottom:1rem;">
     <h2 class="h2" style="margin:0;">できるかな（標準タスク）</h2>
@@ -57,8 +55,12 @@
     <% if @milestones.any? %>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.75rem;">
         <% @milestones.each do |ms| %>
-          <div class="milestone-card" data-id="<%= ms.id %>"
-               style="border:1px solid var(--border);border-radius:.8rem;padding:.9rem;background:#fff;">
+          <% ach = (defined?(@ach_by_ms) && @ach_by_ms) ? @ach_by_ms[ms.id] : nil %>
+
+          <div class="milestone-card <%= 'is-working'  if ach&.working %> <%= 'is-achieved' if ach&.achieved %>"
+               data-id="<%= ms.id %>"
+               style="position:relative;border:1px solid var(--border);border-radius:.8rem;padding:.9rem;background:#fff;">
+
             <div style="font-weight:700;"><%= ms.title %></div>
             <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
               <span class="pill"><%= ms.category.presence || "未分類" %></span>
@@ -66,13 +68,33 @@
               <span class="pill"><%= ms.difficulty_stars %></span>
             </div>
 
-            <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
-              <button class="btn btn-secondary btn-working" type="button">がんばり中</button>
-              <button class="btn btn-primary btn-achieved" type="button">花丸！</button>
-              <button class="btn" style="border:1px dashed var(--border);" type="button" onclick="alert('メモ機能は後日実装予定です')">メモ</button>
-            </div>
+            <% if user_signed_in? && current_child %>
+              <!-- ★ ログイン時：Turbo Frame でコントロールをラップ -->
+              <turbo-frame id="<%= dom_id(ms, :controls) %>">
+                <%= render "tasks/controls", milestone: ms, achievement: ach %>
+              </turbo-frame>
+            <% else %>
+              <!-- ★ 未ログイン時：右上バッジは常設してCSSで切替（JSが is-* を付け外し） -->
+              <div class="badge-group" aria-hidden="true"
+                   style="position:absolute; top:8px; right:8px; pointer-events:none;">
+                <%= image_tag 'icons/try.png',      alt: '', class: 'badge badge-try',  width: 44, height: 44 %>
+                <%= image_tag 'icons/hanamaru.png', alt: '', class: 'badge badge-achi', width: 44, height: 44 %>
+              </div>
 
-            <div class="state-hint" style="margin-top:.5rem;font-size:.85rem;color:var(--muted);"></div>
+              <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-secondary btn-working" type="button">がんばり中</button>
+                <button class="btn btn-primary btn-achieved"  type="button">できた！</button>
+                <button class="btn" style="border:1px dashed var(--border);" type="button"
+                        data-hint-toggle aria-expanded="false">ヒント</button>
+              </div>
+
+              <!-- ヒントパネル -->
+              <div data-hint-box hidden
+                   style="margin-top:.5rem;padding:.6rem;border:1px dashed var(--border);
+                          border-radius:.6rem;background:#fffaf5;color:#7a4a00;font-size:.9rem;">
+                <%= ms.hint_text %>
+              </div>
+            <% end %>
           </div>
         <% end %>
       </div>
@@ -80,59 +102,56 @@
       <p>該当タスクがありません。フィルター条件を変更してください。</p>
     <% end %>
   </div>
-</div>
 
-<!-- おためしモード用の軽量JS（ログイン時はDB保存に置き換える予定） -->
-<script>
-(function(){
-  const KEY = "try_progress_v1"; // localStorageキー（未ログイン用）
-  const loggedIn = <%= user_signed_in? ? "true" : "false" %>;
 
-  function loadState(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ return {}; } }
-  function saveState(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
-  function renderCard(card, rec){
-    const hint = card.querySelector(".state-hint");
-    card.classList.remove("is-working","is-achieved");
-    if(rec?.achieved){
-      card.classList.add("is-achieved");
-      hint.textContent = "花丸にしました（お試し保存）";
-    }else if(rec?.working){
-      card.classList.add("is-working");
-      hint.textContent = "がんばり中（お試し保存）";
-    }else{
-      hint.textContent = "";
+<%# 未ログイン時のみ、おためし保存用のインラインJSとCSSを読み込む %>
+<% unless user_signed_in? %>
+  <script>
+  (function(){
+    const KEY = "try_progress_v1";
+
+    function loadState(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ return {}; } }
+    function saveState(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+    function renderCard(card, rec){
+      card.classList.remove("is-working","is-achieved");
+      if (rec?.achieved) {
+        card.classList.add("is-achieved");
+      } else if (rec?.working) {
+        card.classList.add("is-working");
+      }
     }
-  }
 
-  const state = loadState();
-  document.querySelectorAll(".milestone-card").forEach(card => {
-    const id = card.getAttribute("data-id");
-    renderCard(card, state[id]);
+    const state = loadState();
+    document.querySelectorAll(".milestone-card").forEach(card => {
+      const id = card.getAttribute("data-id");
+      renderCard(card, state[id]);
 
-    const workingBtn  = card.querySelector(".btn-working");
-    const achievedBtn = card.querySelector(".btn-achieved");
+      const workingBtn  = card.querySelector(".btn-working");
+      const achievedBtn = card.querySelector(".btn-achieved");
+      if(!workingBtn || !achievedBtn) return;
 
-    workingBtn.addEventListener("click", () => {
-      if (loggedIn) { alert("DB保存は次のステップで実装します（デモ中）"); return; }
-      state[id] = state[id] || {};
-      state[id].working = !state[id].working;
-      if (state[id].working) state[id].achieved = false; // 同時ONは避ける
-      renderCard(card, state[id]); saveState(state);
+      workingBtn.addEventListener("click", () => {
+        state[id] = state[id] || {};
+        state[id].working = !state[id].working;
+        if (state[id].working) state[id].achieved = false;
+        renderCard(card, state[id]); saveState(state);
+      });
+
+      achievedBtn.addEventListener("click", () => {
+        state[id] = state[id] || {};
+        state[id].achieved = !state[id].achieved;
+        if (state[id].achieved) state[id].working = false;
+        renderCard(card, state[id]); saveState(state);
+      });
     });
+  })();
+  </script>
 
-    achievedBtn.addEventListener("click", () => {
-      if (loggedIn) { alert("DB保存は次のステップで実装します（デモ中）"); return; }
-      state[id] = state[id] || {};
-      state[id].achieved = !state[id].achieved;
-      if (state[id].achieved) state[id].working = false;
-      renderCard(card, state[id]); saveState(state);
-    });
-  });
-})();
-</script>
-
-<style>
-/* 簡単な見た目の変化（お試しモード用） */
-.milestone-card.is-working{ outline: 3px solid rgba(127,184,167,.25); }
-.milestone-card.is-achieved{ outline: 3px solid rgba(233,138,122,.25); }
-</style>
+  <style>
+  /* 未ログイン時の右上バッジはCSSで表示切替（JSが .is-working / .is-achieved を付与） */
+  .badge { display: none; }
+  .milestone-card.is-working  .badge-try  { display: block; }
+  .milestone-card.is-achieved .badge-achi { display: block; }
+  </style>
+<% end %>

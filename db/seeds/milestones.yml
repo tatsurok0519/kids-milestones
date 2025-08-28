@@ -3,69 +3,81 @@
   difficulty: 1
   min_months: 0
   max_months: 2
+  hint_text: "仰向けの時間に、カラフルなおもちゃを足元や手元に置いてあげると、自然と手足を動かすきっかけになります。"
 
 - title: はいはいで前に進む
   category: 運動
   difficulty: 2
   min_months: 7
   max_months: 10
+  hint_text: "赤ちゃんの少し先に好きなおもちゃを置いて、「おいでー」と声をかけてあげましょう。前に進もうとする意欲を引き出します。"
 
 - title: つかまり立ちに挑戦
   category: 運動
   difficulty: 2
   min_months: 9
   max_months: 12
+  hint_text: "安定感のある低い家具（ソファやローテーブルなど）のそばで遊ばせてあげると、自然とつかまり立ちを試すようになります。"
 
 - title: つみきを2個重ねる
   category: 遊び
   difficulty: 2
   min_months: 12
   max_months: 18
+  hint_text: "まずはママやパパが積み重ねて見せてあげましょう。「カッチャン」など楽しい音をつけながらやると、興味を持ちやすくなります。"
 
 - title: コップで上手に飲む
   category: 生活習慣
   difficulty: 2
   min_months: 18
   max_months: 30
+  hint_text: "最初は少量のお水やお茶から始めましょう。取っ手付きのトレーニングマグや、倒れにくい底の広いコップがおすすめです。"
 
 - title: 簡単な言葉をまねする
   category: 言葉
   difficulty: 2
   min_months: 12
   max_months: 24
+  hint_text: "「ワンワン」「ブーブー」など、赤ちゃんが発音しやすい擬音語をたくさん使って話しかけてあげましょう。"
 
 - title: 二語文で話す
   category: 言葉
   difficulty: 3
   min_months: 20
   max_months: 36
+  hint_text: "「マンマ、ちょうだい」「ワンワン、いた」など、子どもの言いたいことを代弁して二語文のモデルを見せてあげることが効果的です。"
 
 - title: お片付けできた
   category: 生活習慣
   difficulty: 2
   min_months: 24
   max_months: 48
+  hint_text: "「おもちゃさん、おうちに帰ろうね」と声をかけながら、お片付けの歌を歌ったりすると、遊びの延長として楽しく取り組めます。"
 
 - title: ジャンプして着地
   category: 運動
   difficulty: 3
   min_months: 30
   max_months: 48
+  hint_text: "低い段差からジャンプしたり、手をつないで一緒に「せーの！」でジャンプしたりするところから始めると安心です。"
 
 - title: 友だちと順番を待つ
   category: 社会性
   difficulty: 3
   min_months: 36
   max_months: 60
+  hint_text: "「〇〇ちゃんの次だよ」「あと3回数えたら交代ね」など、見通しが立つような声かけをしてあげると、順番を待つ練習になります。"
 
 - title: ひらがなに興味を持つ
   category: 言葉
   difficulty: 3
   min_months: 48
   max_months: 72
+  hint_text: "絵本を読み聞かせるときに文字を指で追いかけたり、自分の名前の文字を探したりすることから始めると、自然と興味が湧きます。"
 
 - title: 靴ひもを結ぶ
   category: 生活習慣
-  difficulty: 4
+  difficulty: 3
   min_months: 60
   max_months: 72
+  hint_text: "「うさぎさんの耳を作って…」など、物語仕立てで教えたり、練習用のボードを使ったりすると、楽しく覚えられます。最初は蝶々結びの最後の輪を引っ張るだけでもOKです。"

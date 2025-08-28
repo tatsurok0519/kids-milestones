@@ -1,8 +1,8 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  resources :children do
-    post :select, on: :member   # /children/:id/select にPOST
+  resources :children, only: [] do
+    post :select, on: :member
   end
   
   # ログイン後のダッシュボード
@@ -33,4 +33,6 @@ Rails.application.routes.draw do
   # ✅ マイページ（表示のみ）
   resource :account, only: [:show]
   
+  post "achievements/upsert", to: "achievements#upsert", as: :achievements_upsert
+
 end

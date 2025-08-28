@@ -24,10 +24,16 @@ class TasksController < ApplicationController
                     .by_difficulty(@difficulty)
                     .order(:difficulty, :id)
 
-    # プルダウン用（ビューで使う想定。今は仕込みだけ）
+    # プルダウン用
     @categories   = Milestone.distinct.order(:category).pluck(:category).compact
     @difficulties = (1..3).map { |i| ["#{'★' * i} (#{i})", i] }
 
     @age_band_label = "#{@age_band_index}–#{@age_band_index + 1}歳"
+
+    # ▼ ここから追加：表示中タスクの達成状況をまとめて取得（Turbo部分テンプレで利用）
+    if current_user && current_child && @milestones.present?
+      achs = current_child.achievements.where(milestone_id: @milestones.pluck(:id))
+      @ach_by_ms = achs.index_by(&:milestone_id) # { milestone_id => Achievement }
+    end
   end
 end
