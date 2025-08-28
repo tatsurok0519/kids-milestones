@@ -36,8 +36,9 @@ document.addEventListener("click", (e) => {
   btn.setAttribute("aria-expanded", String(willOpen))
 })
 
-/* 楽観的UI更新（がんばり中/できた！）
-   - _controls.html.erb 側で form[data-progress-form] と hidden_field_tag :toggle を出している前提
+/* 楽観的UI更新（がんばり中/できた！/未着手に戻す）
+   - _controls.html.erb 側で form[data-progress-form] と hidden_field :toggle
+     または button_to の params: { toggle: ... } を出している前提
    - 送信開始時にカードのクラスを即時トグル
    - 最終状態は Turbo Stream の差し替えに任せる */
 function nearestCard(el) {
@@ -49,7 +50,8 @@ document.addEventListener("turbo:submit-start", (ev) => {
   if (!(form instanceof HTMLFormElement)) return
   if (!form.matches('form[data-progress-form]')) return
 
-  const toggle = form.querySelector('input[name="toggle"]')?.value
+  const toggle = form.querySelector('input[name="toggle"]')?.value ||
+                 new FormData(form).get("toggle")
   const card   = nearestCard(form)
   if (!toggle || !card) return
 
@@ -61,6 +63,8 @@ document.addEventListener("turbo:submit-start", (ev) => {
     const on = !card.classList.contains("is-achieved")
     card.classList.toggle("is-achieved", on)
     if (on) card.classList.remove("is-working")
+  } else if (toggle === "clear") {
+    card.classList.remove("is-working", "is-achieved")
   }
 })
 
@@ -70,7 +74,8 @@ document.addEventListener("click", (e) => {
   if (!btn) return
 
   const form   = btn.closest('form[data-progress-form]')
-  const toggle = form?.querySelector('input[name="toggle"]')?.value
+  const toggle = form?.querySelector('input[name="toggle"]')?.value ||
+                 new FormData(form).get("toggle")
   const card   = nearestCard(form)
   if (!toggle || !card) return
 
@@ -82,5 +87,7 @@ document.addEventListener("click", (e) => {
     const on = !card.classList.contains("is-achieved")
     card.classList.toggle("is-achieved", on)
     if (on) card.classList.remove("is-working")
+  } else if (toggle === "clear") {
+    card.classList.remove("is-working", "is-achieved")
   }
 })
