@@ -96,3 +96,5 @@ gem "mini_magick"
 
 gem "kaminari"
 gem "kaminari-i18n"
+
+gem "pundit"

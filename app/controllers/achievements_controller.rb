@@ -3,48 +3,27 @@ class AchievementsController < ApplicationController
   before_action :set_child_and_milestone
 
   def upsert
-    # "working" / "achieved" / "clear"
-    toggle = params[:toggle].to_s
+    toggle = params[:toggle].to_s # "working" / "achieved" / "clear"
+    ach    = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
 
-    # 子ども未選択の安全対策（通常は到達しない想定）
-    unless @child
-      return respond_ng
-    end
-
-    ach = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
+    # Pundit: この記録に操作する権限があるか（所有者か）
+    authorize(ach, :upsert?)
 
     case toggle
     when "working"
-      # 取組み中をトグル。ON時は達成を必ずOFFに
-      ach.working = !ach.working
-      if ach.working
-        ach.achieved    = false
-        ach.achieved_at = nil
-      else
-        ach.achieved_at = nil unless ach.achieved
-      end
-
+      ach.working  = !ach.working
+      ach.achieved = false if ach.working
+      ach.achieved_at = nil unless ach.achieved
     when "achieved"
-      # 達成をトグル。ON時は取組み中を必ずOFFに
       ach.achieved = !ach.achieved
-      if ach.achieved
-        ach.working     = false
-        ach.achieved_at = Time.current
-      else
-        ach.achieved_at = nil
-      end
-
+      ach.working  = false if ach.achieved
+      ach.achieved_at = (ach.achieved ? Time.current : nil)
     when "clear"
-      # 明示的に未着手へ戻す
-      ach.working     = false
-      ach.achieved    = false
+      ach.working = false
+      ach.achieved = false
       ach.achieved_at = nil
-
-    else
-      return respond_ng
     end
 
-    # どちらもOFFならレコード削除（未着手の表現）
     if !ach.working && !ach.achieved
       ach.destroy if ach.persisted?
     else
@@ -59,12 +38,17 @@ class AchievementsController < ApplicationController
   private
 
   def set_child_and_milestone
-    @child     = current_child
+    @child = current_child
+    # 子が選ばれていない/他人の子が入ってしまうのを防ぐ
+    raise Pundit::NotAuthorizedError, "invalid child" unless @child
+    authorize @child, :use?  # ChildPolicy#use?（= owner?）
+
     @milestone = Milestone.find(params[:milestone_id])
   end
 
   def latest_achievement
-    @child&.achievements&.find_by(milestone_id: @milestone.id)
+    # 自分の範囲に限定（保険）
+    policy_scope(Achievement).find_by(child_id: @child.id, milestone_id: @milestone.id)
   end
 
   # ---- レスポンス（Turbo / HTML 両対応） ----

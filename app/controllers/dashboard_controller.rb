@@ -21,7 +21,7 @@ class DashboardController < ApplicationController
 
   # ログインユーザーの子ども一覧（写真付き）
   def load_children
-    @children = current_user.children.with_attached_photo.order(:created_at)
+    @children = policy_scope(Child).with_attached_photo.order(:created_at)
   end
 
   # child_id があればそれを選択してセッションに保存
