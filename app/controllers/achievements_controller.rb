@@ -76,7 +76,8 @@ class AchievementsController < ApplicationController
           age_band:        params[:age_band],
           category:        params[:category],
           difficulty:      params[:difficulty],
-          only_unachieved: params[:only_unachieved]
+          only_unachieved: params[:only_unachieved],
+          page:            params[:page]
         )
       end
     end
@@ -90,7 +91,8 @@ class AchievementsController < ApplicationController
           age_band:        params[:age_band],
           category:        params[:category],
           difficulty:      params[:difficulty],
-          only_unachieved: params[:only_unachieved]
+          only_unachieved: params[:only_unachieved],
+          page:            params[:page]
         )
       end
     end

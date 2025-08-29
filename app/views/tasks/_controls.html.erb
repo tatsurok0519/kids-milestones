@@ -1,3 +1,4 @@
+<%# Turbo対応：「がんばり中 / できた！ / 未着手に戻す」 %>
 <div>
   <%# 右上バッジ（状態に応じて1つだけ表示） %>
   <% if achievement&.working %>
@@ -10,14 +11,15 @@
 
   <div style="margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
 
-    <%# 取組み中 %>
+    <%# がんばり中 %>
     <%= button_to achievements_upsert_path(milestone_id: milestone.id),
           params: {
             toggle: "working",
             age_band: params[:age_band],
             category: params[:category],
             difficulty: params[:difficulty],
-            only_unachieved: params[:only_unachieved]
+            only_unachieved: params[:only_unachieved],
+            page: params[:page] # ← ページ保持
           },
           method: :post,
           form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
@@ -25,14 +27,15 @@
       がんばり中
     <% end %>
 
-    <%# 達成（花丸） %>
+    <%# できた！ %>
     <%= button_to achievements_upsert_path(milestone_id: milestone.id),
           params: {
             toggle: "achieved",
             age_band: params[:age_band],
             category: params[:category],
             difficulty: params[:difficulty],
-            only_unachieved: params[:only_unachieved]
+            only_unachieved: params[:only_unachieved],
+            page: params[:page] # ← ページ保持
           },
           method: :post,
           form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
@@ -40,7 +43,7 @@
       できた！
     <% end %>
 
-    <%# ★ 追加：未着手に戻す（状態がある時だけ出す） %>
+    <%# 未着手に戻す（状態がある時だけ表示） %>
     <% if achievement.present? %>
       <%= button_to achievements_upsert_path(milestone_id: milestone.id),
             params: {
@@ -48,19 +51,18 @@
               age_band: params[:age_band],
               category: params[:category],
               difficulty: params[:difficulty],
-              only_unachieved: params[:only_unachieved]
+              only_unachieved: params[:only_unachieved],
+              page: params[:page] # ← ページ保持
             },
             method: :post,
             form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
-            class:  "btn",
-            form_class: "btn-inline" do %>
+            class:  "btn" do %>
         未着手に戻す
       <% end %>
     <% end %>
 
     <%# ヒント %>
-    <button type="button" class="btn" style="border:1px dashed var(--border);"
-            data-hint-toggle aria-expanded="false">
+    <button type="button" class="btn" style="border:1px dashed var(--border);" data-hint-toggle aria-expanded="false">
       ヒント
     </button>
   </div>

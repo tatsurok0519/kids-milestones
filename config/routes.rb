@@ -32,6 +32,10 @@ Rails.application.routes.draw do
 
   # ✅ マイページ（表示のみ）
   resource :account, only: [:show]
+
+  resources :achievements, only: [] do
+    post :upsert, on: :collection
+  end
   
   post "achievements/upsert", to: "achievements#upsert", as: :achievements_upsert
 
