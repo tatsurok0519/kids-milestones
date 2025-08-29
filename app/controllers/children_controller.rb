@@ -1,4 +1,3 @@
-# app/controllers/children_controller.rb
 class ChildrenController < ApplicationController
   before_action :authenticate_user!
   before_action :set_child, only: [:show, :edit, :update, :destroy]
@@ -78,7 +77,7 @@ class ChildrenController < ApplicationController
   end
 
   def child_params
-    # remove_photo は別途フラグ処理するので permit しない
+    # remove_photo は別フラグで処理するので permit しない
     params.require(:child).permit(:name, :birthday, :photo)
   end
 end

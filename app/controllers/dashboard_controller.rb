@@ -3,6 +3,7 @@ class DashboardController < ApplicationController
   before_action :ensure_user_object
   before_action :load_children
   before_action :select_child
+  before_action -> { add_crumb("ダッシュボード", dashboard_path) }
 
   def show
     # 表示用

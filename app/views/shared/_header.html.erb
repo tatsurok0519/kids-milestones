@@ -1,0 +1,26 @@
+<header style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);">
+  <div class="container" style="display:flex;align-items:center;gap:.75rem;justify-content:space-between;padding:.6rem 0;">
+    <div style="display:flex;align-items:center;gap:.5rem;">
+      <%= image_tag "illustrations/sun.png", alt: "", width: 20, height: 20, style: "flex:none" %>
+      <%= link_to "こどもすくすくカード", authenticated_root_path, class: "h2", style: "font-size:1.05rem;text-decoration:none;color:inherit;" %>
+    </div>
+
+    <nav style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <% if user_signed_in? %>
+        <%= nav_link_to "ダッシュボード", dashboard_path, class: "btn" %>
+        <%= nav_link_to "タスク", tasks_path(age_band: params[:age_band].presence || "all"), class: "btn" %>
+        <%= nav_link_to "マイページ", account_path, class: "btn" %>
+        <%= link_to "ログアウト", destroy_user_session_path, class: "btn btn-secondary", data: { turbo_method: :delete } %>
+      <% else %>
+        <%= nav_link_to "タスク", tasks_path(age_band: params[:age_band].presence || "all"), class: "btn" %>
+        <%= nav_link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
+        <%= nav_link_to "新規登録", new_user_registration_path, class: "btn" %>
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<style>
+/* ナビの「今いる場所」強調 */
+.btn.is-active { border-color:#60a5fa; background:#eff6ff; }
+</style>

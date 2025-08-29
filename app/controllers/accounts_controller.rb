@@ -1,5 +1,9 @@
 class AccountsController < ApplicationController
   before_action :authenticate_user!
+  before_action -> {
+    add_crumb("ダッシュボード", dashboard_path)
+    add_crumb("マイページ", account_path)
+  }
 
   def show
     @user = current_user

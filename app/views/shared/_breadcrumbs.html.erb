@@ -1,0 +1,13 @@
+<% if breadcrumb_trail.present? %>
+  <div class="container" style="padding:.5rem 0;">
+    <%= breadcrumbs(breadcrumb_trail) %>
+  </div>
+<% end %>
+
+<style>
+.breadcrumbs { font-size:.9rem; color:#6b7280; }
+.breadcrumbs .crumb-link { text-decoration:none; color:#2563eb; }
+.breadcrumbs .crumb-link:hover { text-decoration:underline; }
+.breadcrumbs .crumb-current { color:#111827; font-weight:600; }
+.breadcrumbs .crumb-sep { margin:0 .35rem; color:#9ca3af; }
+</style>

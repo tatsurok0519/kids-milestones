@@ -1,4 +1,10 @@
 class TasksController < ApplicationController
+  before_action -> {
+    add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
+    add_crumb("タスク", tasks_path)
+  }
+  
+  
   def index
     # --- 年齢帯: "0".."5" or "all" or nil ---
     band_param = params[:age_band].presence
