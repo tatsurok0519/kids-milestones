@@ -29,6 +29,7 @@ class AchievementsController < ApplicationController
     else
       ach.save!
     end
+    RewardUnlocker.call(@child)
 
     respond_ok
   rescue ActiveRecord::RecordInvalid

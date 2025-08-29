@@ -3,6 +3,8 @@ class Child < ApplicationRecord
   has_many :achievements, dependent: :destroy
   has_many :milestones, through: :achievements
   has_one_attached :photo, dependent: :purge_later
+  has_many :reward_unlocks, dependent: :destroy
+  has_many :rewards, through: :reward_unlocks
 
   validates :name, presence: true
   validates :birthday, presence: true
@@ -91,6 +93,10 @@ class Child < ApplicationRecord
     (i * 12)..(i * 12 + 11)
   end
 
+  def achieved_count
+    achievements.where(achieved: true).count
+  end
+  
   private
   def birthday_cannot_be_in_future
     return unless birthday.present?

@@ -1,0 +1,24 @@
+<div style="margin-top:.75rem;">
+  <div class="h2" style="font-size:1.05rem;margin:0 0 .5rem;">ごほうび</div>
+  <div class="text-muted" style="font-size:.9rem;">花丸：<strong><%= @achieved_count %></strong></div>
+
+  <% [["メダル","medal"],["トロフィー","trophy"]].each do |label, kind| %>
+    <div style="margin-top:.5rem;">
+      <div class="label" style="margin-bottom:.25rem;"><%= label %></div>
+      <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+        <% Reward.where(kind: kind).order(:threshold).each do |rw| %>
+          <% unlocked = @reward_unlock_ids.include?(rw.id) %>
+          <div style="text-align:center;">
+            <%= image_tag rw.icon_path,
+                  alt: "#{label} #{rw.tier}",
+                  width: 56, height: 56,
+                  style: "filter: #{unlocked ? 'none' : 'grayscale(100%) opacity(0.35)'};" %>
+            <div style="font-size:.8rem; color:#6b7280">
+              <%= unlocked ? "解放済" : "#{rw.threshold} 花丸" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

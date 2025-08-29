@@ -78,3 +78,25 @@ end
 
 total = Milestone.count
 puts "[seeds] upserted -> created=#{created}, updated=#{updated}, skipped=#{skipped}, failed=#{failed}, total=#{total}"
+
+# ===== Rewards =====
+rewards = [
+  # メダル（5/10/20）
+  { kind: "medal",  tier: "bronze", threshold: 5,  icon_path: "icons/medal_bronze.png" },
+  { kind: "medal",  tier: "silver", threshold: 10, icon_path: "icons/medal_silver.png" },
+  { kind: "medal",  tier: "gold",   threshold: 20, icon_path: "icons/medal_gold.png" },
+
+  # トロフィー（30/40/50）
+  { kind: "trophy", tier: "bronze", threshold: 30, icon_path: "icons/trophy-bronze.png" },
+  { kind: "trophy", tier: "silver", threshold: 40, icon_path: "icons/trophy_silver.png" },
+  { kind: "trophy", tier: "gold",   threshold: 50, icon_path: "icons/trophy_gold.png" },
+]
+
+rewards.each do |row|
+  r = Reward.find_or_initialize_by(kind: row[:kind], tier: row[:tier])
+  r.threshold = row[:threshold]
+  r.icon_path = row[:icon_path]
+  r.save!
+end
+
+puts "[seeds] rewards upserted: #{rewards.size}"

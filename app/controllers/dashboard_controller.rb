@@ -8,6 +8,8 @@ class DashboardController < ApplicationController
   def show
     # 表示用
     @child        = @selected_child # nil 可
+    @reward_unlock_ids = @child ? @child.reward_unlocks.pluck(:reward_id) : []
+    @achieved_count    = @child ? @child.achievements.where(achieved: true).count : 0
     @age_label    = @child&.age_years_and_months
     @flower_count = @child ? @child.achievements.where(achieved: true).count : 0
 

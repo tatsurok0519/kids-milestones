@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_27_062803) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_29_091039) do
   create_table "achievements", force: :cascade do |t|
     t.integer "child_id", null: false
     t.integer "milestone_id", null: false
@@ -74,6 +74,28 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_27_062803) do
     t.index ["difficulty"], name: "index_milestones_on_difficulty"
   end
 
+  create_table "reward_unlocks", force: :cascade do |t|
+    t.integer "child_id", null: false
+    t.integer "reward_id", null: false
+    t.datetime "unlocked_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["child_id", "reward_id"], name: "index_reward_unlocks_on_child_id_and_reward_id", unique: true
+    t.index ["child_id"], name: "index_reward_unlocks_on_child_id"
+    t.index ["reward_id"], name: "index_reward_unlocks_on_reward_id"
+  end
+
+  create_table "rewards", force: :cascade do |t|
+    t.string "kind", null: false
+    t.string "tier", null: false
+    t.integer "threshold", null: false
+    t.string "icon_path", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind", "tier"], name: "index_rewards_on_kind_and_tier", unique: true
+    t.index ["threshold"], name: "index_rewards_on_threshold"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -92,4 +114,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_27_062803) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "children", "users"
+  add_foreign_key "reward_unlocks", "children"
+  add_foreign_key "reward_unlocks", "rewards"
 end
