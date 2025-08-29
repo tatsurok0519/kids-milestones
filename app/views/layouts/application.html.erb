@@ -10,50 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- ヘッダー：アプリ名 + 主要導線 -->
-    <header class="header-bar">
-      <div class="container header-inner">
-        <h1 class="h1">
-          <%= link_to "こどもすくすくカード",
-                (user_signed_in? ? authenticated_root_path : unauthenticated_root_path) %>
-          <%= image_tag "illustrations/sun.png", alt: "お日さま", class: "sun-inline" %>
-        </h1>
+    <!-- 共有ヘッダー（これだけ表示。直書きヘッダーは削除） -->
+    <%= render "shared/header" %>
 
-        <nav>
-          <% if user_signed_in? %>
-            <%= link_to "ダッシュボード", dashboard_path, class: "btn btn-link" %>
-            <%= link_to "タスク", tasks_path, class: "btn btn-link" %>
-            <%= link_to "マイページ", account_path, class: "btn btn-link" %>
-            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
-          <% else %>
-            <%= link_to "タスク", tasks_path, class: "btn btn-link" %>
-            <%= link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
-            <%= link_to "新規登録", new_user_registration_path, class: "btn btn-secondary" %>
-          <% end %>
-        </nav>
-      </div>
-    </header>
-
-    <!-- パンくず（@breadcrumb_trail があれば表示） -->
-    <% if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
-      <nav class="container" aria-label="breadcrumb" style="padding:.5rem 0;">
-        <% breadcrumb_trail.each_with_index do |(label, path), i| %>
-          <% last = (i == breadcrumb_trail.length - 1) %>
-          <% if path.present? && !last %>
-            <%= link_to label, path, class: "crumb-link" %>
-          <% else %>
-            <span class="crumb-current"><%= label %></span>
-          <% end %>
-          <% unless last %><span class="crumb-sep">›</span><% end %>
-        <% end %>
-      </nav>
-      <style>
-        .crumb-link{ text-decoration:none; color:#2563eb }
-        .crumb-link:hover{ text-decoration:underline }
-        .crumb-current{ font-weight:600; color:#111827 }
-        .crumb-sep{ margin:0 .35rem; color:#9ca3af }
-      </style>
-    <% end %>
+    <!-- パンくず（設定があるときだけ） -->
+    <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
 
     <%= image_tag "illustrations/watering.png", alt: "水やり", class: "watering-illustration" %>
 
@@ -67,11 +28,12 @@
       <%= yield %>
     </main>
 
-    <!-- フッター：補助導線 -->
+    <!-- フッター：導線を「できるかな／そうだん」に統一 -->
     <footer class="container footer" style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
       <div>© <%= Time.current.year %> こどもすくすくカード</div>
       <nav>
-        <%= link_to "タスク", tasks_path, class: "btn" %>
+        <%= link_to "できるかな", tasks_path, class: "btn" %>
+        <%= link_to "そうだん",   consult_path, class: "btn" %>
         <% if user_signed_in? %>
           <%= link_to "マイページ", account_path, class: "btn" %>
         <% else %>

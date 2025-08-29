@@ -11,6 +11,8 @@ ActiveStorage.start()
 // 画像プレビュー用（あなたの既存ファイル）
 import "./photo_preview"
 
+import "./chat_consult"
+
 /* 子ども切替（セレクト変更でURLの child_id を差し替え） */
 document.addEventListener("change", (e) => {
   const sel = e.target?.closest("#child-switcher-select")

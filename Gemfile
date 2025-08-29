@@ -98,3 +98,5 @@ gem "kaminari"
 gem "kaminari-i18n"
 
 gem "pundit"
+
+gem "openai", "~> 0.20"

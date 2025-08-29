@@ -26,7 +26,7 @@
       </div>
 
     <% elsif user_signed_in? %>
-      <h2 class="h2" style="margin:0;">できるかな（標準タスク）</h2>
+      <h2 class="h2" style="margin:0;">できるかな</h2>
       <p style="margin:.25rem 0 0;">
         子どもが未選択です。
         <%= link_to "子どもを追加", new_child_path, class: "btn btn-primary" %>
@@ -34,7 +34,7 @@
       </p>
 
     <% else %>
-      <h2 class="h2" style="margin:0;">できるかな（標準タスク）</h2>
+      <h2 class="h2" style="margin:0;">できるかな</h2>
       <p style="margin:.25rem 0 0;">
         ログインなしの「おためしモード」です。進捗はこの端末（ブラウザ）のみ保存されます。
         <%= link_to "保存やレポートを使うには登録", new_user_registration_path, class: "btn btn-primary", style: "margin-left:.5rem;" %>
@@ -102,7 +102,7 @@
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;">
       <div class="h2" style="font-size:1.1rem;margin:0;">
-        標準タスク（<%= @age_band_label %>）
+        できるかな（<%= @age_band_label %>）
       </div>
       <div class="text-muted" style="font-size:.9rem;">
         該当 <%= @milestones.total_count %> 件

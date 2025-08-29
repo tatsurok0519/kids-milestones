@@ -92,9 +92,10 @@
 
   <!-- 主要リンク（※「子どもの設定」は撤去） -->
   <div class="card" style="padding:.75rem;">
-    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-      <%= link_to "タスク一覧へ", tasks_path, class: "btn btn-primary" %>
-      <%= link_to "マイページ", account_path, class: "btn" %>
-    </div>
+  <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+    <%= link_to "できるかな一覧へ", tasks_path, class: "btn btn-primary" %>
+    <%= link_to "子育てそうだんへ",        consult_path, class: "btn btn-primary" %>  <!-- ← 同じ見た目に -->
+    <%= link_to "マイページ",        account_path, class: "btn" %>
   </div>
+</div>
 </div>

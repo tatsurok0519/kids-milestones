@@ -39,4 +39,9 @@ Rails.application.routes.draw do
   
   post "achievements/upsert", to: "achievements#upsert", as: :achievements_upsert
 
+  # 末尾など適所に追記
+  resource :consult, only: [:show] do
+    get :stream, on: :collection   # ← ストリーミング（SSE）
+  end
+
 end
