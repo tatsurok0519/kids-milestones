@@ -1,12 +1,32 @@
 class TasksController < ApplicationController
   before_action :set_breadcrumbs, only: :index
 
+  # ===== ゲスト用の軽量モデル（ActiveRecordを使わない）=====
+  DemoMilestone = Struct.new(:id, :title, :category, :difficulty, :min_months, :max_months, :description, :hint_text) do
+    def difficulty_stars
+      d = difficulty.to_i.clamp(0, 3)
+      "★" * d + "☆" * (3 - d)
+    end
+
+    # Milestone#age_band_labels 互換の簡易表示
+    def age_band_labels
+      mn = (min_months || 0).to_i
+      mx = (max_months || 71).to_i # 71=5歳11か月相当
+      bands = []
+      start_i = (mn / 12).clamp(0, 5)
+      end_i   = (([mx - 1, mn].max) / 12).clamp(0, 5)
+      (start_i..end_i).each { |i| bands << "#{i}–#{i + 1}歳" }
+      bands.uniq.join(" ")
+    end
+  end
+  private_constant :DemoMilestone
+
   def index
     Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
 
     guest = !user_signed_in?
 
-    # --- まずは「テーブルがあるか」チェック（DB未接続でも落ちない） ---
+    # --- DBにmilestonesテーブルがあるか（落ちないチェック） ---
     has_ms_table =
       begin
         ActiveRecord::Base.connection.data_source_exists?("milestones")
@@ -15,7 +35,7 @@ class TasksController < ApplicationController
         false
       end
 
-    # --- ゲスト体験：テーブル無い/件数不明/0件 なら YAML に確実にフォールバック ---
+    # --- ゲスト体験：テーブル無い/件数不明/0件 → YAML フォールバック ---
     db_count = nil
     if has_ms_table
       begin
@@ -76,29 +96,35 @@ class TasksController < ApplicationController
     @age_band_label = "全年齢"
 
     yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
-    unless File.exist?(yaml_path)
-      Rails.logger.error("[tasks#index] YAML not found: #{yaml_path}")
-      @milestones   = []
-      @categories   = []
-      @difficulties = [1, 2, 3]
-      @parent_tip   = ParentTip.for(child: nil, date: Date.current)
-      return render :index
-    end
+    data =
+      begin
+        raw = File.exist?(yaml_path) ? File.read(yaml_path) : nil
+        if raw.nil?
+          Rails.logger.error("[tasks#index] YAML not found: #{yaml_path}")
+          []
+        else
+          YAML.safe_load(raw, permitted_classes: [Date, Time, Symbol], aliases: true) || []
+        end
+      rescue => e
+        Rails.logger.error("[tasks#index] YAML load error: #{e.class}: #{e.message}")
+        []
+      end
 
-    data = YAML.safe_load_file(yaml_path) || []
-    rows = Array(data).map do |h|
-      Milestone.new(
-        title:       h["title"],
-        category:    h["category"],
-        difficulty:  h["difficulty"],
-        min_months:  h["min_months"],
-        max_months:  h["max_months"],
-        description: h["description"],
-        hint_text:   (h["hint_text"] || h["hint"] || "")
+    rows = []
+    Array(data).each_with_index do |h, idx|
+      rows << DemoMilestone.new(
+        idx + 1,
+        h["title"],
+        h["category"],
+        h["difficulty"],
+        h["min_months"],
+        h["max_months"],
+        h["description"],
+        (h["hint_text"] || h["hint"] || "")
       )
     end
 
-    # 年齢帯フィルタ
+    # 年齢帯 / カテゴリ / 難易度 フィルタ
     if (band = params[:age_band].presence) && band != "all"
       i = band.to_i.clamp(0, 5)
       band_min = i * 12
@@ -110,12 +136,10 @@ class TasksController < ApplicationController
       end
       @age_band_label = "#{i}–#{i + 1}歳"
     end
-
-    # カテゴリ／難易度フィルタ
-    rows.select! { |m| m.category == params[:category] } if params[:category].present?
+    rows.select! { |m| m.category == params[:category] }               if params[:category].present?
     rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i } if params[:difficulty].present?
 
-    rows.sort_by! { |m| [m.difficulty.to_i, m.object_id] }
+    rows.sort_by! { |m| [m.difficulty.to_i, m.id] }
 
     if defined?(Kaminari)
       @milestones = Kaminari.paginate_array(rows).page(params[:page]).per(20)
@@ -131,6 +155,9 @@ class TasksController < ApplicationController
   end
 
   def set_breadcrumbs
+    # パンくずが未導入環境でも落ちないようにガード
+    return unless respond_to?(:add_crumb)
+
     add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
     desired_band = params[:age_band].presence || "all"
     add_crumb("できるかな", tasks_path(age_band: desired_band))
