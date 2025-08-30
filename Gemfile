@@ -91,6 +91,8 @@ gem "importmap-rails", "~> 2.2"
 gem "devise", "~> 4.9"
 
 gem "image_processing", "~> 1.12"
+gem "cloudinary"
+gem "activestorage-cloudinary-service"
 
 gem "mini_magick"
 

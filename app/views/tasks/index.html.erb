@@ -141,31 +141,39 @@
               <span class="pill"><%= ms.difficulty_stars %></span>
             </div>
 
-            <% if user_signed_in? && current_child %>
-              <!-- ログイン時：Turbo Frame でコントロールをラップ -->
+            <% if user_signed_in? && current_child && !@demo_mode %>
+              <!-- ログイン時：Turbo Frame でコントロール -->
               <turbo-frame id="<%= dom_id(ms, :controls) %>">
                 <%= render "tasks/controls", milestone: ms, achievement: ach %>
               </turbo-frame>
             <% else %>
               <!-- 未ログイン時：右上バッジは常設してCSSで切替（JSが is-* を付け外し） -->
               <div class="badge-group" aria-hidden="true"
-                   style="position:absolute; top:8px; right:8px; pointer-events:none;">
+                  style="position:absolute; top:8px; right:8px; pointer-events:none;">
                 <%= image_tag 'icons/try.png',      alt: '', class: 'badge badge-try',  width: 44, height: 44 %>
                 <%= image_tag 'icons/hanamaru.png', alt: '', class: 'badge badge-achi', width: 44, height: 44 %>
               </div>
 
+              <!-- デモ用コントロール（保存はしない） -->
               <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
                 <button class="btn btn-secondary btn-working" type="button">がんばり中</button>
                 <button class="btn btn-primary btn-achieved"  type="button">できた！</button>
-                <button class="btn" style="border:1px dashed var(--border);" type="button"
-                        data-hint-toggle aria-expanded="false">ヒント</button>
+
+                <!-- ヒントトグル（★ここがポイント） -->
+                <button class="btn" type="button"
+                        style="border:1px dashed var(--border);"
+                        data-hint-toggle
+                        aria-expanded="false"
+                        aria-controls="hint_<%= ms.id %>">
+                  ヒント
+                </button>
               </div>
 
-              <!-- ヒントパネル -->
-              <div data-hint-box hidden
-                   style="margin-top:.5rem;padding:.6rem;border:1px dashed var(--border);
+              <!-- ヒントパネル（★hidden と data-hint-box が必須） -->
+              <div id="hint_<%= ms.id %>" data-hint-box hidden
+                  style="margin-top:.5rem;padding:.6rem;border:1px dashed var(--border);
                           border-radius:.6rem;background:#fffaf5;color:#7a4a00;font-size:.9rem;">
-                <%= ms.hint_text %>
+                <%= ms.hint_text.presence || "（ヒントは準備中です）" %>
               </div>
             <% end %>
           </div>

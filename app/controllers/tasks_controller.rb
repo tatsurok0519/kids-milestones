@@ -1,7 +1,7 @@
 class TasksController < ApplicationController
   before_action :set_breadcrumbs, only: :index
 
-  # ===== ゲスト用の軽量モデル（ActiveRecordを使わない）=====
+  # ===== ゲスト/デモ用の軽量モデル（ActiveRecordを使わない）=====
   DemoMilestone = Struct.new(:id, :title, :category, :difficulty, :min_months, :max_months, :description, :hint_text) do
     def difficulty_stars
       d = difficulty.to_i.clamp(0, 3)
@@ -24,8 +24,6 @@ class TasksController < ApplicationController
   def index
     Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
 
-    guest = !user_signed_in?
-
     # --- DBにmilestonesテーブルがあるか（落ちないチェック） ---
     has_ms_table =
       begin
@@ -35,7 +33,7 @@ class TasksController < ApplicationController
         false
       end
 
-    # --- ゲスト体験：テーブル無い/件数不明/0件 → YAML フォールバック ---
+    # --- テーブル有無と件数（落ちても握りつぶす） ---
     db_count = nil
     if has_ms_table
       begin
@@ -46,8 +44,10 @@ class TasksController < ApplicationController
       end
     end
 
-    if guest && (!has_ms_table || db_count.nil? || db_count.zero?)
-      Rails.logger.warn("[tasks#index] demo fallback: has_table=#{has_ms_table}, count=#{db_count.inspect}")
+    # ★ DBが未準備/空なら、ログイン有無に関係なくデモ表示（保存UIはビューで @demo_mode を見て抑止）
+    if (!has_ms_table || db_count.nil? || db_count.zero?)
+      Rails.logger.warn("[tasks#index] DEMO FALLBACK (everyone): has_table=#{has_ms_table}, count=#{db_count.inspect}")
+      @demo_mode = true
       return render_demo_from_yaml
     end
 
@@ -91,8 +91,9 @@ class TasksController < ApplicationController
 
   private
 
-  # --- ゲスト用：YAMLから100件デモを描画（DBゼロ/未準備でも必ず動く） ---
+  # --- YAMLから100件デモを描画（DBゼロ/未準備でも必ず動く） ---
   def render_demo_from_yaml
+    @demo_mode ||= true
     @age_band_label = "全年齢"
 
     yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
@@ -155,7 +156,6 @@ class TasksController < ApplicationController
   end
 
   def set_breadcrumbs
-    # パンくずが未導入環境でも落ちないようにガード
     return unless respond_to?(:add_crumb)
 
     add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
