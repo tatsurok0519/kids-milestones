@@ -6,7 +6,7 @@ class AchievementsController < ApplicationController
     toggle = params[:toggle].to_s # "working" / "achieved" / "clear"
     ach    = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
 
-    # Pundit: この記録に操作する権限があるか（所有者か）
+    # Pundit: 自分の記録だけ操作可
     authorize(ach, :upsert?)
 
     case toggle
@@ -29,7 +29,9 @@ class AchievementsController < ApplicationController
     else
       ach.save!
     end
-    RewardUnlocker.call(@child)
+
+    # ← 追加：今回新たに解放されたごほうび（演出用）
+    @new_rewards = RewardUnlocker.call(@child)
 
     respond_ok
   rescue ActiveRecord::RecordInvalid
@@ -40,9 +42,9 @@ class AchievementsController < ApplicationController
 
   def set_child_and_milestone
     @child = current_child
-    # 子が選ばれていない/他人の子が入ってしまうのを防ぐ
+    # 子が未選択/他人の子を防ぐ
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
-    authorize @child, :use?  # ChildPolicy#use?（= owner?）
+    authorize @child, :use?  # ChildPolicy#use?
 
     @milestone = Milestone.find(params[:milestone_id])
   end
@@ -57,6 +59,7 @@ class AchievementsController < ApplicationController
     respond_to do |f|
       f.turbo_stream { render_controls(achievement: latest_achievement, status: :ok) }
       f.html do
+        flash[:notice] = "ごほうび解放！" if @new_rewards.present?
         redirect_to tasks_path(
           age_band:        params[:age_band],
           category:        params[:category],
@@ -83,12 +86,24 @@ class AchievementsController < ApplicationController
     end
   end
 
-  # 対象フレームを差し替える
+  # 対象フレームを差し替える + 新規解放があればトーストを追加
   def render_controls(achievement:, status:)
-    render turbo_stream: turbo_stream.update(
+    streams = []
+    streams << turbo_stream.update(
       view_context.dom_id(@milestone, :controls),
       partial: "tasks/controls",
       locals:  { milestone: @milestone, achievement: achievement }
-    ), status: status
+    )
+
+    if @new_rewards.present?
+      streams << turbo_stream.append(
+        # レイアウトにある <div id="toasts" class="toast-layer"> … </div> に挿入
+        "toasts",
+        partial: "shared/reward_toast",
+        locals:  { rewards: @new_rewards }
+      )
+    end
+
+    render turbo_stream: streams, status: status
   end
 end

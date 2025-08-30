@@ -8,6 +8,7 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+    <script>window.__SIGNED_IN__ = <%= user_signed_in? ? 'true' : 'false' %>;</script>
   </head>
   <body>
     <!-- 共有ヘッダー（これだけ表示。直書きヘッダーは削除） -->
@@ -41,5 +42,6 @@
         <% end %>
       </nav>
     </footer>
+    <div id="toasts" class="toast-layer" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_29_091039) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_30_043139) do
   create_table "achievements", force: :cascade do |t|
     t.integer "child_id", null: false
     t.integer "milestone_id", null: false
@@ -80,7 +80,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_091039) do
     t.datetime "unlocked_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["child_id", "reward_id"], name: "index_reward_unlocks_on_child_id_and_reward_id", unique: true
+    t.index ["child_id", "reward_id"], name: "index_reward_unlocks_on_child_and_reward_unique", unique: true
     t.index ["child_id"], name: "index_reward_unlocks_on_child_id"
     t.index ["reward_id"], name: "index_reward_unlocks_on_reward_id"
   end

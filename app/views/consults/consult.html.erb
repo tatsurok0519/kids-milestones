@@ -1,0 +1,12 @@
+<!-- 例: そうだんページ -->
+<div class="consult-page">
+  <%= render "consults/form" %>
+
+  <!-- ☆ メッセージ一覧 -->
+  <div id="consult_messages"
+      class="consult-list"
+      data-newest-first="true"
+      aria-live="polite" aria-busy="false">
+    <%= render @messages %>
+  </div>
+</div>

@@ -1,28 +1,19 @@
-<%# 並び：メダル(5/10/20) → トロフィー(30/40/50)。未解放は非表示。左寄せで詰める %>
 <% ordered      = Reward.order(Arel.sql("CASE kind WHEN 'medal' THEN 0 ELSE 1 END"), :threshold).to_a %>
 <% unlocked_ids = @reward_unlock_ids || [] %>
 <% items        = ordered.select { |rw| unlocked_ids.include?(rw.id) } %>
 
 <% if items.any? %>
-  <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;">
+  <div class="rewards-row" style="display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;">
     <% items.each do |rw| %>
-      <%# ===== サイズ（銀・金を少し大きく）：レイアウトが暴れない無難値 ===== %>
       <% size =
         if rw.kind == 'medal'
-          rw.tier == 'bronze' ? 48 : 56       # メダル：銅48 / 銀・金56
+          rw.tier == 'bronze' ? 48 : 56
         else
-          case rw.tier                         # トロフィー：銅64 / 銀72 / 金80
-          when 'bronze' then 64
-          when 'silver' then 72
-          else               80
-          end
+          { 'bronze'=>64, 'silver'=>72, 'gold'=>80 }[rw.tier]
         end %>
-
-      <span style="width:<%= size %>px; height:<%= size %>px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;">
-        <%= image_tag rw.icon_path,
-              alt: "#{rw.kind} #{rw.tier}",
-              title: "解放済",
-              style: "max-width:100%; max-height:100%; object-fit:contain; display:block;" %>
+      <span id="reward_icon_<%= rw.id %>" class="reward-icon"
+            style="width:<%= size %>px; height:<%= size %>px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;">
+        <%= image_tag rw.icon_path, alt: "", style: "max-width:100%; max-height:100%; object-fit:contain; display:block;" %>
       </span>
     <% end %>
   </div>

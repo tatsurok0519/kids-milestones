@@ -1,0 +1,29 @@
+/* 最新を上に見せる：DOMはそのまま、見た目だけ上下反転 */
+.consult-list.consult-list--newest-first {
+  display: flex;
+  flex-direction: column-reverse; /* ここがミソ */
+  gap: 12px;
+}
+
+/* スクロール領域が別なら必要に応じて */
+.consult-list {
+  overflow-y: auto;
+  max-height: calc(100vh - 220px); /* 余白はレイアウトに合わせて調整 */
+}
+
+/* 新規が入った感じのハイライト（任意） */
+.consult-turn--new {
+  animation: consultPulse 0.8s ease-out;
+}
+@keyframes consultPulse {
+  from { box-shadow: 0 0 0 6px rgba(255,200,0,.35); }
+  to   { box-shadow: 0 0 0 0 rgba(255,200,0,0); }
+}
+
+.consult-turn--new {
+  animation: consultPulse 0.8s ease-out;
+}
+@keyframes consultPulse {
+  from { box-shadow: 0 0 0 6px rgba(255, 200, 0, 0.35); }
+  to   { box-shadow: 0 0 0 0 rgba(255, 200, 0, 0); }
+}

@@ -1,0 +1,17 @@
+<%# 新規に解放されたリワードのトースト。3秒で自動消去。JSイベントでアイコンにクラス付与。 %>
+<% labels = rewards.map { |rw|
+  (rw.kind == 'medal' ? 'メダル' : 'トロフィー') +
+  '（' + { 'bronze'=>'銅','silver'=>'銀','gold'=>'金' }[rw.tier] + '）'
+} %>
+
+<div class="toast reward-toast" data-timeout="3000">
+  <%= image_tag rewards.last.icon_path, alt: "", width: 28, height: 28, style: "flex:none" %>
+  <div><strong>ごほうび解放！</strong> <%= labels.join('・') %></div>
+</div>
+
+<script>
+  // ダッシュボードのアイコンにアニメ用クラスを付ける
+  document.dispatchEvent(new CustomEvent("reward:unlocked", {
+    detail: { ids: <%= raw rewards.map(&:id).to_json %> }
+  }));
+</script>
