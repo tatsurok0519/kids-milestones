@@ -9,9 +9,9 @@ import * as ActiveStorage from "@rails/activestorage"
 ActiveStorage.start()
 
 // 画像プレビュー用（あなたの既存ファイル）
-import "./photo_preview"
+import "photo_preview"
 
-import "./chat_consult"
+import "chat_consult"
 
 /* ---------------------------
    小さなユーティリティ
