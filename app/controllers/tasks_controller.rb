@@ -6,7 +6,7 @@ class TasksController < ApplicationController
 
     guest = !user_signed_in?
 
-    # milestones テーブルがあるか
+    # --- まずは「テーブルがあるか」チェック（DB未接続でも落ちない） ---
     has_ms_table =
       begin
         ActiveRecord::Base.connection.data_source_exists?("milestones")
@@ -15,13 +15,23 @@ class TasksController < ApplicationController
         false
       end
 
-    # ★ ゲスト体験：テーブルが無い「または0件」なら YAML フォールバック
-    if guest && (!has_ms_table || (has_ms_table && Milestone.unscoped.count.zero?))
-      Rails.logger.warn("[tasks#index] demo fallback: has_table=#{has_ms_table}, count=#{has_ms_table ? Milestone.unscoped.count : 'n/a'}")
+    # --- ゲスト体験：テーブル無い/件数不明/0件 なら YAML に確実にフォールバック ---
+    db_count = nil
+    if has_ms_table
+      begin
+        db_count = Milestone.unscoped.count
+      rescue => e
+        Rails.logger.error("[tasks#index] Milestone.count failed: #{e.class}: #{e.message}")
+        db_count = nil
+      end
+    end
+
+    if guest && (!has_ms_table || db_count.nil? || db_count.zero?)
+      Rails.logger.warn("[tasks#index] demo fallback: has_table=#{has_ms_table}, count=#{db_count.inspect}")
       return render_demo_from_yaml
     end
 
-    # === ここから通常処理（DBあり・件数あり） ===
+    # === ここから通常処理（DBあり・1件以上） ===
     band_param = params[:age_band].presence
     if band_param == "all"
       @age_band_label = "全年齢"
@@ -55,18 +65,27 @@ class TasksController < ApplicationController
 
     @parent_tip = ParentTip.for(child: (user_signed_in? ? current_child : nil), date: Date.current)
   rescue => e
-    Rails.logger.error("[tasks#index] #{e.class}: #{e.message}\n" + e.backtrace.take(10).join("\n"))
+    Rails.logger.error("[tasks#index] #{e.class}: #{e.message}\n" + e.backtrace.take(12).join("\n"))
     raise
   end
 
   private
 
-  # ★ YAML デモ描画（ゲスト・DB未準備/空のときに使用）
+  # --- ゲスト用：YAMLから100件デモを描画（DBゼロ/未準備でも必ず動く） ---
   def render_demo_from_yaml
     @age_band_label = "全年齢"
 
     yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
-    data = File.exist?(yaml_path) ? YAML.safe_load_file(yaml_path) : []
+    unless File.exist?(yaml_path)
+      Rails.logger.error("[tasks#index] YAML not found: #{yaml_path}")
+      @milestones   = []
+      @categories   = []
+      @difficulties = [1, 2, 3]
+      @parent_tip   = ParentTip.for(child: nil, date: Date.current)
+      return render :index
+    end
+
+    data = YAML.safe_load_file(yaml_path) || []
     rows = Array(data).map do |h|
       Milestone.new(
         title:       h["title"],
@@ -79,7 +98,7 @@ class TasksController < ApplicationController
       )
     end
 
-    # --- フィルタ（年齢帯 / カテゴリ / 難易度）を Ruby で適用 ---
+    # 年齢帯フィルタ
     if (band = params[:age_band].presence) && band != "all"
       i = band.to_i.clamp(0, 5)
       band_min = i * 12
@@ -87,25 +106,17 @@ class TasksController < ApplicationController
       rows.select! do |m|
         mn = (m.min_months || 0).to_i
         mx = (m.max_months || 10_000).to_i
-        # 月齢レンジが年齢帯と重なっていれば採用
         (mn < band_max) && (mx >= band_min)
       end
       @age_band_label = "#{i}–#{i + 1}歳"
     end
 
-    if (cat = params[:category].presence)
-      rows.select! { |m| m.category == cat }
-    end
+    # カテゴリ／難易度フィルタ
+    rows.select! { |m| m.category == params[:category] } if params[:category].present?
+    rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i } if params[:difficulty].present?
 
-    if (dif = params[:difficulty].presence)
-      d = dif.to_i
-      rows.select! { |m| m.difficulty.to_i == d }
-    end
-
-    # 表示並び＝難易度→擬似ID
     rows.sort_by! { |m| [m.difficulty.to_i, m.object_id] }
 
-    # --- ページング（Kaminari 有無で分岐） ---
     if defined?(Kaminari)
       @milestones = Kaminari.paginate_array(rows).page(params[:page]).per(20)
     else

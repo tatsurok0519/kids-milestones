@@ -100,20 +100,26 @@
 
   <!-- 一覧 -->
   <div class="card">
+    <%# ページング可否＆件数を安全に計算 %>
+    <% has_pager    = defined?(Kaminari) && @milestones.respond_to?(:current_page) %>
+    <% total_count  = @milestones.respond_to?(:total_count) ? @milestones.total_count : @milestones.size %>
+    <% total_pages  = has_pager ? @milestones.total_pages : 1 %>
+    <% current_page = has_pager ? @milestones.current_page : 1 %>
+
     <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;">
       <div class="h2" style="font-size:1.1rem;margin:0;">
-        できるかな（<%= @age_band_label %>）
+        できるかな（<%= @age_band_label.presence || "全年齢" %>）
       </div>
       <div class="text-muted" style="font-size:.9rem;">
-        該当 <%= @milestones.total_count %> 件
-        （<%= @milestones.current_page %>/<%= @milestones.total_pages %>ページ）
+        該当 <%= total_count %> 件
+        <% if has_pager %>（<%= current_page %>/<%= total_pages %>ページ）<% end %>
       </div>
     </div>
 
     <hr class="divider">
 
-    <% if @milestones.any? %>
-      <% if @milestones.total_pages > 1 %>
+    <% if total_count.positive? %>
+      <% if has_pager && total_pages > 1 %>
         <div style="margin:.25rem 0 .75rem;">
           <%= paginate @milestones, params: request.query_parameters %>
         </div>
@@ -166,7 +172,7 @@
         <% end %>
       </div>
 
-      <% if @milestones.total_pages > 1 %>
+      <% if has_pager && total_pages > 1 %>
         <div style="margin:.75rem 0 0;">
           <%= paginate @milestones, params: request.query_parameters %>
         </div>
