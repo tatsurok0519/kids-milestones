@@ -4,7 +4,9 @@ class TasksController < ApplicationController
   def index
     Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
 
-    # 1) milestonesテーブル存在チェック（本番初回対策）
+    guest = !user_signed_in?
+
+    # milestones テーブルがあるか
     has_ms_table =
       begin
         ActiveRecord::Base.connection.data_source_exists?("milestones")
@@ -13,12 +15,13 @@ class TasksController < ApplicationController
         false
       end
 
-    unless has_ms_table
-      Rails.logger.warn("[tasks#index] milestones table missing -> YAML fallback")
+    # ★ ゲスト体験：テーブルが無い「または0件」なら YAML フォールバック
+    if guest && (!has_ms_table || (has_ms_table && Milestone.unscoped.count.zero?))
+      Rails.logger.warn("[tasks#index] demo fallback: has_table=#{has_ms_table}, count=#{has_ms_table ? Milestone.unscoped.count : 'n/a'}")
       return render_demo_from_yaml
     end
 
-    # === ここから通常処理（あなたの既存ロジック） ===
+    # === ここから通常処理（DBあり・件数あり） ===
     band_param = params[:age_band].presence
     if band_param == "all"
       @age_band_label = "全年齢"
@@ -40,8 +43,7 @@ class TasksController < ApplicationController
     @difficulties    = [1, 2, 3]
     @only_unachieved = params[:only_unachieved] == "1"
 
-    scope = scope.by_category(params[:category])
-                 .by_difficulty(params[:difficulty])
+    scope = scope.by_category(params[:category]).by_difficulty(params[:difficulty])
     scope = scope.unachieved_for(current_child) if user_signed_in? && current_child && @only_unachieved
 
     @milestones = scope.order(:difficulty, :id).page(params[:page]).per(20)
@@ -53,16 +55,16 @@ class TasksController < ApplicationController
 
     @parent_tip = ParentTip.for(child: (user_signed_in? ? current_child : nil), date: Date.current)
   rescue => e
-    # 予期せぬ例外があればログに先頭10行
-    Rails.logger.error("[tasks#index] #{e.class}: #{e.message}\n" +
-                       e.backtrace.take(10).join("\n"))
+    Rails.logger.error("[tasks#index] #{e.class}: #{e.message}\n" + e.backtrace.take(10).join("\n"))
     raise
   end
 
   private
 
+  # ★ YAML デモ描画（ゲスト・DB未準備/空のときに使用）
   def render_demo_from_yaml
     @age_band_label = "全年齢"
+
     yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
     data = File.exist?(yaml_path) ? YAML.safe_load_file(yaml_path) : []
     rows = Array(data).map do |h|
@@ -77,12 +79,36 @@ class TasksController < ApplicationController
       )
     end
 
-    # 並び＋ページング（Kaminariが本番で読めていない場合は全件表示にフォールバック）
+    # --- フィルタ（年齢帯 / カテゴリ / 難易度）を Ruby で適用 ---
+    if (band = params[:age_band].presence) && band != "all"
+      i = band.to_i.clamp(0, 5)
+      band_min = i * 12
+      band_max = (i + 1) * 12
+      rows.select! do |m|
+        mn = (m.min_months || 0).to_i
+        mx = (m.max_months || 10_000).to_i
+        # 月齢レンジが年齢帯と重なっていれば採用
+        (mn < band_max) && (mx >= band_min)
+      end
+      @age_band_label = "#{i}–#{i + 1}歳"
+    end
+
+    if (cat = params[:category].presence)
+      rows.select! { |m| m.category == cat }
+    end
+
+    if (dif = params[:difficulty].presence)
+      d = dif.to_i
+      rows.select! { |m| m.difficulty.to_i == d }
+    end
+
+    # 表示並び＝難易度→擬似ID
     rows.sort_by! { |m| [m.difficulty.to_i, m.object_id] }
+
+    # --- ページング（Kaminari 有無で分岐） ---
     if defined?(Kaminari)
       @milestones = Kaminari.paginate_array(rows).page(params[:page]).per(20)
     else
-      Rails.logger.warn("[tasks#index] Kaminari not loaded in production; rendering all demo rows")
       @milestones = rows
     end
 
