@@ -1,21 +1,19 @@
 class TasksController < ApplicationController
   before_action :set_breadcrumbs, only: :index
 
-  # ===== ゲスト/デモ用の軽量モデル（ActiveRecordを使わない）=====
+  # --- ゲスト/デモ用 軽量モデル ---
   DemoMilestone = Struct.new(:id, :title, :category, :difficulty, :min_months, :max_months, :description, :hint_text) do
     def difficulty_stars
       d = difficulty.to_i.clamp(0, 3)
       "★" * d + "☆" * (3 - d)
     end
-
-    # Milestone#age_band_labels 互換の簡易表示
     def age_band_labels
       mn = (min_months || 0).to_i
-      mx = (max_months || 71).to_i # 71=5歳11か月相当
+      mx = (max_months || 71).to_i
       bands = []
-      start_i = (mn / 12).clamp(0, 5)
-      end_i   = (([mx - 1, mn].max) / 12).clamp(0, 5)
-      (start_i..end_i).each { |i| bands << "#{i}–#{i + 1}歳" }
+      s = (mn / 12).clamp(0, 5)
+      e = (([mx - 1, mn].max) / 12).clamp(0, 5)
+      (s..e).each { |i| bands << "#{i}–#{i + 1}歳" }
       bands.uniq.join(" ")
     end
   end
@@ -23,36 +21,21 @@ class TasksController < ApplicationController
 
   def index
     Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
-    try_backfill_hints_from_yaml! 
 
-    # --- DBにmilestonesテーブルがあるか（落ちないチェック） ---
-    has_ms_table =
-      begin
-        ActiveRecord::Base.connection.data_source_exists?("milestones")
-      rescue => e
-        Rails.logger.error("[tasks#index] data_source_exists? error: #{e.class}: #{e.message}")
-        false
-      end
+    # 1) DB/テーブル存在を安全に確認
+    has_ms_table = data_source_exists_safely?("milestones")
+    db_count     = has_ms_table ? safe { Milestone.unscoped.count } : nil
 
-    # --- テーブル有無と件数（落ちても握りつぶす） ---
-    db_count = nil
-    if has_ms_table
-      begin
-        db_count = Milestone.unscoped.count
-      rescue => e
-        Rails.logger.error("[tasks#index] Milestone.count failed: #{e.class}: #{e.message}")
-        db_count = nil
-      end
-    end
-
-    # ★ DBが未準備/空なら、ログイン有無に関係なくデモ表示（保存UIはビューで @demo_mode を見て抑止）
-    if (!has_ms_table || db_count.nil? || db_count.zero?)
-      Rails.logger.warn("[tasks#index] DEMO FALLBACK (everyone): has_table=#{has_ms_table}, count=#{db_count.inspect}")
+    # 2) DB 未準備 or 0件 → だれであってもデモ表示
+    if !has_ms_table || db_count.nil? || db_count.zero?
+      Rails.logger.warn("[tasks#index] DEMO FALLBACK: has_table=#{has_ms_table}, count=#{db_count.inspect}")
       @demo_mode = true
       return render_demo_from_yaml
     end
 
-    # === ここから通常処理（DBあり・1件以上） ===
+    # 3) ここから通常処理（DBあり・1件以上）
+    try_backfill_hints_from_yaml! # ※DBが生きていることが確認できた後で呼ぶ
+
     band_param = params[:age_band].presence
     if band_param == "all"
       @age_band_label = "全年齢"
@@ -84,45 +67,64 @@ class TasksController < ApplicationController
       @ach_by_ms = achs.index_by(&:milestone_id)
     end
 
-    @parent_tip = ParentTip.for(child: (user_signed_in? ? current_child : nil), date: Date.current)
+    @parent_tip = safe_parent_tip(user_signed_in? ? current_child : nil)
+
   rescue => e
-    Rails.logger.error("[tasks#index] #{e.class}: #{e.message}\n" + e.backtrace.take(12).join("\n"))
-    raise
+    # どこかで例外 → 500にせずデモで表示
+    Rails.logger.error("[tasks#index] rescue #{e.class}: #{e.message}\n" + e.backtrace.take(12).join("\n"))
+    @demo_mode = true
+    render_demo_from_yaml
   end
 
   private
 
+  # ==== 強耐性ユーティリティ ====
+  def safe
+    yield
+  rescue => e
+    Rails.logger.warn("[tasks#index] safe block skipped: #{e.class}: #{e.message}")
+    nil
+  end
+
+  def data_source_exists_safely?(name)
+    ActiveRecord::Base.connection_pool.with_connection { |c| c.data_source_exists?(name) }
+  rescue => e
+    Rails.logger.warn("[tasks#index] data_source_exists?(#{name}) failed: #{e.class}: #{e.message}")
+    false
+  end
+
+  def safe_parent_tip(child)
+    ParentTip.for(child: child, date: Date.current)
+  rescue => e
+    Rails.logger.warn("[tasks#index] ParentTip fallback: #{e.class}: #{e.message}")
+    "あせらず、できることからやってみましょう。"
+  end
+
+  # ==== ヒントのバックフィル（DBが生きていて1件以上ある時だけ）====
   def try_backfill_hints_from_yaml!
-    return unless defined?(Milestone)
-    return unless Milestone.table_exists?
     return unless Rails.env.production?
-    return unless Milestone.where(hint_text: [nil, ""]).exists?
+
+    need = safe { Milestone.unscoped.where(hint_text: [nil, ""]).limit(1).exists? }
+    return unless need
 
     yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
     return unless File.exist?(yaml_path)
 
-    begin
-      data = YAML.safe_load(File.read(yaml_path), permitted_classes: [Date, Time, Symbol], aliases: true) || []
-      index = data.index_by { |h| h["title"] }
-      updated = 0
-
-      Milestone.where(hint_text: [nil, ""]).find_each do |m|
-        src = index[m.title]
-        next unless src
-        text = src["hint_text"].presence || src["hint"].presence
-        next unless text
-        # バリデーションを避けて安全にカラムだけ更新
-        m.update_columns(hint_text: text)
-        updated += 1
-      end
-
-      Rails.logger.warn("[tasks#index] backfilled hint_text for #{updated} milestones from YAML")
-    rescue => e
-      Rails.logger.error("[tasks#index] backfill failed: #{e.class}: #{e.message}")
+    data  = YAML.safe_load(File.read(yaml_path), permitted_classes: [Date, Time, Symbol], aliases: true) || []
+    index = data.index_by { |h| h["title"] }
+    updated = 0
+    Milestone.unscoped.where(hint_text: [nil, ""]).find_each do |m|
+      src  = index[m.title] or next
+      text = src["hint_text"].presence || src["hint"].presence or next
+      m.update_columns(hint_text: text) # バリデーションを回避して静かに更新
+      updated += 1
     end
+    Rails.logger.warn("[tasks#index] backfilled hint_text for #{updated} milestones from YAML")
+  rescue => e
+    Rails.logger.warn("[tasks#index] backfill skipped: #{e.class}: #{e.message}")
   end
 
-  # --- YAMLから100件デモを描画（DBゼロ/未準備でも必ず動く） ---
+  # ==== デモ描画（DBに触らない）====
   def render_demo_from_yaml
     @demo_mode ||= true
     @age_band_label = "全年齢"
@@ -146,17 +148,12 @@ class TasksController < ApplicationController
     Array(data).each_with_index do |h, idx|
       rows << DemoMilestone.new(
         idx + 1,
-        h["title"],
-        h["category"],
-        h["difficulty"],
-        h["min_months"],
-        h["max_months"],
-        h["description"],
+        h["title"], h["category"], h["difficulty"],
+        h["min_months"], h["max_months"], h["description"],
         (h["hint_text"] || h["hint"] || "")
       )
     end
 
-    # 年齢帯 / カテゴリ / 難易度 フィルタ
     if (band = params[:age_band].presence) && band != "all"
       i = band.to_i.clamp(0, 5)
       band_min = i * 12
@@ -170,7 +167,6 @@ class TasksController < ApplicationController
     end
     rows.select! { |m| m.category == params[:category] }               if params[:category].present?
     rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i } if params[:difficulty].present?
-
     rows.sort_by! { |m| [m.difficulty.to_i, m.id] }
 
     if defined?(Kaminari)
@@ -181,14 +177,13 @@ class TasksController < ApplicationController
 
     @categories   = rows.map(&:category).compact.uniq.sort
     @difficulties = [1, 2, 3]
-    @parent_tip   = ParentTip.for(child: nil, date: Date.current)
+    @parent_tip   = safe_parent_tip(nil) # DBに触らない文言フォールバック
 
     render :index
   end
 
   def set_breadcrumbs
     return unless respond_to?(:add_crumb)
-
     add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
     desired_band = params[:age_band].presence || "all"
     add_crumb("できるかな", tasks_path(age_band: desired_band))
