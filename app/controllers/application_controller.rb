@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :basic_auth, if: :basic_auth_applicable?
   before_action :set_current_child
+  before_action :pull_reward_boot_ids
 
   helper_method :current_child
 
@@ -36,6 +37,11 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def pull_reward_boot_ids
+    # 次ページで一度だけ使って消す
+    @reward_boot_ids = session.delete(:reward_boot_ids)
+  end
+  
   # 現在選択中の子（nil 可）
   def current_child
     @current_child

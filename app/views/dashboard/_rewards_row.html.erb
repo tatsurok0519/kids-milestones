@@ -2,8 +2,10 @@
 <% unlocked_ids = @reward_unlock_ids || [] %>
 <% items        = ordered.select { |rw| unlocked_ids.include?(rw.id) } %>
 
+<%# 仕様：未解放は非表示／左寄せ／折返しなし（アニメの光が切れないよう overflow:visible） %>
 <% if items.any? %>
-  <div class="rewards-row" style="display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;">
+  <div class="rewards-row"
+       style="display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap; white-space:nowrap; overflow:visible;">
     <% items.each do |rw| %>
       <% size =
         if rw.kind == 'medal'

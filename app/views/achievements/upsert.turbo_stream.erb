@@ -1,0 +1,14 @@
+<%= turbo_stream.replace dom_id(@milestone, :controls) do %>
+  <%= render "tasks/controls", milestone: @milestone, achievement: @achievement %>
+<% end %>
+
+<%# 右上トーストを追加（既存の実装そのまま） %>
+<%= turbo_stream.append "toasts" do %>
+  <%= render "shared/reward_toast", rewards: @new_rewards %>
+<% end %>
+
+<%# ★ 解放IDを reward_animator に流し、クライアントでイベント化する %>
+<% ids = Array(@new_rewards).map(&:id) %>
+<%= turbo_stream.update "reward_animator" do %>
+  <div data-reward-unlocked="<%= ids.join(',') %>"></div>
+<% end %>

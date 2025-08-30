@@ -11,6 +11,7 @@ ActiveStorage.start()
 // 画像プレビュー用（あなたの既存ファイル）
 import "photo_preview"
 
+// 相談SSEクライアント（あなたの既存ファイル）
 import "chat_consult"
 
 /* ---------------------------
@@ -174,16 +175,63 @@ document.addEventListener("click", (e) => {
 })
 
 /* ---------------------------
+   ごほうび：Turbo Stream → カスタムイベント化
+   - reward_animator ターゲットの update/append/replace を捕捉
+   - data-reward-unlocked="1,2,3" を読み、reward:unlocked を発火
+--------------------------- */
+document.addEventListener("turbo:before-stream-render", (ev) => {
+  const ts = ev.target
+  if (!(ts instanceof Element)) return
+
+  const action = ts.getAttribute("action")
+  const target = ts.getAttribute("target")
+  if (!target || target !== "reward_animator") return
+  if (!["update","append","replace"].includes(action)) return
+
+  const tpl = ts.querySelector("template")
+  if (!tpl) return
+
+  const div = document.createElement("div")
+  div.innerHTML = tpl.innerHTML
+  const payload = div.firstElementChild?.getAttribute("data-reward-unlocked") || ""
+  const ids = payload.split(",").map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+
+  if (ids.length) {
+    document.dispatchEvent(new CustomEvent("reward:unlocked", { detail: { ids } }))
+  }
+})
+
+/* ---------------------------
    ごほうび：新規解放イベントでアイコンにアニメ用クラスを付与
 --------------------------- */
 document.addEventListener("reward:unlocked", (e) => {
   const ids = e.detail?.ids || [];
   ids.forEach((id) => {
-    const el = document.getElementById(`reward_icon_${id}`);
-    if (!el) return;
-    el.classList.remove("anim-unlock"); // リスタート用
-    void el.offsetWidth;                 // reflow
+    const el  = document.getElementById(`reward_icon_${id}`);
+    const img = el?.querySelector("img");
+    if (!el || !img) return;
+
+    // リスタート用リセット
+    el.classList.remove("anim-unlock");
+    void el.offsetWidth;
+
     el.classList.add("anim-unlock");
+
+    // 両方（wrapper と img）の animationend を待ってから片付け
+    let pending = 2;
+    const onEnd = () => {
+      pending -= 1;
+      if (pending <= 0) {
+        el.classList.remove("anim-unlock");   // ← 光りっぱなし防止
+        el.removeEventListener("animationend", onEnd, true);
+        img.removeEventListener("animationend", onEnd, true);
+      }
+    };
+    el.addEventListener("animationend",  onEnd, true);
+    img.addEventListener("animationend", onEnd, true);
+
+    // 念のための安全弁（1.8s 後に必ず消す）
+    setTimeout(() => el.classList.remove("anim-unlock"), 1800);
   });
 });
 
@@ -193,12 +241,12 @@ document.addEventListener("reward:unlocked", (e) => {
 function setupToasts() {
   document.querySelectorAll(".toast[data-timeout]").forEach((el) => {
     if (el.__armed) return; el.__armed = true;
-    const ms = parseInt(el.getAttribute("data-timeout")) || 3000;
-    setTimeout(() => el.remove(), ms);
-  });
+    const ms = parseInt(el.getAttribute("data-timeout")) || 3000
+    setTimeout(() => el.remove(), ms)
+  })
 }
-document.addEventListener("turbo:load",   setupToasts);
-document.addEventListener("turbo:render", setupToasts);
+document.addEventListener("turbo:load",   setupToasts)
+document.addEventListener("turbo:render", setupToasts)
 
 /* ---------------------------
    未ログイン時の初期クリーニング

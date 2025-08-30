@@ -226,3 +226,95 @@ img { max-width: 100%; height: auto; }
 /* 画面幅で出し分け（PCは横スクロール、スマホはドロップダウン） */
 @media (min-width: 641px) { .child-switcher .dropdown-sm { display: none; } }
 @media (max-width: 640px) { .child-switcher .row { display: none; } }
+
+/* ---- rewards (控えめ演出) ---- */
+@layer components {
+  /* 解放前後でのなめらかさ */
+  .reward-icon,
+  .reward-icon img {
+    transition: transform .35s ease, filter .35s ease, opacity .35s ease;
+    will-change: transform, filter, opacity;
+  }
+
+  /* キーフレーム（img直付け・ラッパ両対応） */
+  .reward-icon.anim-unlock,
+  .reward-icon.anim-unlock img {
+    animation: rw-pop .45s cubic-bezier(.2,.8,.2,1),
+               rw-glow 1.4s ease-out .15s both;
+    will-change: transform, filter, opacity;
+  }
+}
+
+/* ポップ：ふわっと拡大→収束（控えめ） */
+@keyframes rw-pop {
+  0%   { transform: scale(.6) rotate(-4deg); opacity: 0; }
+  60%  { transform: scale(1.10) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* 発光：やさしいドロップシャドウ */
+@keyframes rw-glow {
+  0%   { filter: drop-shadow(0 0 0 rgba(255,200,0,0)); }
+  100% { filter: drop-shadow(0 0 12px rgba(255,200,0,.45)); }
+}
+
+/* ユーザーが簡易表示を希望する環境ではアニメを無効化 */
+@media (prefers-reduced-motion: reduce) {
+  .reward-icon, .reward-icon img { transition: none !important; }
+  .reward-icon.anim-unlock,
+  .reward-icon.anim-unlock img { animation: none !important; }
+}
+
+/* ---- toast ---- */
+@layer components {
+  .toast-layer {
+    position: fixed; top: 12px; right: 12px; z-index: 1000;
+    display: flex; flex-direction: column; gap: .5rem; pointer-events: none;
+  }
+  .toast {
+    display:flex; gap:.5rem; align-items:center; pointer-events:auto;
+    background:#fff; border:1px solid #e5e7eb; border-radius:.6rem;
+    padding:.5rem .7rem; box-shadow: 0 6px 20px rgba(0,0,0,.06);
+    animation: toast-in .25s ease-out;
+  }
+}
+@keyframes toast-in { from { transform: translateY(-6px); opacity:0; } to { opacity:1; } }
+
+/* === Rewards animation (pop + glow then fade) === */
+.reward-icon{
+  position: relative;
+  display: inline-flex;
+  transform-origin: center;
+}
+.reward-icon img{ display:block; max-width:100%; height:auto; }
+
+/* ラッパー：ふわっと拡大→収束（見えやすく0.55s） */
+.reward-icon.anim-unlock{
+  animation: rw-pop .55s cubic-bezier(.2,.8,.2,1) both;
+  will-change: transform, opacity;
+}
+
+/* 画像：淡く発光→必ず消える */
+.reward-icon.anim-unlock img{
+  animation: rw-glow 1.2s ease-out .1s forwards;
+  will-change: filter, opacity;
+}
+
+/* 拡大→収束 */
+@keyframes rw-pop{
+  0%   { transform: scale(.55) rotate(-4deg); opacity:.2; }
+  60%  { transform: scale(1.12) rotate(0deg); opacity:1; }
+  100% { transform: scale(1); }
+}
+
+/* 発光（はっきり → 0 に戻す） */
+@keyframes rw-glow{
+  0%   { filter:none; }
+  45%  { filter: drop-shadow(0 0 16px rgba(255,200,0,.65)); }
+  100% { filter:none; } /* ← 消灯 */
+}
+
+@media (prefers-reduced-motion: reduce){
+  .reward-icon.anim-unlock,
+  .reward-icon.anim-unlock img{ animation: none !important; }
+}

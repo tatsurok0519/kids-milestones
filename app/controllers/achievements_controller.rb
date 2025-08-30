@@ -32,6 +32,8 @@ class AchievementsController < ApplicationController
 
     # ← 追加：今回新たに解放されたごほうび（演出用）
     @new_rewards = RewardUnlocker.call(@child)
+    ids = Array(@new_rewards).map(&:id)
+    session[:reward_boot_ids] = ids if ids.any?
 
     respond_ok
   rescue ActiveRecord::RecordInvalid
