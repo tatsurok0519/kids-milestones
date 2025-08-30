@@ -23,6 +23,7 @@ class TasksController < ApplicationController
 
   def index
     Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
+    try_backfill_hints_from_yaml! 
 
     # --- DBにmilestonesテーブルがあるか（落ちないチェック） ---
     has_ms_table =
@@ -90,6 +91,36 @@ class TasksController < ApplicationController
   end
 
   private
+
+  def try_backfill_hints_from_yaml!
+    return unless defined?(Milestone)
+    return unless Milestone.table_exists?
+    return unless Rails.env.production?
+    return unless Milestone.where(hint_text: [nil, ""]).exists?
+
+    yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
+    return unless File.exist?(yaml_path)
+
+    begin
+      data = YAML.safe_load(File.read(yaml_path), permitted_classes: [Date, Time, Symbol], aliases: true) || []
+      index = data.index_by { |h| h["title"] }
+      updated = 0
+
+      Milestone.where(hint_text: [nil, ""]).find_each do |m|
+        src = index[m.title]
+        next unless src
+        text = src["hint_text"].presence || src["hint"].presence
+        next unless text
+        # バリデーションを避けて安全にカラムだけ更新
+        m.update_columns(hint_text: text)
+        updated += 1
+      end
+
+      Rails.logger.warn("[tasks#index] backfilled hint_text for #{updated} milestones from YAML")
+    rescue => e
+      Rails.logger.error("[tasks#index] backfill failed: #{e.class}: #{e.message}")
+    end
+  end
 
   # --- YAMLから100件デモを描画（DBゼロ/未準備でも必ず動く） ---
   def render_demo_from_yaml
