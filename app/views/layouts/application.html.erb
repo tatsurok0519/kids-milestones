@@ -11,7 +11,7 @@
     <script>window.__SIGNED_IN__ = <%= user_signed_in? ? 'true' : 'false' %>;</script>
   </head>
   <body>
-    <!-- 共有ヘッダー（これだけ表示。直書きヘッダーは削除） -->
+    <!-- 共通ヘッダー -->
     <%= render "shared/header" %>
 
     <!-- パンくず（設定があるときだけ） -->
@@ -29,19 +29,10 @@
       <%= yield %>
     </main>
 
-    <!-- フッター：導線を「できるかな／そうだん」に統一 -->
-    <footer class="container footer" style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
-      <div>© <%= Time.current.year %> こどもすくすくカード</div>
-      <nav>
-        <%= link_to "できるかな", tasks_path, class: "btn" %>
-        <%= link_to "そうだん",   consult_path, class: "btn" %>
-        <% if user_signed_in? %>
-          <%= link_to "マイページ", account_path, class: "btn" %>
-        <% else %>
-          <%= link_to "ログイン", new_user_session_path, class: "btn" %>
-        <% end %>
-      </nav>
-    </footer>
+    <!-- フッター（パーシャル） -->
+    <%= render "shared/footer" %>
+
+    <!-- トーストレイヤ -->
     <div id="toasts" class="toast-layer" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>

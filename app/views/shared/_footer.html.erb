@@ -1,14 +1,5 @@
-<footer style="margin-top:2rem;border-top:1px solid var(--border);background:#fafafa;">
-  <div class="container" style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;padding:.8rem 0;">
-    <div class="text-muted" style="font-size:.9rem;">© <%= Time.current.year %> こどもすくすくカード</div>
-    <nav style="display:flex;gap:.5rem;flex-wrap:wrap;">
-      <%= link_to "タスク", tasks_path(age_band: "all"), class: "btn" %>
-      <% if user_signed_in? %>
-        <%= link_to "マイページ", account_path, class: "btn" %>
-      <% else %>
-        <%= link_to "ログイン", new_user_session_path, class: "btn" %>
-      <% end %>
-      <!-- 将来: 利用案内 / お問い合わせへのリンクをここに -->
-    </nav>
-  </div>
+<footer style="margin-top:2rem; padding:.8rem 0; text-align:center;">
+  <span style="font-size:.9rem; color:#6b7280;">
+    &copy; <%= Time.current.year %> Kids Milestones
+  </span>
 </footer>

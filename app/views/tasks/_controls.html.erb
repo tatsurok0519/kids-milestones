@@ -1,6 +1,6 @@
 <%# Turbo対応：「がんばり中 / できた！ / 未着手に戻す」 %>
 <div>
-  <%# 右上バッジ（状態に応じて1つだけ表示） %>
+  <%# 右上バッジ（状態に応じて1つだけ表示）。ゲストは achievement が無いので表示されません。 %>
   <% if achievement&.working %>
     <%= image_tag "icons/try.png", alt: "", width: 48, height: 48,
           style: "position:absolute; top:8px; right:8px; pointer-events:none;" %>
@@ -61,16 +61,29 @@
       <% end %>
     <% end %>
 
-    <%# ヒント %>
-    <button type="button" class="btn" style="border:1px dashed var(--border);" data-hint-toggle aria-expanded="false">
-      ヒント
-    </button>
+    <%# ヒント（未ログインでも表示）。hint_text が無い場合は出さない。 %>
+    <% show_hint = milestone.respond_to?(:hint_text) && milestone.hint_text.present? %>
+    <% if show_hint %>
+      <%# YAMLフォールバックで id が無い場合も衝突しないように固有IDを作る %>
+      <% hint_box_id = "hint_box_#{milestone.id || "demo_#{milestone.title.to_s.parameterize}_#{milestone.object_id}"}" %>
+
+      <button type="button"
+              class="btn"
+              style="border:1px dashed var(--border);"
+              data-hint-toggle
+              aria-expanded="false"
+              aria-controls="<%= hint_box_id %>">
+        ヒント
+      </button>
+    <% end %>
   </div>
 
-  <%# ヒントパネル %>
-  <div data-hint-box hidden
-       style="margin-top:.5rem; padding:.6rem; border:1px dashed var(--border);
-              border-radius:.6rem; background:#fffaf5; color:#7a4a00; font-size:.9rem;">
-    <%= milestone.hint_text %>
-  </div>
+  <%# ヒントパネル（未ログインでも表示） %>
+  <% if show_hint %>
+    <div id="<%= hint_box_id %>" data-hint-box hidden
+         style="margin-top:.5rem; padding:.6rem; border:1px dashed var(--border);
+                border-radius:.6rem; background:#fffaf5; color:#7a4a00; font-size:.9rem;">
+      <%= simple_format(h(milestone.hint_text)) %>
+    </div>
+  <% end %>
 </div>

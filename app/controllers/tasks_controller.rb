@@ -56,7 +56,8 @@ class TasksController < ApplicationController
             difficulty:  h["difficulty"],
             min_months:  h["min_months"],
             max_months:  h["max_months"],
-            description: h["description"]
+            description: h["description"],
+            hint_text:   h["hint_text"] || h["hint"] || ""   # ★ ここを追加
           )
         end
         # 画面フィルタが指定されていればYAMLにも適用（age_band=all 前提）
