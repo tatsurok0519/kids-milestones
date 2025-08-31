@@ -1,3 +1,8 @@
+<%# === ここから3行を partial 先頭に追記 ======================= %>
+<%# ヒント領域のID: 引数 hint_id が来なければ milestone から決定 %>
+<% hint_id = (local_assigns[:hint_id] || dom_id(milestone, :hint)) %>
+<%# ============================================================= %>
+
 <%# Turbo対応：「がんばり中 / できた！ / 未着手に戻す」だけ。ヒントは置かない %>
 <div>
   <%# 右上バッジ（状態に応じて1つだけ表示） %>
@@ -42,6 +47,10 @@
           class:  "btn btn-primary" do %>
       できた！
     <% end %>
+
+    <div id="<%= hint_id %>" hidden>
+      <%= simple_format(milestone.description.presence || "ヒントは準備中です") %>
+    </div>
 
     <%# 未着手に戻す（状態がある時だけ表示） %>
     <% if achievement.present? %>

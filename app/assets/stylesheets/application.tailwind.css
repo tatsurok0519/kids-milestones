@@ -326,3 +326,7 @@ header.header-bar img.brand-logo{
 @media (min-width: 1024px){
   header.header-bar img.brand-logo{ width:104px !important; max-width:104px !important; }
 }
+
+/* ヒントを保険で入れるならこちら */
+details.hint { display: block; }
+details.hint > summary { cursor: pointer; }

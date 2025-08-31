@@ -1,60 +1,47 @@
 class RewardUnlocker
+  # 返り値: 今回「新たに」解放された Reward の配列（なければ []）
   def self.call(child)
     new(child).call
   end
 
   def initialize(child)
     @child = child
+    @adapter = ActiveRecord::Base.connection.adapter_name.downcase
   end
 
-  # 戻り値: 今回「新たに」解放された Reward の配列（なければ []）
   def call
     return [] unless @child
 
-    # 累計の「できた！」数（取り消しはあっても、ごほうびは累計扱い）
+    # 現在の「できた！」数（通算ではなく現在値）
     achieved_count = @child.achievements.where(achieved: true).count
 
-    # しきい値を満たしたごほうび候補（並びは閾値→ID）
-    eligible_scope = Reward.where("threshold <= ?", achieved_count).order(:threshold, :id)
-    eligible_ids    = eligible_scope.pluck(:id)
-    return [] if eligible_ids.empty?
+    # しきい値を満たした候補（メダル／トロフィー想定。別種も閾値連動なら追加可）
+    candidates = Reward
+      .where(kind: %w[medal trophy])
+      .where("threshold <= ?", achieved_count)
+      .order(:threshold, :id)
 
-    # 事前に「すでに解放済み」のIDを取っておく（今回の“新規”判定に使う）
-    before_ids = RewardUnlock.where(child_id: @child.id).pluck(:reward_id)
+    candidate_ids = candidates.pluck(:id)
+    return [] if candidate_ids.empty?
 
-    # 今回作る対象（＝候補 − 既存）
-    target_ids = eligible_ids - before_ids
+    # 既に解放済みのID
+    before_ids = RewardUnlock.where(child_id: @child.id, reward_id: candidate_ids).pluck(:reward_id)
+
+    # 今回作る対象
+    target_ids = candidate_ids - before_ids
     return [] if target_ids.empty?
 
     now = Time.current
     rows = target_ids.map do |rid|
-      # unlocked_at カラムが無い場合は migration か下行を削ってください
-      { child_id: @child.id, reward_id: rid, unlocked_at: now, created_at: now, updated_at: now }
+      h = { child_id: @child.id, reward_id: rid, created_at: now, updated_at: now }
+      h[:unlocked_at] = now if column_exists?(:reward_unlocks, :unlocked_at)
+      h
     end
 
-    # できるだけ一括で保存（DB/環境に応じて安全にフォールバック）
-    if RewardUnlock.respond_to?(:upsert_all)
-      begin
-        # PG ではユニークインデックス名を使うと堅い。SQLite 開発環境ではカラム配列でOK。
-        unique_by =
-          if ActiveRecord::Base.connection.adapter_name.downcase.include?("postgres")
-            :index_reward_unlocks_on_child_and_reward_unique # ← マイグレーションで付けた名前に合わせる
-          else
-            %i[child_id reward_id]
-          end
+    upsert_rows!(rows)
 
-        RewardUnlock.upsert_all(rows, unique_by: unique_by)
-      rescue => _
-        # upsert_all が失敗したら行ごとに安全に作成（同時実行は rescue で吸収）
-        create_one_by_one!(target_ids, now)
-      end
-    else
-      # 古いRails等：行ごと
-      create_one_by_one!(target_ids, now)
-    end
-
-    # 「今回新たに増えたもの」＝保存後の状態 − 保存前
-    after_ids = RewardUnlock.where(child_id: @child.id, reward_id: eligible_ids).pluck(:reward_id)
+    # 保存後に増えたIDを差分で取得
+    after_ids = RewardUnlock.where(child_id: @child.id, reward_id: candidate_ids).pluck(:reward_id)
     new_ids   = after_ids - before_ids
     return [] if new_ids.empty?
 
@@ -63,16 +50,40 @@ class RewardUnlocker
 
   private
 
-  def create_one_by_one!(reward_ids, timestamp)
-    reward_ids.each do |rid|
-      begin
-        RewardUnlock.find_or_create_by!(child_id: @child.id, reward_id: rid) do |unlock|
-          # unlocked_at カラムがある場合だけセット
-          unlock.unlocked_at = timestamp if unlock.respond_to?(:unlocked_at)
+  def upsert_rows!(rows)
+    if RewardUnlock.respond_to?(:upsert_all)
+      unique_by =
+        if @adapter.include?("postgres")
+          # マイグレーションで付けた一意インデックス名
+          :index_reward_unlocks_on_child_and_reward_unique
+        else
+          %i[child_id reward_id]
         end
-      rescue ActiveRecord::RecordNotUnique
-        # 競合（他リクエストがほぼ同時に作成）→ 既存を使う/スキップでOK
+      RewardUnlock.upsert_all(rows, unique_by: unique_by)
+    else
+      rows.each do |attrs|
+        begin
+          RewardUnlock.find_or_create_by!(child_id: attrs[:child_id], reward_id: attrs[:reward_id]) do |ru|
+            ru.assign_attributes(attrs.except(:child_id, :reward_id))
+          end
+        rescue ActiveRecord::RecordNotUnique
+          # 同時実行の競合は無視（既存を優先）
+        end
       end
     end
+  rescue => _
+    # upsert_all 非対応や一時的失敗時のフォールバック（1行ずつ）
+    rows.each do |attrs|
+      begin
+        RewardUnlock.find_or_create_by!(child_id: attrs[:child_id], reward_id: attrs[:reward_id]) do |ru|
+          ru.assign_attributes(attrs.except(:child_id, :reward_id))
+        end
+      rescue ActiveRecord::RecordNotUnique
+      end
+    end
+  end
+
+  def column_exists?(table, column)
+    ActiveRecord::Base.connection.column_exists?(table, column)
   end
 end
