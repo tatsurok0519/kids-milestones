@@ -1,31 +1,49 @@
-<header style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);"> 
-  <div class="container" style="display:flex;align-items:center;gap:.75rem;justify-content:space-between;padding:.6rem 0;">
-    <div style="display:flex;align-items:center;gap:.5rem;">
+<header class="header-bar">
+  <div class="container header-inner">
+    <!-- 左：ブランド -->
+    <div class="brand">
+      <%# ← ここで width を clamp で直書き（CSSが遅れても効く） %>
       <%= image_tag "illustrations/sun.png",
-            alt: "お日さま",
-            class: "sun-inline",
-            style: "flex:none" %>
-      <%= link_to "こどもすくすくカード", authenticated_root_path, class: "h2", style: "font-size:1.05rem;text-decoration:none;color:inherit;" %>
+            alt: "",
+            class: "brand-logo",
+            style: "width:clamp(56px,18vw,96px);height:auto;flex:none;" %>
+
+      <h1 class="brand-title">
+        <%= link_to "こどもすくすくカード",
+                    (respond_to?(:root_path) ? root_path : dashboard_path),
+                    style: "text-decoration:none; color:inherit;" %>
+      </h1>
     </div>
 
-    <nav style="display:flex;gap:.5rem;flex-wrap:wrap;">
+    <!-- 右：ナビ（現在地は is-active で強調） -->
+    <% current_ctrl = controller_path %>
+    <% dash_class  = "btn btn-secondary" + (current_ctrl == "dashboard" ? " is-active" : "") %>
+    <% tasks_class = "btn btn-secondary" + (current_ctrl == "tasks"     ? " is-active" : "") %>
+
+    <% mypage_url =
+         if respond_to?(:mypage_path)
+           mypage_path
+         elsif respond_to?(:edit_user_registration_path)
+           edit_user_registration_path
+         elsif respond_to?(:user_path) && defined?(current_user) && current_user
+           user_path(current_user)
+         end %>
+    <% mypg_class = "btn btn-secondary" + (mypage_url && (current_page?(mypage_url) rescue false) ? " is-active" : "") %>
+
+    <nav class="main-nav">
+      <%= link_to "ダッシュボード", dashboard_path,             class: dash_class,  "aria-current": (current_ctrl=="dashboard" ? "page" : nil) %>
+      <%= link_to "できるかな",    tasks_path(age_band: "all"), class: tasks_class, "aria-current": (current_ctrl=="tasks" ? "page" : nil) %>
+      <% if mypage_url %>
+        <%= link_to "マイページ",   mypage_url,                  class: mypg_class %>
+      <% end %>
       <% if user_signed_in? %>
-        <%= nav_link_to "ダッシュボード", dashboard_path, class: "btn" %>
-        <%= nav_link_to "できるかな", tasks_path(age_band: params[:age_band].presence || "all"), class: "btn" %>
-        <%= nav_link_to "そうだん", consult_path, class: "btn" %>  <!-- ← これ -->
-        <%= nav_link_to "マイページ", account_path, class: "btn" %>
-        <%= link_to "ログアウト", destroy_user_session_path, class: "btn btn-secondary", data: { turbo_method: :delete } %>
-      <% else %>
-        <%= nav_link_to "できるかな", tasks_path(age_band: params[:age_band].presence || "all"), class: "btn" %>
-        <%= nav_link_to "そうだん", consult_path, class: "btn" %>  <!-- ← これ -->
-        <%= nav_link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
-        <%= nav_link_to "新規登録", new_user_registration_path, class: "btn" %>
+        <%= link_to "ログアウト", destroy_user_session_path, data: { turbo_method: :delete }, class: "btn" %>
       <% end %>
     </nav>
   </div>
 </header>
 
 <style>
-/* ナビの「今いる場所」強調 */
+/* 現在地ハイライト */
 .btn.is-active { border-color:#60a5fa; background:#eff6ff; }
 </style>

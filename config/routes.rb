@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   get "/chat",   to: "pages#chat"
   get "/report", to: "pages#report"
   get "/home",   to: "home#index", as: :home
+  get "/growth_policy", to: "pages#growth_policy", as: :growth_policy
 
   get "up" => "rails/health#show", as: :rails_health_check
   # ★ 子ども管理（ログイン必須）

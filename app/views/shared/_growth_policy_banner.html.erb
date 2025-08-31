@@ -1,0 +1,22 @@
+<div id="growth-policy-banner" role="region" aria-label="比べない育ちのご案内"
+     style="position:relative;margin:0 0 .75rem 0;">
+  <div class="container">
+    <div class="card" style="padding:.75rem 1rem; border:1px solid #e8d9b3; background:#fff9e8;">
+      <div style="display:flex; gap:.75rem; align-items:flex-start;">
+        <%= image_tag "illustrations/sun.png", alt: "", width: 24, height: 24,
+              style: "flex:none; margin-top:.15rem;" %>
+        <div style="line-height:1.6;">
+          <strong>比べない育ち</strong>：発達は人それぞれ。できた／できないで評価せず、ゆっくりでも大丈夫。
+          医療的な不安はかかりつけへ。<%= link_to "くわしく", growth_policy_path, class: "link" %>
+        </div>
+
+        <button type="button" data-close-growth-policy
+                aria-label="このお知らせを閉じる"
+                class="btn"
+                style="margin-left:auto; padding:.25rem .5rem; border:1px solid var(--border);">
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

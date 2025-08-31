@@ -318,3 +318,42 @@ img { max-width: 100%; height: auto; }
   .reward-icon.anim-unlock,
   .reward-icon.anim-unlock img{ animation: none !important; }
 }
+
+/* どのテーマでもリンクが見やすいように */
+.link { color:#c17400; text-underline-offset:2px; }
+.link:hover { color:#9f5f00; text-decoration: underline; }
+
+/* ==== Header brand logo (sun) ==== */
+/* デフォ：モバイルでも最大 96px。画面幅に応じて 56〜96px で可変 */
+.brand-logo{
+  width: clamp(56px, 18vw, 96px);
+  height: auto;
+  flex: none;
+}
+
+/* タブレットで少しだけ拡大 */
+@media (min-width: 640px){
+  .brand-logo{ width: 96px; }
+}
+
+/* デスクトップでは最大 120px まで */
+@media (min-width: 1024px){
+  .brand-logo{ width: 120px; }
+}
+
+/* ヘッダーはモバイルで2段に落とす */
+.header-inner{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:.85rem 0; }
+.brand{ display:flex; align-items:center; gap:.6rem; min-width:0; }
+.brand-title{ font-size:1.6rem; line-height:1.15; margin:0; }
+@media (max-width:640px){ .brand-title{ font-size:1.35rem; } }
+
+/* ナビはモバイルで下段・全幅 */
+.main-nav{ display:flex; gap:.5rem; flex-wrap:wrap; }
+@media (max-width:640px){
+  .brand{ flex: 1 1 100%; }
+  .main-nav{ flex: 1 1 100%; order:2; justify-content:flex-start; }
+}
+/* PCでは右寄せ */
+@media (min-width:641px){
+  .main-nav{ margin-left:auto; justify-content:flex-end; }
+}

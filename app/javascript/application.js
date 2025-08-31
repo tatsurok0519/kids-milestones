@@ -289,3 +289,28 @@ function demoInitialCleanup() {
 }
 document.addEventListener("turbo:load", demoInitialCleanup)
 document.addEventListener("turbo:render", demoInitialCleanup)
+
+(function(){
+  const KEY = "hide_growth_policy_until";
+  const banner = document.getElementById("growth-policy-banner");
+  if (!banner) return;
+
+  // 既に非表示予約がある？
+  try {
+    const until = localStorage.getItem(KEY);
+    if (until && new Date(until) > new Date()) {
+      banner.remove();
+      return;
+    }
+  } catch(_) {}
+
+  // ×クリックで 30日非表示
+  banner.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-close-growth-policy]");
+    if (!btn) return;
+    const until = new Date();
+    until.setDate(until.getDate() + 30);
+    try { localStorage.setItem(KEY, until.toISOString()); } catch(_) {}
+    banner.remove();
+  });
+})();

@@ -5,6 +5,7 @@ class PagesController < ApplicationController
   def landing; end
   def chat;  end
   def report; end
+  def growth_policy; end
 
   private
 

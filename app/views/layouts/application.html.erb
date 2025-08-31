@@ -19,6 +19,53 @@
 
     <%= image_tag "illustrations/watering.png", alt: "水やり", class: "watering-illustration" %>
 
+    <%# ===== 比べない育ちメッセージ バナー ===== %>
+    <div id="growth-policy-banner" class="container" style="margin-top:.75rem;">
+      <div class="growth-banner"
+           style="position:relative; border:1px solid #cce7ff; background:#f5fbff; border-radius:.8rem; padding:.75rem;
+                  display:flex; gap:.75rem; align-items:flex-start;">
+        <%= image_tag "illustrations/sun.png", alt:"", width:24, height:24, style:"flex:none; margin-top:.1rem;" %>
+        <div style="line-height:1.6;">
+          <div class="label" style="font-weight:700; margin-bottom:.25rem;">比べない育ちを大切に</div>
+          <p style="margin:.25rem 0 0;">
+            子どもの育ちは一人ひとりのペースで進みます。焦らず、その子の今の姿を大切にしましょう。
+          </p>
+          <%= link_to "くわしく", growth_policy_path, class:"btn btn-secondary", style:"margin-top:.5rem; padding:.25rem .6rem; font-size:.85rem;" %>
+        </div>
+        <button id="growth-dismiss" type="button" aria-label="閉じる"
+                style="position:absolute; top:8px; right:8px; border:0; background:transparent;
+                       font-size:20px; line-height:1; cursor:pointer;">×</button>
+      </div>
+    </div>
+
+    <%# バナーの表示制御（×で14日間非表示） %>
+    <script>
+      (function(){
+        const KEY = "gp_banner_hide_until";
+        function hideBanner(){
+          const b = document.getElementById("growth-policy-banner");
+          if (b) b.remove();
+        }
+        function shouldHide(){
+          try{
+            const s = localStorage.getItem(KEY);
+            return s && new Date(s) > new Date();
+          }catch(_){ return false; }
+        }
+        document.addEventListener("turbo:load", function(){
+          if (shouldHide()) { hideBanner(); return; }
+          const btn = document.getElementById("growth-dismiss");
+          if (!btn) return;
+          btn.addEventListener("click", function(){
+            const until = new Date(); until.setDate(until.getDate() + 14); // 14日間 非表示
+            try{ localStorage.setItem(KEY, until.toISOString()); }catch(_){}
+            hideBanner();
+          }, { once:true });
+        });
+      })();
+    </script>
+    <%# ===== ここまで：比べない育ちバナー ===== %>
+
     <% flash.each do |k, v| %>
       <div class="container" style="margin-top:1rem">
         <div class="flash <%= k %>"><%= v %></div>
