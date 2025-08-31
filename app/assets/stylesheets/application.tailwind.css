@@ -330,3 +330,4 @@ header.header-bar img.brand-logo{
 /* ヒントを保険で入れるならこちら */
 details.hint { display: block; }
 details.hint > summary { cursor: pointer; }
+.toast-layer { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }

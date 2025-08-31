@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
   <head>
     <title>こどもすくすくカード</title>
@@ -58,7 +58,7 @@
           const btn = document.getElementById("growth-dismiss");
           if (!btn) return;
           btn.addEventListener("click", function(){
-            const until = new Date(); until.setDate(until.getDate() + 14); // 14日間 非表示
+            const until = new Date(); until.setDate(until.getDate() + 14);
             try{ localStorage.setItem(KEY, until.toISOString()); }catch(_){}
             hideBanner();
           }, { once:true });
@@ -80,21 +80,11 @@
     <!-- フッター（パーシャル） -->
     <%= render "shared/footer" %>
 
-    <!-- トーストレイヤ -->
-    <div id="toasts" class="toast-layer" role="status" aria-live="polite" aria-atomic="true"></div>
-    <div id="reward_animator" hidden aria-hidden="true"></div>
-
-    <%# 新規ごほうびが直前の操作で解放されていたら、次ページロード時に演出を起動 %>
-    <% if @reward_boot_ids.present? %>
-      <script>
-        document.addEventListener('turbo:load', function onBootOnce(){
-          document.removeEventListener('turbo:load', onBootOnce, { once: true });
-          const ids = <%= @reward_boot_ids.map(&:to_i).to_json %>;
-          if (ids.length) {
-            document.dispatchEvent(new CustomEvent('reward:unlocked', { detail: { ids } }));
-          }
-        }, { once: true });
-      </script>
-    <% end %>
+    <!-- トーストレイヤ（★ サーバーでプリレンダー。HTMLリダイレクトでも出る） -->
+    <div id="toasts" class="toast-layer" role="status" aria-live="polite" aria-atomic="true">
+      <% if @reward_boot_ids.present? %>
+        <%= render "shared/reward_toast", rewards: Reward.where(id: @reward_boot_ids) %>
+      <% end %>
+    </div>
   </body>
 </html>

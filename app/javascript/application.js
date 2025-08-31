@@ -1,35 +1,38 @@
-// app/javascript/application.js 
+// app/javascript/application.js
 // Configure your import map in config/importmap.rb.
 // Read more: https://github.com/rails/importmap-rails
 
 import "@hotwired/turbo-rails"
 
-// 画像のdirect_uploadに必要
+// ActiveStorage（direct_upload 等）
 import * as ActiveStorage from "@rails/activestorage"
 ActiveStorage.start()
 
-// 画像プレビュー用（あなたの既存ファイル）
-import "photo_preview"
+// Stimulusを使っていれば（無ければ読み込まれません）
+import "controllers"
 
-// 相談SSEクライアント（あなたの既存ファイル）
+// 既存のアプリ用スクリプト
+import "photo_preview"
 import "chat_consult"
 
 /* ---------------------------
-   小さなユーティリティ
+   ユーティリティ
 --------------------------- */
-function nearestCard(el) {
-  return el?.closest?.(".milestone-card")
-}
+function nearestCard(el) { return el?.closest?.(".milestone-card") }
 
 function readToggleFrom(form, submitEvent) {
-  // hidden input[name="toggle"] 優先 → FormData → submitterのdata-mode/value
-  const hidden = form.querySelector('input[name="toggle"]')?.value
-  if (hidden) return hidden
+  // hidden input → FormData → submitter
+  const hidToggle = form.querySelector('input[name="toggle"]')?.value
+  const hidState  = form.querySelector('input[name="state"]')?.value
+  if (hidToggle) return hidToggle
+  if (hidState)  return hidState
 
   try {
     const fd = new FormData(form)
-    const val = fd.get("toggle")
-    if (val) return String(val)
+    const v1 = fd.get("toggle")
+    const v2 = fd.get("state")
+    if (v1) return String(v1)
+    if (v2) return String(v2)
   } catch (_) {}
 
   const s = submitEvent?.submitter
@@ -75,11 +78,26 @@ function showDemoToast(message) {
   setTimeout(() => t.remove(), 2500)
 }
 
+function isSignedIn() {
+  if (typeof window.__SIGNED_IN__ === "undefined") return true
+  return !!window.__SIGNED_IN__
+}
+
+function isProgressForm(form) {
+  if (!(form instanceof HTMLFormElement)) return false
+  if (form.matches('form[data-progress-form]')) return true
+  try {
+    const action = (form.getAttribute("action") || form.action || "")
+    if (action.includes("/achievements/upsert")) return true
+  } catch(_) {}
+  return false
+}
+
 /* ---------------------------
-   子ども切替（セレクト変更でURLの child_id を差し替え）
+   子ども切替（セレクトで child_id を差し替え）
 --------------------------- */
 document.addEventListener("change", (e) => {
-  const sel = e.target?.closest("#child-switcher-select")
+  const sel = e.target?.closest?.("#child-switcher-select")
   if (!sel) return
   const id  = sel.value
   const url = new URL(window.location.href)
@@ -89,130 +107,89 @@ document.addEventListener("change", (e) => {
 
 /* ---------------------------
    ヒントの開閉（data-hint-toggle / data-hint-box）
-   - aria-controls を最優先
-   - 見つからなければ同じカード内から探索
-   - hidden と display の両方を確実に切り替える
+   ※ <details> を使う場合はJS不要。両対応。
 --------------------------- */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest?.("[data-hint-toggle]");
-  if (!btn) return;
+  const btn = e.target.closest?.("[data-hint-toggle]")
+  if (!btn) return
 
-  // 1) aria-controls を最優先
-  let box = null;
-  const targetId = btn.getAttribute("aria-controls");
-  if (targetId) box = document.getElementById(targetId);
+  let box = null
+  const targetId = btn.getAttribute("aria-controls")
+  if (targetId) box = document.getElementById(targetId)
 
-  // 2) 見つからなければ同じカード/turbo-frame 内で探索
   if (!box) {
-    const root =
-      btn.closest(".milestone-card") ||
-      btn.closest("turbo-frame") ||
-      document;
-    box = root.querySelector("[data-hint-box]");
+    const root = btn.closest(".milestone-card") || btn.closest("turbo-frame") || document
+    box = root.querySelector("[data-hint-box]")
   }
-  if (!box) return; // 対象なし
+  if (!box) return
 
-  // 3) 表示/非表示を堅実にトグル
-  const willOpen =
-    box.hasAttribute("hidden") ||
-    box.hidden === true ||
-    box.style.display === "none";
-
+  const willOpen = box.hasAttribute("hidden") || box.hidden === true || box.style.display === "none"
   if (willOpen) {
-    box.hidden = false;
-    box.removeAttribute("hidden");
-    box.style.display = ""; // 初期値（CSS任せ）
+    box.hidden = false
+    box.removeAttribute("hidden")
+    box.style.display = ""
   } else {
-    box.hidden = true;
-    box.setAttribute("hidden", "");
-    box.style.display = "none";
+    box.hidden = true
+    box.setAttribute("hidden", "")
+    box.style.display = "none"
   }
-
-  btn.setAttribute("aria-expanded", String(willOpen));
-});
+  btn.setAttribute("aria-expanded", String(willOpen))
+})
 
 /* ---------------------------
-   進捗トグル（がんばり中/できた！/未着手に戻す）
-   - ログイン時: 従来通り送信（Turbo）＋楽観更新
-   - 未ログイン: 送信はキャンセルし、見た目だけ切り替える（非保存デモ）
+   進捗トグル（楽観更新＋おためしモード）
 --------------------------- */
 
-// サインイン状態（レイアウトで window.__SIGNED_IN__ を出している想定）
-// 未設定の場合は true 扱い（= 安全側：保存をブロックしない）
-function isSignedIn() {
-  if (typeof window.__SIGNED_IN__ === "undefined") {
-    console.warn("[kids-milestones] window.__SIGNED_IN__ が未設定です。ログイン扱いとして動作します。")
-    return true
-  }
-  return !!window.__SIGNED_IN__
-}
-
-// A) 未ログインでは submit を捕捉して保存を止める（見た目は切替）
+// 未ログイン: submit を止めて見た目だけ切替
 document.addEventListener("submit", (ev) => {
   const form = ev.target
-  if (!(form instanceof HTMLFormElement)) return
-  if (!form.matches('form[data-progress-form]')) return
-
-  // 既ログインなら通常の送信フローに任せる
+  if (!isProgressForm(form)) return
   if (isSignedIn()) return
 
-  // --- 未ログイン: 送信せず、見た目だけ切替 ---
   ev.preventDefault()
-
   const toggle = readToggleFrom(form, ev)
   const card   = nearestCard(form)
 
-  // クリック側で既に切り替えている場合はスキップ（二重反転防止）
-  if (!form.dataset.demoToggled) {
-    toggleCardUI(card, toggle)
-  }
+  if (!form.dataset.demoToggled) toggleCardUI(card, toggle)
   form.dataset.demoToggled = "1"
 
   showDemoToast("おためし中：ログインすると進捗が保存されます")
-}, true) // capture で早めに横取り
+}, true)
 
-// B) ログイン時の楽観更新（送信開始時に即時反映）
+// ログイン時: 送信開始で即時反映（Turboが最終状態で上書き）
 document.addEventListener("turbo:submit-start", (ev) => {
   const form = ev.target
-  if (!(form instanceof HTMLFormElement)) return
-  if (!form.matches('form[data-progress-form]')) return
-  if (!isSignedIn()) return // 未ログインは submit 自体をキャンセルしている
+  if (!isProgressForm(form)) return
+  if (!isSignedIn()) return
 
   const toggle = readToggleFrom(form, ev)
   const card   = nearestCard(form)
   toggleCardUI(card, toggle)
 })
 
-// C) クリックで送信するパターン（後方互換）
-//   - 未ログイン: その場でUIだけ反映（保存なし）
-//   - ログイン   : ここでは何もしない（turbo:submit-start に任せる）
+// クリック送信パターンの後方互換（未ログインのみ即時反映）
 document.addEventListener("click", (e) => {
   const btn  = e.target.closest?.('form[data-progress-form] > button')
   if (!btn) return
+  const form = btn.closest('form[data-progress-form]')
+  if (!form || isSignedIn()) return
 
-  const form   = btn.closest('form[data-progress-form]')
-  if (!form) return
-
-  if (!isSignedIn()) {
-    const toggle = readToggleFrom(form, { submitter: btn })
-    const card   = nearestCard(form)
-    toggleCardUI(card, toggle)
-    form.dataset.demoToggled = "1" // submit 側での二重トグル防止
-  }
+  const toggle = readToggleFrom(form, { submitter: btn })
+  const card   = nearestCard(form)
+  toggleCardUI(card, toggle)
+  form.dataset.demoToggled = "1"
 })
 
 /* ---------------------------
-   ごほうび：Turbo Stream → カスタムイベント化
-   - reward_animator ターゲットの update/append/replace を捕捉
-   - data-reward-unlocked="1,2,3" を読み、reward:unlocked を発火
+   ごほうび：Turbo Stream → カスタムイベント化（互換用）
+   ※ レイアウト側プリレンダーでもOK。両対応。
 --------------------------- */
 document.addEventListener("turbo:before-stream-render", (ev) => {
   const ts = ev.target
   if (!(ts instanceof Element)) return
-
   const action = ts.getAttribute("action")
   const target = ts.getAttribute("target")
-  if (!target || target !== "reward_animator") return
+  if (target !== "reward_animator") return
   if (!["update","append","replace"].includes(action)) return
 
   const tpl = ts.querySelector("template")
@@ -222,52 +199,43 @@ document.addEventListener("turbo:before-stream-render", (ev) => {
   div.innerHTML = tpl.innerHTML
   const payload = div.firstElementChild?.getAttribute("data-reward-unlocked") || ""
   const ids = payload.split(",").map(s => parseInt(s, 10)).filter(n => !isNaN(n))
-
-  if (ids.length) {
-    document.dispatchEvent(new CustomEvent("reward:unlocked", { detail: { ids } }))
-  }
+  if (ids.length) document.dispatchEvent(new CustomEvent("reward:unlocked", { detail: { ids } }))
 })
 
 /* ---------------------------
-   ごほうび：新規解放イベントでアイコンにアニメ用クラスを付与
+   ごほうび：新規解放アイコンをアニメ
 --------------------------- */
 document.addEventListener("reward:unlocked", (e) => {
-  const ids = e.detail?.ids || [];
+  const ids = e.detail?.ids || []
   ids.forEach((id) => {
-    const el  = document.getElementById(`reward_icon_${id}`);
-    const img = el?.querySelector("img");
-    if (!el || !img) return;
+    const el  = document.getElementById(`reward_icon_${id}`)
+    const img = el?.querySelector("img")
+    if (!el || !img) return
 
-    // リスタート用リセット
-    el.classList.remove("anim-unlock");
-    void el.offsetWidth;
+    el.classList.remove("anim-unlock")
+    void el.offsetWidth
+    el.classList.add("anim-unlock")
 
-    el.classList.add("anim-unlock");
-
-    // 両方（wrapper と img）の animationend を待ってから片付け
-    let pending = 2;
+    let pending = 2
     const onEnd = () => {
-      pending -= 1;
-      if (pending <= 0) {
-        el.classList.remove("anim-unlock");   // ← 光りっぱなし防止
-        el.removeEventListener("animationend", onEnd, true);
-        img.removeEventListener("animationend", onEnd, true);
+      if (--pending <= 0) {
+        el.classList.remove("anim-unlock")
+        el.removeEventListener("animationend", onEnd, true)
+        img.removeEventListener("animationend", onEnd, true)
       }
-    };
-    el.addEventListener("animationend",  onEnd, true);
-    img.addEventListener("animationend", onEnd, true);
-
-    // 念のための安全弁（1.8s 後に必ず消す）
-    setTimeout(() => el.classList.remove("anim-unlock"), 1800);
-  });
-});
+    }
+    el.addEventListener("animationend",  onEnd, true)
+    img.addEventListener("animationend", onEnd, true)
+    setTimeout(() => el.classList.remove("anim-unlock"), 1800)
+  })
+})
 
 /* ---------------------------
-   トーストの自動消去（Turbo遷移にも対応）
+   トースト自動消去（プリレンダー/Stream両対応）
 --------------------------- */
 function setupToasts() {
   document.querySelectorAll(".toast[data-timeout]").forEach((el) => {
-    if (el.__armed) return; el.__armed = true;
+    if (el.__armed) return; el.__armed = true
     const ms = parseInt(el.getAttribute("data-timeout")) || 3000
     setTimeout(() => el.remove(), ms)
   })
@@ -276,9 +244,7 @@ document.addEventListener("turbo:load",   setupToasts)
 document.addEventListener("turbo:render", setupToasts)
 
 /* ---------------------------
-   未ログイン時の初期クリーニング
-   - 以前の localStorage 仕様の残骸を消す
-   - DOMの .is-working / .is-achieved を初期状態に戻す
+   未ログインの初期クリーニング（おためしモード）
 --------------------------- */
 function demoInitialCleanup() {
   if (isSignedIn()) return
@@ -289,28 +255,3 @@ function demoInitialCleanup() {
 }
 document.addEventListener("turbo:load", demoInitialCleanup)
 document.addEventListener("turbo:render", demoInitialCleanup)
-
-(function(){
-  const KEY = "hide_growth_policy_until";
-  const banner = document.getElementById("growth-policy-banner");
-  if (!banner) return;
-
-  // 既に非表示予約がある？
-  try {
-    const until = localStorage.getItem(KEY);
-    if (until && new Date(until) > new Date()) {
-      banner.remove();
-      return;
-    }
-  } catch(_) {}
-
-  // ×クリックで 30日非表示
-  banner.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-close-growth-policy]");
-    if (!btn) return;
-    const until = new Date();
-    until.setDate(until.getDate() + 30);
-    try { localStorage.setItem(KEY, until.toISOString()); } catch(_) {}
-    banner.remove();
-  });
-})();
