@@ -327,7 +327,32 @@ header.header-bar img.brand-logo{
   header.header-bar img.brand-logo{ width:104px !important; max-width:104px !important; }
 }
 
-/* ヒントを保険で入れるならこちら */
-details.hint { display: block; }
-details.hint > summary { cursor: pointer; }
-.toast-layer { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }
+/* --- ヒントを確実に表示（hint / hint-wrap の両方に適用） --- */
+details.hint,
+details.hint-wrap {
+  display: block;
+}
+
+details.hint > summary,
+details.hint-wrap > summary,
+summary.btn-hint {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  /* 他のCSSが display:none を指定していても勝つための保険 */
+}
+
+/* ブラウザ既定の三角を消す（任意） */
+details.hint > summary::-webkit-details-marker,
+details.hint-wrap > summary::-webkit-details-marker,
+summary.btn-hint::-webkit-details-marker {
+  display: none;
+}
+
+/* トーストの受け皿（右上固定） */
+.toast-layer {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
