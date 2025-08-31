@@ -10,11 +10,12 @@ class ConsultsController < ApplicationController
 
   # GET /consult
   def show
-    # ビュー表示だけ
+    # ビュー表示のみ
   end
 
   # GET /consult/stream?q=...
   def stream
+    # SSE ヘッダ
     response.headers["Content-Type"]      = "text/event-stream"
     response.headers["Cache-Control"]     = "no-cache"
     response.headers["X-Accel-Buffering"] = "no"
@@ -23,13 +24,15 @@ class ConsultsController < ApplicationController
 
     q = params[:q].to_s.strip
     if q.blank?
-      sse.write("相談内容を入力してください。", event: "token")
-      sse.write("", event: "done")
+      sse.write("相談内容を入力してください。", event: "token") rescue nil
+      sse.write("", event: "done")                                         rescue nil
       return
     end
 
     uri  = URI.parse("https://api.openai.com/v1/chat/completions")
-    http = Net::HTTP.start(uri.host, uri.port, use_ssl: true, read_timeout: 300)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl      = true
+    http.read_timeout = 300
 
     req = Net::HTTP::Post.new(uri.request_uri)
     req["Authorization"] = "Bearer #{openai_api_key}"
@@ -47,8 +50,8 @@ class ConsultsController < ApplicationController
     http.request(req) do |res|
       if res.code.to_i >= 400
         Rails.logger.error("[consult stream] HTTP #{res.code} #{res.message}")
-        sse.write("（接続に失敗しました: HTTP #{res.code}）", event: "token")
-        sse.write("", event: "done")
+        sse.write("（接続に失敗しました: HTTP #{res.code}）", event: "token") rescue nil
+        sse.write("", event: "done")                                         rescue nil
         next
       end
 
@@ -62,17 +65,26 @@ class ConsultsController < ApplicationController
             delta = json.dig("choices", 0, "delta", "content")
             sse.write(delta.to_s, event: "token") if delta
           rescue JSON::ParserError
-            # noop
+            # 無視
           end
         end
       end
     end
   rescue => e
     Rails.logger.error("[consult stream] #{e.class}: #{e.message}")
-    begin sse.write("\n[サーバでエラーが発生しました]", event: "token"); rescue nil end
+    sse.write("\n[サーバでエラーが発生しました]", event: "token") rescue nil
   ensure
-    begin sse&.write("", event: "done"); rescue nil end
-    begin sse&.close;                     rescue nil end
+    begin
+      sse.write("", event: "done")
+    rescue
+      # noop
+    end
+    begin
+      sse.close
+      response.stream.close
+    rescue
+      # noop
+    end
   end
 
   private
