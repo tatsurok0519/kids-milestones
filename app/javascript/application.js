@@ -89,20 +89,47 @@ document.addEventListener("change", (e) => {
 
 /* ---------------------------
    ヒントの開閉（data-hint-toggle / data-hint-box）
+   - aria-controls を最優先
+   - 見つからなければ同じカード内から探索
+   - hidden と display の両方を確実に切り替える
 --------------------------- */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest?.("[data-hint-toggle]")
-  if (!btn) return
+  const btn = e.target.closest?.("[data-hint-toggle]");
+  if (!btn) return;
 
-  const root = btn.closest(".milestone-card") || btn.closest("turbo-frame") || document
-  const box  = root.querySelector("[data-hint-box]")
-  if (!box) return
+  // 1) aria-controls を最優先
+  let box = null;
+  const targetId = btn.getAttribute("aria-controls");
+  if (targetId) box = document.getElementById(targetId);
 
-  const willOpen = box.hasAttribute("hidden")
-  if (willOpen) box.removeAttribute("hidden")
-  else          box.setAttribute("hidden", "")
-  btn.setAttribute("aria-expanded", String(willOpen))
-})
+  // 2) 見つからなければ同じカード/turbo-frame 内で探索
+  if (!box) {
+    const root =
+      btn.closest(".milestone-card") ||
+      btn.closest("turbo-frame") ||
+      document;
+    box = root.querySelector("[data-hint-box]");
+  }
+  if (!box) return; // 対象なし
+
+  // 3) 表示/非表示を堅実にトグル
+  const willOpen =
+    box.hasAttribute("hidden") ||
+    box.hidden === true ||
+    box.style.display === "none";
+
+  if (willOpen) {
+    box.hidden = false;
+    box.removeAttribute("hidden");
+    box.style.display = ""; // 初期値（CSS任せ）
+  } else {
+    box.hidden = true;
+    box.setAttribute("hidden", "");
+    box.style.display = "none";
+  }
+
+  btn.setAttribute("aria-expanded", String(willOpen));
+});
 
 /* ---------------------------
    進捗トグル（がんばり中/できた！/未着手に戻す）

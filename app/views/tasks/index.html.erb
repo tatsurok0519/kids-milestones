@@ -1,5 +1,5 @@
 <div class="container main">
-  <!-- ヘッダー（子ども情報を表示） -->
+  <!-- ヘッダー -->
   <div class="card" style="margin-bottom:1rem;">
     <% if user_signed_in? && current_child %>
       <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
@@ -81,7 +81,7 @@
             class: "input",
             onchange: "this.form.submit()" %>
 
-      <!-- 未達成のみ（ログイン＆子選択時のみ有効） -->
+      <!-- 未達成のみ -->
       <label class="label" for="only_unachieved" style="display:flex;align-items:center;gap:.35rem;">
         <%= check_box_tag :only_unachieved, "1", @only_unachieved,
               onchange: "this.form.submit()",
@@ -100,7 +100,6 @@
 
   <!-- 一覧 -->
   <div class="card">
-    <%# ページング可否＆件数を安全に計算 %>
     <% has_pager    = defined?(Kaminari) && @milestones.respond_to?(:current_page) %>
     <% total_count  = @milestones.respond_to?(:total_count) ? @milestones.total_count : @milestones.size %>
     <% total_pages  = has_pager ? @milestones.total_pages : 1 %>
@@ -142,40 +141,42 @@
             </div>
 
             <% if user_signed_in? && current_child && !@demo_mode %>
-              <!-- ログイン時：Turbo Frame でコントロール -->
+              <!-- ログイン時：進捗コントロール（ヒントは置かない） -->
               <turbo-frame id="<%= dom_id(ms, :controls) %>">
                 <%= render "tasks/controls", milestone: ms, achievement: ach %>
               </turbo-frame>
             <% else %>
-              <!-- 未ログイン/デモ時：右上バッジ（専用クラスに変更） -->
+              <!-- 未ログイン/デモ：右上バッジ（専用クラス） -->
               <div class="rw-badge-group" aria-hidden="true"
                    style="position:absolute; top:8px; right:8px; pointer-events:none;">
                 <%= image_tag 'icons/try.png',      alt: '', class: 'rw-badge rw-badge-try',  width: 44, height: 44 %>
                 <%= image_tag 'icons/hanamaru.png', alt: '', class: 'rw-badge rw-badge-achi', width: 44, height: 44 %>
               </div>
 
-              <!-- デモ用コントロール（保存はしない） -->
+              <!-- 未ログイン/デモ：おためし進捗ボタン -->
               <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
                 <button class="btn btn-secondary btn-working" type="button">がんばり中</button>
                 <button class="btn btn-primary btn-achieved"  type="button">できた！</button>
-
-                <!-- ヒントトグル -->
-                <button class="btn" type="button"
-                        style="border:1px dashed var(--border);"
-                        data-hint-toggle
-                        aria-expanded="false"
-                        aria-controls="hint_<%= ms.id %>">
-                  ヒント
-                </button>
-              </div>
-
-              <!-- ヒントパネル -->
-              <div id="hint_<%= ms.id %>" data-hint-box hidden
-                   style="margin-top:.5rem;padding:.6rem;border:1px dashed var(--border);
-                          border-radius:.6rem;background:#fffaf5;color:#7a4a00;font-size:.9rem;">
-                <%= (ms.try(:hint_text).presence || ms.try(:hint).presence || "（ヒントは準備中です）") %>
               </div>
             <% end %>
+
+            <%# ▼▼ 共通ヒント（どちらの状態でも1か所だけ） ▼▼ %>
+            <% hint_html = milestone_hint_text(ms).presence %>
+            <% if hint_html.present? %>
+              <details class="hint-wrap" style="margin-top:.6rem;">
+                <summary class="btn"
+                        style="display:inline-flex; border:1px dashed var(--border); cursor:pointer; list-style:none;">
+                  ヒント
+                </summary>
+                <div class="hint-box"
+                    style="margin-top:.5rem; padding:.6rem; border:1px dashed var(--border);
+                           border-radius:.6rem; background:#fffaf5; color:#7a4a00; font-size:.9rem;">
+                  <%= hint_html %>
+                </div>
+              </details>
+            <% end %>
+            <%# ▲▲ 共通ヒントここまで ▲▲ %>
+
           </div>
         <% end %>
       </div>
@@ -192,64 +193,52 @@
   </div>
 </div>
 
-<%# ☆☆☆ ここが肝：未ログイン **または** デモモードのときにJS/CSSを読む ☆☆☆ %>
+<%# ★ 未ログイン or デモモードのときだけ、デモ保存のJS/CSSを読み込む %>
 <% if !user_signed_in? || @demo_mode %>
   <script>
   (function(){
     const KEY = "try_progress_v1";
-
     function loadState(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ return {}; } }
     function saveState(state){ localStorage.setItem(KEY, JSON.stringify(state)); }
-
     function renderCard(card, rec){
       card.classList.remove("is-working","is-achieved");
-      if (rec?.achieved) {
-        card.classList.add("is-achieved");
-      } else if (rec?.working) {
-        card.classList.add("is-working");
-      }
+      if (rec && rec.achieved)      { card.classList.add("is-achieved"); }
+      else if (rec && rec.working)  { card.classList.add("is-working"); }
     }
-
     const state = loadState();
     document.querySelectorAll(".milestone-card").forEach(card => {
       const id = card.getAttribute("data-id");
       renderCard(card, state[id]);
-
-      const workingBtn  = card.querySelector(".btn-working");
-      const achievedBtn = card.querySelector(".btn-achieved");
-
-      // 進捗トグル（デモ保存：localStorage）
-      workingBtn?.addEventListener("click", () => {
+      card.querySelector(".btn-working")?.addEventListener("click", () => {
         state[id] = state[id] || {};
         state[id].working = !state[id].working;
         if (state[id].working) state[id].achieved = false;
         renderCard(card, state[id]); saveState(state);
       });
-
-      achievedBtn?.addEventListener("click", () => {
+      card.querySelector(".btn-achieved")?.addEventListener("click", () => {
         state[id] = state[id] || {};
         state[id].achieved = !state[id].achieved;
         if (state[id].achieved) state[id].working = false;
         renderCard(card, state[id]); saveState(state);
-      });
-
-      // ヒント開閉
-      const hintBtn = card.querySelector("[data-hint-toggle]");
-      const hintBox = card.querySelector("[data-hint-box]");
-      hintBtn?.addEventListener("click", () => {
-        const willOpen = hintBox.hasAttribute("hidden");
-        if (willOpen) hintBox.removeAttribute("hidden");
-        else          hintBox.setAttribute("hidden", "");
-        hintBtn.setAttribute("aria-expanded", String(willOpen));
       });
     });
   })();
   </script>
 
   <style>
-  /* バッジはデフォ非表示。状態クラスで切替（専用クラス名で衝突回避） */
+  /* TRY/花丸バッジ：状態クラスで表示切替（専用クラス） */
   .rw-badge { display: none; }
   .milestone-card.is-working  .rw-badge-try  { display: block; }
   .milestone-card.is-achieved .rw-badge-achi { display: block; }
+
+  /* details/summary のデフォ三角を消す */
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  </style>
+<% else %>
+  <style>
+  /* ログイン時にも details の三角を消す（CSSは共通で適用） */
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
   </style>
 <% end %>
