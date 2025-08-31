@@ -48,10 +48,10 @@
           if (b) b.remove();
         }
         function shouldHide(){
-          try{
+          try {
             const s = localStorage.getItem(KEY);
             return s && new Date(s) > new Date();
-          }catch(_){ return false; }
+          } catch(_) { return false; }
         }
         document.addEventListener("turbo:load", function(){
           if (shouldHide()) { hideBanner(); return; }
@@ -59,9 +59,9 @@
           if (!btn) return;
           btn.addEventListener("click", function(){
             const until = new Date(); until.setDate(until.getDate() + 14);
-            try{ localStorage.setItem(KEY, until.toISOString()); }catch(_){}
+            try { localStorage.setItem(KEY, until.toISOString()); } catch(_){}
             hideBanner();
-          }, { once:true });
+          }, { once: true });
         });
       })();
     </script>

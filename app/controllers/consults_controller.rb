@@ -5,9 +5,8 @@ require "json"
 class ConsultsController < ApplicationController
   include ActionController::Live
 
-  before_action :ensure_openai_key!
-  before_action :set_breadcrumbs, only: :show
-  skip_forgery_protection only: :stream # GET だが環境によって弾かれる保険
+  before_action :ensure_openai_key!, only: [:show, :stream]
+  before_action :set_breadcrumbs,     only: :show
 
   # GET /consult
   def show
@@ -16,13 +15,11 @@ class ConsultsController < ApplicationController
 
   # GET /consult/stream?q=...
   def stream
-    # SSE ヘッダ
-    response.headers["Content-Type"]      = "text/event-stream; charset=utf-8"
+    response.headers["Content-Type"]      = "text/event-stream"
     response.headers["Cache-Control"]     = "no-cache"
     response.headers["X-Accel-Buffering"] = "no"
-    response.headers["Last-Modified"]     = Time.now.httpdate
 
-    sse = ActionController::Live::SSE.new(response.stream)
+    sse = ActionController::Live::SSE.new(response.stream, retry: 300)
 
     q = params[:q].to_s.strip
     if q.blank?
@@ -31,59 +28,51 @@ class ConsultsController < ApplicationController
       return
     end
 
-    begin
-      uri  = URI.parse("https://api.openai.com/v1/chat/completions")
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl      = true
-      http.read_timeout = 300
+    uri  = URI.parse("https://api.openai.com/v1/chat/completions")
+    http = Net::HTTP.start(uri.host, uri.port, use_ssl: true, read_timeout: 300)
 
-      req = Net::HTTP::Post.new(uri.request_uri)
-      req["Authorization"] = "Bearer #{openai_api_key}"
-      req["Content-Type"]  = "application/json"
-      req.body = {
-        model: "gpt-4o-mini",
-        stream: true,
-        messages: [
-          { role: "system", content: "あなたは子育ての相談相手です。相手をねぎらい、根拠に基づき、断定を避け、やさしい日本語で答えてください。医療や緊急の判断が必要な場合は受診・相談先を案内します。" },
-          { role: "user",   content: q }
-        ],
-        max_tokens: 800
-      }.to_json
+    req = Net::HTTP::Post.new(uri.request_uri)
+    req["Authorization"] = "Bearer #{openai_api_key}"
+    req["Content-Type"]  = "application/json"
+    req.body = {
+      model:   "gpt-4o-mini",
+      stream:  true,
+      messages: [
+        { role: "system", content: "あなたは子育ての相談相手です。相手をねぎらい、根拠に基づき、断定を避け、やさしい日本語で答えてください。医療や緊急の判断が必要な場合は受診・相談先を案内します。" },
+        { role: "user",   content: q }
+      ],
+      max_tokens: 800
+    }.to_json
 
-      http.request(req) do |res|
-        if res.code.to_i >= 400
-          Rails.logger.error("[consult stream] HTTP #{res.code} #{res.message}")
-          sse.write("（接続に失敗しました: HTTP #{res.code}）", event: "token")
-          sse.write("", event: "done")
-          next
-        end
+    http.request(req) do |res|
+      if res.code.to_i >= 400
+        Rails.logger.error("[consult stream] HTTP #{res.code} #{res.message}")
+        sse.write("（接続に失敗しました: HTTP #{res.code}）", event: "token")
+        sse.write("", event: "done")
+        next
+      end
 
-        # OpenAIの event-stream を1行ずつパース
-        res.read_body do |chunk|
-          chunk.each_line do |line|
-            next unless line.start_with?("data:")
-            data = line[5..].strip
-            break if data == "[DONE]"
-            begin
-              json  = JSON.parse(data)
-              delta = json.dig("choices", 0, "delta", "content")
-              sse.write(delta.to_s, event: "token") if delta
-            rescue JSON::ParserError
-              # 途中のハートビートなどは捨てる
-            end
+      res.read_body do |chunk|
+        chunk.each_line do |line|
+          next unless line.start_with?("data:")
+          data = line[5..].strip
+          break if data == "[DONE]"
+          begin
+            json  = JSON.parse(data)
+            delta = json.dig("choices", 0, "delta", "content")
+            sse.write(delta.to_s, event: "token") if delta
+          rescue JSON::ParserError
+            # noop
           end
         end
       end
-
-    rescue => e
-      Rails.logger.error("[consult stream] #{e.class}: #{e.message}")
-      sse.write("\n[サーバでエラーが発生しました]", event: "token")
-    ensure
-      # クライアント側の完了ハンドラ用に必ず done を送ってから閉じる
-      sse.write("", event: "done") rescue nil
-      sse.close rescue nil
-      response.stream.close rescue nil
     end
+  rescue => e
+    Rails.logger.error("[consult stream] #{e.class}: #{e.message}")
+    begin sse.write("\n[サーバでエラーが発生しました]", event: "token"); rescue nil end
+  ensure
+    begin sse&.write("", event: "done"); rescue nil end
+    begin sse&.close;                     rescue nil end
   end
 
   private

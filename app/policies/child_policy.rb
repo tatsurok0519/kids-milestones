@@ -1,19 +1,15 @@
 class ChildPolicy < ApplicationPolicy
-  def show?    = owner?
-  def update?  = owner?
-  def destroy? = owner?
-  def select?  = owner?   # ダッシュボードでの選択など
-  def use?     = owner?   # 子に紐づく操作全般のガードに使う
+  def index?   = user.present?
+  def new?     = create?
+  def create?  = user.present?
+  def show?    = record.user_id == user.id
+  def update?  = show?
+  def destroy? = show?
+  def use?     = show?   # 既存用途互換
 
   class Scope < Scope
     def resolve
-      scope.where(user_id: user.id)
+      user ? scope.where(user_id: user.id) : scope.none
     end
-  end
-
-  private
-
-  def owner?
-    record.user_id == user.id
   end
 end

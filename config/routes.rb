@@ -30,6 +30,8 @@ Rails.application.routes.draw do
   resource :consult, only: [:show] do
     get :stream, on: :collection
   end
+  get "consult",         to: "consults#show"
+  get "consult/stream",  to: "consults#stream"
 
   # ログイン後のトップ
   authenticated :user do
