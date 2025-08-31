@@ -1,13 +1,10 @@
-# Be sure to restart your server when you modify this file.
+# app/javascript をアセットパスに追加
+Rails.application.config.assets.paths << Rails.root.join("app/javascript")
 
-# Version of your assets, change this if you want to expire all your assets.
-Rails.application.config.assets.version = "1.0"
-Rails.application.config.assets.paths << Rails.root.join("app/assets/builds")
-Rails.application.config.assets.precompile += %w[ application.css application.js ]
-# Add additional assets to the asset load path.
-# Rails.application.config.assets.paths << Emoji.images_path
+# 単独モジュール
+Rails.application.config.assets.precompile += %w[ chat_consult.js photo_preview.js ]
 
-# Precompile additional assets.
-# application.js, application.css, and all non-JS/CSS in the app/assets
-# folder are already added.
-# Rails.application.config.assets.precompile += %w( admin.js admin.css )
+# ★ Stimulusコントローラ（digestedで出力されるように）
+Rails.application.config.assets.precompile += Dir.glob(
+  Rails.root.join("app/javascript/controllers/**/*.js")
+).map { |p| Pathname.new(p).relative_path_from(Rails.root.join("app/javascript")).to_s }

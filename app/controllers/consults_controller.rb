@@ -7,20 +7,24 @@ class ConsultsController < ApplicationController
 
   before_action :ensure_openai_key!
   before_action :set_breadcrumbs, only: :show
+  skip_forgery_protection only: :stream # GET だが環境によって弾かれる保険
 
+  # GET /consult
   def show
-    # ビューを表示（/consult）
+    # ビュー表示だけ
   end
 
   # GET /consult/stream?q=...
   def stream
+    # SSE ヘッダ
     response.headers["Content-Type"]      = "text/event-stream; charset=utf-8"
     response.headers["Cache-Control"]     = "no-cache"
     response.headers["X-Accel-Buffering"] = "no"
+    response.headers["Last-Modified"]     = Time.now.httpdate
 
-    q = params[:q].to_s.strip
     sse = ActionController::Live::SSE.new(response.stream)
 
+    q = params[:q].to_s.strip
     if q.blank?
       sse.write("相談内容を入力してください。", event: "token")
       sse.write("", event: "done")
@@ -37,7 +41,7 @@ class ConsultsController < ApplicationController
       req["Authorization"] = "Bearer #{openai_api_key}"
       req["Content-Type"]  = "application/json"
       req.body = {
-        model: "gpt-4o-mini",  # 必要に応じて変更OK
+        model: "gpt-4o-mini",
         stream: true,
         messages: [
           { role: "system", content: "あなたは子育ての相談相手です。相手をねぎらい、根拠に基づき、断定を避け、やさしい日本語で答えてください。医療や緊急の判断が必要な場合は受診・相談先を案内します。" },
@@ -54,6 +58,7 @@ class ConsultsController < ApplicationController
           next
         end
 
+        # OpenAIの event-stream を1行ずつパース
         res.read_body do |chunk|
           chunk.each_line do |line|
             next unless line.start_with?("data:")
@@ -64,17 +69,20 @@ class ConsultsController < ApplicationController
               delta = json.dig("choices", 0, "delta", "content")
               sse.write(delta.to_s, event: "token") if delta
             rescue JSON::ParserError
-              # 心拍などは無視
+              # 途中のハートビートなどは捨てる
             end
           end
         end
       end
+
     rescue => e
       Rails.logger.error("[consult stream] #{e.class}: #{e.message}")
       sse.write("\n[サーバでエラーが発生しました]", event: "token")
     ensure
+      # クライアント側の完了ハンドラ用に必ず done を送ってから閉じる
       sse.write("", event: "done") rescue nil
-      sse.close
+      sse.close rescue nil
+      response.stream.close rescue nil
     end
   end
 
@@ -83,7 +91,7 @@ class ConsultsController < ApplicationController
   def set_breadcrumbs
     if respond_to?(:add_crumb)
       add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
-      add_crumb("そうだん", consult_path)  # ← ここを「そうだん」に統一
+      add_crumb("そうだん", consult_path)
     end
   end
 

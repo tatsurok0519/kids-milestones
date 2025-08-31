@@ -1,10 +1,5 @@
-<%# === ヒント領域のID（渡されなくても自給） ======================= %>
-<% hint_id = (local_assigns[:hint_id] || dom_id(milestone, :hint)) %>
-<%# ================================================================ %>
-
-<%# Turbo対応の操作UI。位置合わせ用に position:relative を付与 %>
-<div style="position:relative;">
-  <%# 右上バッジ（TRY/花丸） %>
+<div>
+  <%# 右上バッジ（状態に応じて1つだけ表示） %>
   <% if achievement&.working %>
     <%= image_tag "icons/try.png", alt: "", width: 48, height: 48,
           style: "position:absolute; top:8px; right:8px; pointer-events:none;" %>
@@ -18,8 +13,7 @@
     <%# がんばり中 %>
     <%= button_to achievements_upsert_path(milestone_id: milestone.id),
           params: {
-            state: "working",
-            child_id: current_child&.id,
+            toggle: "working",
             age_band: params[:age_band],
             category: params[:category],
             difficulty: params[:difficulty],
@@ -27,7 +21,7 @@
             page: params[:page]
           },
           method: :post,
-          form:   { data: { turbo_frame: dom_id(milestone, :controls), turbo_stream: true, progress_form: true } },
+          form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
           class:  "btn btn-secondary" do %>
       がんばり中
     <% end %>
@@ -35,8 +29,7 @@
     <%# できた！ %>
     <%= button_to achievements_upsert_path(milestone_id: milestone.id),
           params: {
-            state: "achieved",
-            child_id: current_child&.id,
+            toggle: "achieved",
             age_band: params[:age_band],
             category: params[:category],
             difficulty: params[:difficulty],
@@ -44,17 +37,16 @@
             page: params[:page]
           },
           method: :post,
-          form:   { data: { turbo_frame: dom_id(milestone, :controls), turbo_stream: true, progress_form: true } },
+          form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
           class:  "btn btn-primary" do %>
       できた！
     <% end %>
 
-    <%# 未着手に戻す（状態が存在する時だけ） %>
+    <%# 未着手に戻す（状態がある時だけ） %>
     <% if achievement.present? %>
       <%= button_to achievements_upsert_path(milestone_id: milestone.id),
             params: {
-              state: "clear",
-              child_id: current_child&.id,
+              toggle: "clear",
               age_band: params[:age_band],
               category: params[:category],
               difficulty: params[:difficulty],
@@ -62,7 +54,7 @@
               page: params[:page]
             },
             method: :post,
-            form:   { data: { turbo_frame: dom_id(milestone, :controls), turbo_stream: true, progress_form: true } },
+            form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
             class:  "btn" do %>
         未着手に戻す
       <% end %>
@@ -70,11 +62,3 @@
 
   </div>
 </div>
-
-<%# === ヒント（JS不要の <details> 方式。説明が空でも骨組みは出す） === %>
-<details class="hint mt-2">
-  <summary class="btn btn-hint">ヒント</summary>
-  <div id="<%= hint_id %>" class="hint-panel">
-    <%= simple_format(milestone.description.presence || "ヒントは準備中です") %>
-  </div>
-</details>

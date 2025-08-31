@@ -246,12 +246,14 @@ document.addEventListener("turbo:render", setupToasts)
 /* ---------------------------
    未ログインの初期クリーニング（おためしモード）
 --------------------------- */
+// app/javascript/application.js（該当箇所）
 function demoInitialCleanup() {
   if (isSignedIn()) return
   try { localStorage.removeItem("try_progress_v1") } catch (_) {}
-  document.querySelectorAll(".is-working, .is-achieved").forEach((el) => {
-    el.classList.remove("is-working", "is-achieved")
-  })
+ document.querySelectorAll(".milestone-card").forEach((el) => {
+   el.classList.remove("is-working", "is-achieved")
+ })
 }
 document.addEventListener("turbo:load", demoInitialCleanup)
 document.addEventListener("turbo:render", demoInitialCleanup)
+document.addEventListener("DOMContentLoaded", demoInitialCleanup)

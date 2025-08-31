@@ -20,11 +20,11 @@ class ChildrenController < ApplicationController
   # 作成
   def create
     @child = current_user.children.new(child_params)
+    authorize @child
     if @child.save
-      # 作成直後に選択しておくとUXが良い（任意）
-      session[:current_child_id] = @child.id
-      redirect_to @child, notice: "子どもを登録しました。"
+      redirect_to children_path, notice: "子どもを追加しました。"
     else
+      flash.now[:alert] = "入力に誤りがあります。"
       render :new, status: :unprocessable_entity
     end
   end
