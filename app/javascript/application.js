@@ -4,14 +4,14 @@
 
 import "@hotwired/turbo-rails"
 
-// ActiveStorage（direct_upload 等）
+// ActiveStorage（direct_upload の進捗などを使う場合に必要。使ってなくても害はありません）
 import * as ActiveStorage from "@rails/activestorage"
 ActiveStorage.start()
 
-// Stimulusを使っていれば（無ければ読み込まれません）
-import "controllers"
+// Stimulus
+import "controllers"   // ← ここが重要。 "controllers/application" ではない
 
-// 既存のアプリ用スクリプト
+// アプリ独自のスクリプト
 import "photo_preview"
 import "chat_consult"
 

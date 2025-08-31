@@ -4,12 +4,10 @@
     <title>こどもすくすくカード</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <!-- Importmap（Stimulus/Turbo など ESModules） -->
     <%= javascript_importmap_tags %>
-    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
-    <script>window.__SIGNED_IN__ = <%= user_signed_in? ? 'true' : 'false' %>;</script>
   </head>
   <body>
     <!-- 共通ヘッダー -->

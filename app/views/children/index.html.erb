@@ -4,7 +4,7 @@
 
     <div class="actions" style="margin:.5rem 0 1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
       <%= link_to "子どもを追加", new_child_path, class:"btn btn-primary" %>
-      <%= link_to "マイページへ戻る", mypage_path, class:"btn btn-secondary" %>
+      <%= link_to "マイページへ戻る", root_path, class:"btn btn-secondary" %>
     </div>
 
     <% if @children.any? %>
