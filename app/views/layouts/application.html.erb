@@ -3,11 +3,8 @@
   <head>
     <title>こどもすくすくカード</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-
-    <!-- Importmap（Stimulus/Turbo など ESModules） -->
-    <%= javascript_importmap_tags %>
+    <%= javascript_importmap_tags %>   <!-- ←これだけでJSは読む -->
   </head>
   <body>
     <!-- 共通ヘッダー -->

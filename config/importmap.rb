@@ -1,5 +1,3 @@
-# Pin npm packages by running ./bin/importmap
-
 pin "application"
 
 pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
@@ -13,5 +11,5 @@ pin "@rails/activestorage",   to: "activestorage.esm.js"
 pin "chat_consult",  to: "chat_consult.js"
 pin "photo_preview", to: "photo_preview.js"
 
-# ★ここが肝：controllers 配下を Importmap に登録
+# controllers 配下を Importmap に登録
 pin_all_from "app/javascript/controllers", under: "controllers"

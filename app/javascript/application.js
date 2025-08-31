@@ -3,17 +3,12 @@
 // Read more: https://github.com/rails/importmap-rails
 
 import "@hotwired/turbo-rails"
-
-// ActiveStorage（direct_upload の進捗などを使う場合に必要。使ってなくても害はありません）
-import * as ActiveStorage from "@rails/activestorage"
-ActiveStorage.start()
-
-// Stimulus
-import "controllers"   // ← ここが重要。 "controllers/application" ではない
-
-// アプリ独自のスクリプト
+import "controllers"      // ← 重要。 "controllers/application" ではない
 import "photo_preview"
 import "chat_consult"
+
+import * as ActiveStorage from "@rails/activestorage"
+ActiveStorage.start()
 
 /* ---------------------------
    ユーティリティ
