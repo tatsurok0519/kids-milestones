@@ -1,4 +1,66 @@
 ja:
+  # 既存: 日付フォーマット（そのまま保持）
   date:
     formats:
       long: "%Y年%-m月%-d日"
+
+  # 追加（任意）: 時刻フォーマット
+  time:
+    formats:
+      long:  "%Y年%-m月%-d日 %H:%M"
+      short: "%-m/%-d %H:%M"
+
+  # ActiveRecord の日本語化
+  activerecord:
+    models:
+      achievement: 達成
+      child: 子ども
+      milestone: マイルストーン
+      user: ユーザー
+    attributes:
+      achievement:
+        child: 子ども
+        child_id: 子ども
+        milestone: マイルストーン
+        milestone_id: マイルストーン
+        working: がんばり中
+        achieved: できた
+        achieved_at: 達成日時
+      child:
+        name: 名前
+        birthday: 誕生日
+        photo: 写真
+      milestone:
+        title: タイトル
+        category: カテゴリ
+        difficulty: 難易度
+        min_months: 最小月齢
+        max_months: 最大月齢
+        description: 説明
+      user:
+        name: 氏名
+        email: メールアドレス
+        password: パスワード
+        password_confirmation: パスワード（確認）
+
+  # バリデーションメッセージ
+  errors:
+    # "属性名 + メッセージ" の並び方
+    format: "%{attribute}%{message}"
+
+    # 共通メッセージ（必要に応じて追加）
+    messages:
+      blank: "を入力してください"
+      invalid: "は不正な値です"
+      taken: "は既に存在します"
+      too_short: "は%{count}文字以上で入力してください"
+      too_long: "は%{count}文字以内で入力してください"
+      not_a_number: "は数値で入力してください"
+
+    # モデル固有のメッセージ
+    models:
+      achievement:
+        attributes:
+          milestone_id:
+            # （重要）子ども×マイルストーンの重複エラーを日本語で
+            taken: "はこの子に対して既に達成済みです"
