@@ -1,48 +1,44 @@
-<div class="container">
-  <div class="card" style="margin-bottom:1rem;">
-    <h2 class="h2">お子さまカード一覧</h2>
-  </div>
+<div class="container main">
+  <div class="card">
+    <h2 class="h2" style="margin-top:0;">子ども一覧</h2>
 
-  <% if @children.blank? %>
-    <div class="card" style="text-align:center">
-      <p>まだ登録がありません。まずはお子さまカードを作成してください。</p>
-      <%= link_to "子どもを追加", new_child_path, class: "btn btn-primary" %>
+    <div class="actions" style="margin:.5rem 0 1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+      <%= link_to "子どもを追加", new_child_path, class:"btn btn-primary" %>
+      <%= link_to "マイページへ戻る", mypage_path, class:"btn btn-secondary" %>
     </div>
-  <% else %>
-    <% @children.each do |kid| %>
-      <div class="card" style="display:flex; align-items:center; gap:.75rem; justify-content:space-between; margin-bottom:.75rem;">
-        <div style="display:flex; align-items:center; gap:.75rem;">
-          <% if kid.photo.attached? %>
-            <%= image_tag kid.photo, alt: "#{kid.name}の写真",
-                  style: "width:56px;height:56px;object-fit:cover;border-radius:50%;" %>
-          <% else %>
-            <div style="width:56px;height:56px;border-radius:50%;background:#fff3d1;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:#9a7b35;">
-              No Photo
+
+    <% if @children.any? %>
+      <div class="cards-grid">
+        <% @children.each do |child| %>
+          <div class="card" style="padding:1rem;">
+            <div style="display:flex; gap:.75rem; align-items:center;">
+              <% if child.photo.attached? %>
+                <%= image_tag child.photo_thumb, alt: "#{child.name}の写真",
+                      style: "width:72px;height:72px;object-fit:cover;border-radius:.6rem;border:1px solid var(--border);" %>
+              <% else %>
+                <%= image_tag "illustrations/sun.png", alt: "", width: 72, height: 72,
+                      style: "border-radius:.6rem;border:1px solid var(--border);background:#f3f4f6;" %>
+              <% end %>
+
+              <div style="min-width:0;">
+                <div style="font-weight:700;"><%= child.name %></div>
+                <div class="text-muted" style="font-size:.9rem;margin-top:.2rem;">
+                  <%= child.age_label %> / <%= child.age_band_label %>
+                </div>
+
+                <div style="margin-top:.5rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+                  <%= link_to "編集", edit_child_path(child), class:"btn btn-secondary" %>
+                  <%= link_to "削除", child_path(child),
+                        data:{ turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
+                        class:"btn" %>
+                </div>
+              </div>
             </div>
-          <% end %>
-          <div>
-            <div style="font-weight:700;"><%= kid.name %></div>
-            <% if (ym = kid.age_years_months).present? %>
-              <div class="pill" style="margin-top:.25rem;"><%= ym %></div>
-            <% end %>
           </div>
-        </div>
-
-        <div style="display:flex; gap:.5rem;">
-          <%= link_to "編集", edit_child_path(kid), class: "btn btn-secondary" %>
-
-          <%= button_to "削除",
-                child_path(kid),
-                method: :delete,
-                form: { data: { turbo_confirm: "#{kid.name} のカードを削除します。写真と達成履歴も削除され、元に戻せません。よろしいですか？" } },
-                class: "btn btn-secondary",
-                style: "border-color:#f2c4b3;background:#fff;" %>
-        </div>
+        <% end %>
       </div>
+    <% else %>
+      <p>登録された子どもはいません。</p>
     <% end %>
-
-    <div style="text-align:right;">
-      <%= link_to "子どもを追加", new_child_path, class: "btn btn-primary" %>
-    </div>
-  <% end %>
+  </div>
 </div>

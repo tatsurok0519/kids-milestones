@@ -4,29 +4,96 @@
   <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
     <%= render "devise/shared/error_messages", resource: resource %>
 
+    <%# ===== お名前 ===== %>
+    <% n_id   = "#{f.object_name}_name" %>
+    <% n_hint = "#{n_id}_hint" %>
+    <% n_err  = resource.errors[:name].first %>
+    <% n_errid = "#{n_id}_error" %>
+
     <div class="field">
-      <label class="label" for="user_name">お名前</label>
-      <%= f.text_field :name, autocomplete: "name", class: "input", placeholder: "よしえ" %>
+      <%= f.label :name, "お名前", class: "label" %>
+      <%= f.text_field :name,
+            id: n_id, class: "input", autocomplete: "name", required: true,
+            "aria-describedby": [n_hint, (n_err ? n_errid : nil)].compact.join(" "),
+            "aria-invalid": n_err.present? %>
+      <p id="<%= n_hint %>" class="text-muted" style="font-size:.85rem; margin:.3rem 0 0;">
+        ニックネームでもOKです。
+      </p>
+      <% if n_err.present? %>
+        <p id="<%= n_errid %>" style="color:#9b2c10; font-size:.85rem; margin:.25rem 0 0;">
+          <%= n_err %>
+        </p>
+      <% end %>
     </div>
 
-    <div class="field" style="margin-top:.75rem;">
-      <label class="label" for="user_email">メールアドレス</label>
-      <%= f.email_field :email, autocomplete: "email", class: "input", placeholder: "example@example.com" %>
-    </div>
+    <%# ===== メールアドレス ===== %>
+    <% e_id   = "#{f.object_name}_email" %>
+    <% e_hint = "#{e_id}_hint" %>
+    <% e_err  = resource.errors[:email].first %>
+    <% e_errid = "#{e_id}_error" %>
 
     <div class="field" style="margin-top:.75rem;">
-      <label class="label" for="user_password">
-        パスワード
+      <%= f.label :email, "メールアドレス", class: "label" %>
+      <%= f.email_field :email,
+            id: e_id, class: "input", autocomplete: "email", inputmode: "email", required: true,
+            "aria-describedby": [e_hint, (e_err ? e_errid : nil)].compact.join(" "),
+            "aria-invalid": e_err.present? %>
+      <p id="<%= e_hint %>" class="text-muted" style="font-size:.85rem; margin:.3rem 0 0;">
+        ログイン・お知らせに使用します。
+      </p>
+      <% if e_err.present? %>
+        <p id="<%= e_errid %>" style="color:#9b2c10; font-size:.85rem; margin:.25rem 0 0;">
+          <%= e_err %>
+        </p>
+      <% end %>
+    </div>
+
+    <%# ===== パスワード ===== %>
+    <% p_id   = "#{f.object_name}_password" %>
+    <% p_hint = "#{p_id}_hint" %>
+    <% p_err  = resource.errors[:password].first %>
+    <% p_errid = "#{p_id}_error" %>
+
+    <div class="field" style="margin-top:.75rem;">
+      <%= f.label :password, "パスワード", class: "label" %>
+      <%= f.password_field :password,
+            id: p_id, class: "input", autocomplete: "new-password", required: true,
+            "aria-describedby": [p_hint, (p_err ? p_errid : nil)].compact.join(" "),
+            "aria-invalid": p_err.present? %>
+      <p id="<%= p_hint %>" class="text-muted" style="font-size:.85rem; margin:.3rem 0 0;">
         <% if @minimum_password_length %>
-          <small style="color:#7b6f69;font-weight:normal;">（<%= @minimum_password_length %>文字以上）</small>
+          <%= @minimum_password_length %>文字以上を推奨します。
+        <% else %>
+          できるだけ長く・推測されにくいものにしましょう。
         <% end %>
-      </label>
-      <%= f.password_field :password, autocomplete: "new-password", class: "input" %>
+      </p>
+      <% if p_err.present? %>
+        <p id="<%= p_errid %>" style="color:#9b2c10; font-size:.85rem; margin:.25rem 0 0;">
+          <%= p_err %>
+        </p>
+      <% end %>
     </div>
 
+    <%# ===== パスワード（確認） ===== %>
+    <% pc_id   = "#{f.object_name}_password_confirmation" %>
+    <% pc_hint = "#{pc_id}_hint" %>
+    <% pc_err  = resource.errors[:password_confirmation].first %>
+    <% pc_errid = "#{pc_id}_error" %>
+
     <div class="field" style="margin-top:.75rem;">
-      <label class="label" for="user_password_confirmation">パスワード（確認）</label>
-      <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "input" %>
+      <%= f.label :password_confirmation, "パスワード（確認）", class: "label" %>
+      <%= f.password_field :password_confirmation,
+            id: pc_id, class: "input", autocomplete: "new-password", required: true,
+            "aria-describedby": [pc_hint, (pc_err ? pc_errid : nil)].compact.join(" "),
+            "aria-invalid": pc_err.present? %>
+      <p id="<%= pc_hint %>" class="text-muted" style="font-size:.85rem; margin:.3rem 0 0;">
+        上と同じパスワードを入力してください。
+      </p>
+      <% if pc_err.present? %>
+        <p id="<%= pc_errid %>" style="color:#9b2c10; font-size:.85rem; margin:.25rem 0 0;">
+          <%= pc_err %>
+        </p>
+      <% end %>
     </div>
 
     <div class="actions" style="margin-top:1rem;">

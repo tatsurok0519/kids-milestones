@@ -1,8 +1,7 @@
-<!-- app/views/children/_form.html.erb -->
 <%= form_with model: child, local: true, html: { multipart: true } do |f| %>
 
   <% if child.errors.any? %>
-    <div class="flash alert" style="margin-bottom:1rem;">
+    <div class="flash alert" role="alert" style="margin-bottom:1rem;">
       <strong><%= child.errors.count %>件のエラーがあります：</strong>
       <ul style="margin:.5rem 0 0 1rem;">
         <% child.errors.full_messages.each do |m| %>
@@ -12,48 +11,98 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <label class="label" for="child_name">お名前 <span style="color:#c44">*</span></label>
-    <%= f.text_field :name, class: "input", placeholder: "例）ゆきこ / よしえ / はると" %>
-  </div>
+  <%# ===== お名前 ===== %>
+  <% n_id    = "#{f.object_name}_name" %>
+  <% n_hint  = "#{n_id}_hint" %>
+  <% n_err   = child.errors[:name].first %>
+  <% n_errid = "#{n_id}_error" %>
 
   <div class="field">
-    <label class="label" for="child_birthday">お誕生日 <span style="color:#c44">*</span></label>
-    <%= f.date_field :birthday, class: "input" %>
+    <%= f.label :name, "お名前", class: "label" %>
+    <%= f.text_field :name,
+          id: n_id, class: "input", placeholder: "例）ゆきこ / よしえ / はると",
+          autocomplete: "name", required: true,
+          "aria-describedby": [n_hint, (n_err ? n_errid : nil)].compact.join(" "),
+          "aria-invalid": n_err.present? %>
+    <p id="<%= n_hint %>" class="text-muted" style="font-size:.85rem;margin:.3rem 0 0;">
+      呼び名でもOKです。後から変更できます。
+    </p>
+    <% if n_err.present? %>
+      <p id="<%= n_errid %>" style="color:#9b2c10;font-size:.85rem;margin:.25rem 0 0;">
+        <%= n_err %>
+      </p>
+    <% end %>
   </div>
 
-  <div class="field">
-    <label class="label">写真（任意）</label>
+  <%# ===== お誕生日 ===== %>
+  <% b_id    = "#{f.object_name}_birthday" %>
+  <% b_hint  = "#{b_id}_hint" %>
+  <% b_err   = child.errors[:birthday].first %>
+  <% b_errid = "#{b_id}_error" %>
+
+  <div class="field" style="margin-top:.75rem;">
+    <%= f.label :birthday, "お誕生日", class: "label" %>
+    <%= f.date_field :birthday,
+          id: b_id, class: "input", required: true, autocomplete: "bday",
+          "aria-describedby": [b_hint, (b_err ? b_errid : nil)].compact.join(" "),
+          "aria-invalid": b_err.present? %>
+    <p id="<%= b_hint %>" class="text-muted" style="font-size:.85rem;margin:.3rem 0 0;">
+      進捗の目安に使います。正確でなくても大丈夫です。
+    </p>
+    <% if b_err.present? %>
+      <p id="<%= b_errid %>" style="color:#9b2c10;font-size:.85rem;margin:.25rem 0 0;">
+        <%= b_err %>
+      </p>
+    <% end %>
+  </div>
+
+  <%# ===== 写真（任意） ===== %>
+  <% p_id    = "#{f.object_name}_photo" %>
+  <% p_hint  = "#{p_id}_hint" %>
+  <% p_err   = child.errors[:photo].first %>
+  <% p_errid = "#{p_id}_error" %>
+
+  <div class="field" style="margin-top:.75rem;">
+    <%= f.label :photo, "写真（任意）", class: "label" %>
 
     <div style="display:flex; gap:1rem; align-items:center; margin-bottom:.5rem;">
-      <%# プレビュー枠（既存があればサムネで表示） %>
+      <%# プレビュー枠 %>
       <% if child.photo.attached? %>
         <%= image_tag(child.photo_thumb, alt: "#{child.name}の写真",
               id: "photo-preview",
               style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" ) %>
       <% else %>
-        <img id="photo-preview" alt="プレビュー"
+        <img id="photo-preview" alt="選択した写真のプレビュー"
              style="width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;">
       <% end %>
 
       <div style="display:flex; flex-direction:column; gap:.5rem;">
         <%= f.file_field :photo,
-              class: "input",
+              id: p_id, class: "input",
               accept: "image/png,image/jpg,image/jpeg,image/gif",
+              "aria-describedby": [p_hint, (p_err ? p_errid : nil)].compact.join(" "),
               onchange: "previewSelectedImage(this, 'photo-preview')" %>
 
         <% if child.photo.attached? %>
-          <label class="pill" style="cursor:pointer; user-select:none;">
-            <%= f.check_box :remove_photo, {}, "1", "0" %> 写真を削除（新しい写真を選ぶと上書きされます）
+          <% rm_id = "#{f.object_name}_remove_photo" %>
+          <label for="<%= rm_id %>" class="pill" style="cursor:pointer; user-select:none;">
+            <%= f.check_box :remove_photo, { id: rm_id }, "1", "0" %> 写真を削除（新しい写真を選ぶと上書き）
           </label>
         <% end %>
       </div>
     </div>
 
-    <small class="text-muted">※ PNG/JPG/GIF、5MBまで。表示時は枠に合わせてトリミングされます。</small>
+    <p id="<%= p_hint %>" class="text-muted" style="font-size:.85rem;">
+      PNG/JPG/GIF、5MBまで。表示時は枠に合わせてトリミングされます。
+    </p>
+    <% if p_err.present? %>
+      <p id="<%= p_errid %>" style="color:#9b2c10;font-size:.85rem;margin:.25rem 0 0;">
+        <%= p_err %>
+      </p>
+    <% end %>
   </div>
 
-  <div class="actions">
+  <div class="actions" style="margin-top:1rem;">
     <%= f.submit (child.persisted? ? "更新する" : "登録する"), class: "btn btn-primary" %>
     <%= link_to "戻る", children_path, class: "btn btn-secondary" %>
   </div>

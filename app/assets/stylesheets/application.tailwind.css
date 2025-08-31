@@ -46,11 +46,6 @@ a:hover{color:#9f5f00;text-decoration:underline}
   display:flex;align-items:center;justify-content:space-between;gap:.5rem;
   padding:.85rem 0
 }
-/* タイトルはアイコンを横並びに添える */
-.h1{
-  display:flex;align-items:center;gap:.5rem;
-  font-size:1.1rem;font-weight:700;margin:0;letter-spacing:.02em;
-}
 
 /* セクション & カード */
 .h2{font-size:1.25rem;font-weight:700;margin:.25rem 0 .75rem}
@@ -103,7 +98,7 @@ input[type="url"],input[type="number"],input[type="date"],textarea,select{
 .divider{height:1px;background:var(--border);border:0;margin:1rem 0}
 .footer{color:var(--muted);font-size:.85rem;padding:1.25rem 0}
 
-/* ==== フォームがカードからはみ出す問題の修正 ==== */
+/* ==== フォームはみ出し対策 ==== */
 *, *::before, *::after { box-sizing: border-box; }
 .input,
 input[type="text"], input[type="email"], input[type="password"],
@@ -116,12 +111,18 @@ input:not([type]), textarea, select {
 .card .actions { margin-top:1rem; }
 
 /* === 装飾イラスト === */
-/* お日さまはタイトル内にインライン配置 */
+/* タイトル横などで使う小さめ太陽（1定義に統一） */
 .sun-inline{
-  width:36px;height:auto;
+  width:64px;height:auto;
   transform: rotate(-8deg);
   filter: drop-shadow(0 3px 4px rgba(255,170,0,.25));
+  vertical-align: middle;
+  opacity:.9;
 }
+@media (max-width: 640px){
+  .sun-inline{ width:48px; }
+}
+
 /* 水やりは画面右下に固定 */
 .watering-illustration{
   position: fixed; right: 20px; bottom: 20px;
@@ -129,14 +130,14 @@ input:not([type]), textarea, select {
   filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
 }
 
-/* ======== Mobile-first polish (スマホ最適化の上乗せ) ======== */
+/* ======== Mobile-first polish ======== */
 
 /* タップしやすさ（ボタン/入力の最小高さ） */
 .btn,
 input[type="text"], input[type="email"], input[type="password"],
 input[type="search"], input[type="url"], input[type="number"], input[type="date"],
 input:not([type]), textarea, select {
-  min-height: 44px;              /* iOS推奨タップ領域 */
+  min-height: 44px;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -147,9 +148,6 @@ img { max-width: 100%; height: auto; }
 /* 共通カードグリッド用 */
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; }
 
-/* ヘッダーのナビが狭い幅で折り返せるように */
-.header-inner nav { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:flex-end; }
-
 /* 余白と文字サイズを小さめ画面で調整 */
 @media (max-width: 640px) {
   .container { padding: 0 1rem; }
@@ -157,32 +155,13 @@ img { max-width: 100%; height: auto; }
   .h1 { font-size: 1rem; text-align: center; }
   .h2 { font-size: 1.1rem; }
 
-  /* ヘッダーは縦積みにして詰まりを防ぐ */
+  /* ヘッダーは縦積み */
   .header-inner { flex-direction: column; align-items: stretch; }
-  .header-inner nav { justify-content: center; }
-
-  /* カードの最小幅を少し小さくして1列になりにくく */
-  .cards-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 }
 
-/* とても狭い幅ではお日さまは非表示（被り防止） */
+/* とても狭い幅では太陽を隠す（被り防止） */
 @media (max-width: 360px) {
   .sun-inline{ display: none; }
-}
-
-/* タイトル横の太陽（大きめ） */
-.sun-inline{
-  width: 110px;         /* ← デスクトップは大きめ（例: 110〜120px） */
-  height: auto;
-  margin-left: 10px;
-  vertical-align: middle;
-  opacity: .9;
-  filter: drop-shadow(0 4px 8px rgba(240,160,60,.18));
-}
-
-/* スマホでは少しだけ小さく */
-@media (max-width: 640px){
-  .sun-inline{ width: 80px; margin-left: 8px; }
 }
 
 /* ===== 子ども切替UI ===== */
@@ -193,7 +172,8 @@ img { max-width: 100%; height: auto; }
 .kid-chip{
   display:inline-flex; align-items:center; gap:.6rem;
   background:#fff; border:1px solid var(--border);
-  padding:.5rem .7rem; border-radius:.9rem; text-decoration:none; color:var(--text);
+  padding:.5rem .7rem; border-radius:.9rem; text-decoration:none; color:#fff0;
+  color:var(--text);
   box-shadow: var(--shadow-sm);
 }
 .kid-chip:hover{ background:#fff8e0; }
@@ -211,7 +191,7 @@ img { max-width: 100%; height: auto; }
 .kid-meta .kid-name{ font-weight:700; line-height:1.1; }
 .kid-meta .kid-age{ font-size:.8rem; color:#7a6b5a; }
 
-/* 表示切り替え（PC/スマホ） */
+/* 表示切替（PC/スマホ） */
 .only-mobile{ display:none; }
 @media (max-width: 640px){
   .only-desktop{ display:none; }
@@ -219,7 +199,7 @@ img { max-width: 100%; height: auto; }
 }
 
 .kid-chip.is-active {
-  outline: 3px solid rgba(255,211,105,.35); /* はちみつ色のハイライト */
+  outline: 3px solid rgba(255,211,105,.35);
   border-color: var(--pri-600);
 }
 
@@ -229,14 +209,11 @@ img { max-width: 100%; height: auto; }
 
 /* ---- rewards (控えめ演出) ---- */
 @layer components {
-  /* 解放前後でのなめらかさ */
   .reward-icon,
   .reward-icon img {
     transition: transform .35s ease, filter .35s ease, opacity .35s ease;
     will-change: transform, filter, opacity;
   }
-
-  /* キーフレーム（img直付け・ラッパ両対応） */
   .reward-icon.anim-unlock,
   .reward-icon.anim-unlock img {
     animation: rw-pop .45s cubic-bezier(.2,.8,.2,1),
@@ -244,25 +221,12 @@ img { max-width: 100%; height: auto; }
     will-change: transform, filter, opacity;
   }
 }
+@keyframes rw-pop { 0%{transform:scale(.6) rotate(-4deg);opacity:0} 60%{transform:scale(1.10);opacity:1} 100%{transform:scale(1)} }
+@keyframes rw-glow{ 0%{filter:drop-shadow(0 0 0 rgba(255,200,0,0))} 100%{filter:drop-shadow(0 0 12px rgba(255,200,0,.45))} }
 
-/* ポップ：ふわっと拡大→収束（控えめ） */
-@keyframes rw-pop {
-  0%   { transform: scale(.6) rotate(-4deg); opacity: 0; }
-  60%  { transform: scale(1.10) rotate(0deg); opacity: 1; }
-  100% { transform: scale(1); }
-}
-
-/* 発光：やさしいドロップシャドウ */
-@keyframes rw-glow {
-  0%   { filter: drop-shadow(0 0 0 rgba(255,200,0,0)); }
-  100% { filter: drop-shadow(0 0 12px rgba(255,200,0,.45)); }
-}
-
-/* ユーザーが簡易表示を希望する環境ではアニメを無効化 */
 @media (prefers-reduced-motion: reduce) {
   .reward-icon, .reward-icon img { transition: none !important; }
-  .reward-icon.anim-unlock,
-  .reward-icon.anim-unlock img { animation: none !important; }
+  .reward-icon.anim-unlock, .reward-icon.anim-unlock img { animation: none !important; }
 }
 
 /* ---- toast ---- */
@@ -280,80 +244,85 @@ img { max-width: 100%; height: auto; }
 }
 @keyframes toast-in { from { transform: translateY(-6px); opacity:0; } to { opacity:1; } }
 
-/* === Rewards animation (pop + glow then fade) === */
-.reward-icon{
-  position: relative;
-  display: inline-flex;
-  transform-origin: center;
-}
-.reward-icon img{ display:block; max-width:100%; height:auto; }
-
-/* ラッパー：ふわっと拡大→収束（見えやすく0.55s） */
-.reward-icon.anim-unlock{
-  animation: rw-pop .55s cubic-bezier(.2,.8,.2,1) both;
-  will-change: transform, opacity;
-}
-
-/* 画像：淡く発光→必ず消える */
-.reward-icon.anim-unlock img{
-  animation: rw-glow 1.2s ease-out .1s forwards;
-  will-change: filter, opacity;
-}
-
-/* 拡大→収束 */
-@keyframes rw-pop{
-  0%   { transform: scale(.55) rotate(-4deg); opacity:.2; }
-  60%  { transform: scale(1.12) rotate(0deg); opacity:1; }
-  100% { transform: scale(1); }
-}
-
-/* 発光（はっきり → 0 に戻す） */
-@keyframes rw-glow{
-  0%   { filter:none; }
-  45%  { filter: drop-shadow(0 0 16px rgba(255,200,0,.65)); }
-  100% { filter:none; } /* ← 消灯 */
-}
-
-@media (prefers-reduced-motion: reduce){
-  .reward-icon.anim-unlock,
-  .reward-icon.anim-unlock img{ animation: none !important; }
-}
-
 /* どのテーマでもリンクが見やすいように */
 .link { color:#c17400; text-underline-offset:2px; }
 .link:hover { color:#9f5f00; text-decoration: underline; }
 
-/* ==== Header brand logo (sun) ==== */
-/* デフォ：モバイルでも最大 96px。画面幅に応じて 56〜96px で可変 */
-.brand-logo{
-  width: clamp(56px, 18vw, 96px);
-  height: auto;
-  flex: none;
-}
-
-/* タブレットで少しだけ拡大 */
-@media (min-width: 640px){
-  .brand-logo{ width: 96px; }
-}
-
-/* デスクトップでは最大 120px まで */
-@media (min-width: 1024px){
-  .brand-logo{ width: 120px; }
-}
-
-/* ヘッダーはモバイルで2段に落とす */
+/* ---- Header layout ---- */
 .header-inner{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:.85rem 0; }
 .brand{ display:flex; align-items:center; gap:.6rem; min-width:0; }
 .brand-title{ font-size:1.6rem; line-height:1.15; margin:0; }
 @media (max-width:640px){ .brand-title{ font-size:1.35rem; } }
 
-/* ナビはモバイルで下段・全幅 */
+/* ナビ（ボタン群） */
 .main-nav{ display:flex; gap:.5rem; flex-wrap:wrap; }
+/* モバイル：2段目へ・全幅 */
 @media (max-width:640px){
   .brand{ flex: 1 1 100%; }
   .main-nav{ flex: 1 1 100%; order:2; justify-content:flex-start; }
 }
-/* PCでは右寄せ */
+/* PC：右寄せ */
 @media (min-width:641px){
   .main-nav{ margin-left:auto; justify-content:flex-end; }
+}
+
+/* ========= A11y base ========= */
+.sr-only {
+  position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,1px,1px); white-space:nowrap; border:0;
+}
+
+:focus { outline: none; }
+:focus-visible {
+  outline: 3px solid rgba(255,211,105,.85);
+  outline-offset: 2px;
+  border-radius: .4rem;
+}
+
+/* タップ領域の最低サイズ（44x44） */
+a.btn, button.btn, .pill,
+input[type="checkbox"] + label, input[type="radio"] + label {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* チェック系 */
+input[type="checkbox"], input[type="radio"] { inline-size: 1.1rem; block-size: 1.1rem; }
+.form-check { display:flex; align-items:center; gap:.5rem; }
+.form-check > input { flex: none; }
+.form-check > label { cursor: pointer; }
+
+/* 入力欄のコントラスト/エラー伝達 */
+input, textarea, select { color: #2a2523; background:#fff; border:1px solid var(--border); }
+input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]{
+  border-color:#e35b5b; box-shadow:0 0 0 3px rgba(227,91,91,.15);
+}
+
+/* セカンダリボタン見やすく */
+.btn-secondary { color:#222; background:#fff; border-color:#ddd; }
+.btn-secondary:hover { background:#fff8e0; border-color:#ccc; }
+
+/* （残しておくなら）高コントラスト・モード */
+html[data-contrast="high"] {
+  --text:#1b1b1b; --border:#c9b890;
+  --pri:#cf7f00; --pri-600:#b86f00; --accent:#ffca3a;
+}
+html[data-contrast="high"] body { color: var(--text); }
+html[data-contrast="high"] .btn-primary { background: var(--pri); }
+html[data-contrast="high"] .btn-secondary { border-color: #bbb; color:#161616; }
+
+/* === Hard cap: header sun logo (never giant again) === */
+/* ※必ずファイルの最後に置いてください */
+header.header-bar img.brand-logo{
+  width:72px !important;
+  max-width:72px !important;
+  height:auto !important;
+  flex:none;
+}
+@media (min-width: 641px){
+  header.header-bar img.brand-logo{ width:88px !important; max-width:88px !important; }
+}
+@media (min-width: 1024px){
+  header.header-bar img.brand-logo{ width:104px !important; max-width:104px !important; }
 }

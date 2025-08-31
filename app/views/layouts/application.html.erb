@@ -3,6 +3,7 @@
   <head>
     <title>こどもすくすくカード</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
@@ -72,7 +73,7 @@
       </div>
     <% end %>
 
-    <main class="container main" style="padding:1.5rem 0">
+    <main id="main" class="container main" style="padding:1.5rem 0">
       <%= yield %>
     </main>
 
@@ -80,7 +81,7 @@
     <%= render "shared/footer" %>
 
     <!-- トーストレイヤ -->
-    <div id="toasts" class="toast-layer" aria-live="polite" aria-atomic="true"></div>
+    <div id="toasts" class="toast-layer" role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="reward_animator" hidden aria-hidden="true"></div>
 
     <%# 新規ごほうびが直前の操作で解放されていたら、次ページロード時に演出を起動 %>

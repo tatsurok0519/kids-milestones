@@ -2,19 +2,58 @@
   <h2 class="h2">ログイン</h2>
 
   <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <%# ===== メール ===== %>
+    <% e_id    = "#{f.object_name}_email" %>
+    <% e_hint  = "#{e_id}_hint" %>
+    <% e_err   = resource.errors[:email].first %>
+    <% e_errid = "#{e_id}_error" %>
+
     <div class="field">
-      <label class="label" for="user_email">メールアドレス</label>
-      <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input", placeholder: "example@example.com" %>
+      <%= f.label :email, "メールアドレス", class: "label" %>
+      <%= f.email_field :email,
+            id: e_id, class: "input", autofocus: true,
+            autocomplete: "email", inputmode: "email", required: true,
+            "aria-describedby": [e_hint, (e_err ? e_errid : nil)].compact.join(" "),
+            "aria-invalid": e_err.present? %>
+      <p id="<%= e_hint %>" class="text-muted" style="font-size:.85rem;margin:.3rem 0 0;">
+        登録したメールアドレスを入力してください。
+      </p>
+      <% if e_err.present? %>
+        <p id="<%= e_errid %>" style="color:#9b2c10;font-size:.85rem;margin:.25rem 0 0;">
+          <%= e_err %>
+        </p>
+      <% end %>
     </div>
 
+    <%# ===== パスワード ===== %>
+    <% p_id    = "#{f.object_name}_password" %>
+    <% p_hint  = "#{p_id}_hint" %>
+    <% p_err   = resource.errors[:password].first %>
+    <% p_errid = "#{p_id}_error" %>
+
     <div class="field" style="margin-top:.75rem;">
-      <label class="label" for="user_password">パスワード</label>
-      <%= f.password_field :password, autocomplete: "current-password", class: "input" %>
+      <%= f.label :password, "パスワード", class: "label" %>
+      <%= f.password_field :password,
+            id: p_id, class: "input",
+            autocomplete: "current-password", required: true,
+            "aria-describedby": [p_hint, (p_err ? p_errid : nil)].compact.join(" "),
+            "aria-invalid": p_err.present? %>
+      <p id="<%= p_hint %>" class="text-muted" style="font-size:.85rem;margin:.3rem 0 0;">
+        セキュリティのため、公共の端末では入力後にログアウトしてください。
+      </p>
+      <% if p_err.present? %>
+        <p id="<%= p_errid %>" style="color:#9b2c10;font-size:.85rem;margin:.25rem 0 0;">
+          <%= p_err %>
+        </p>
+      <% end %>
     </div>
 
     <% if devise_mapping.rememberable? %>
+      <% r_id = "#{f.object_name}_remember_me" %>
       <div class="field" style="margin-top:.75rem;">
-        <label><%= f.check_box :remember_me %> ログインしたままにする</label>
+        <label for="<%= r_id %>" class="label" style="font-weight:normal;">
+          <%= f.check_box :remember_me, id: r_id %> ログインしたままにする
+        </label>
       </div>
     <% end %>
 
@@ -23,8 +62,8 @@
     </div>
   <% end %>
 
-  <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+  <div style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;">
     <%= link_to "新規登録はこちら", new_registration_path(resource_name), class: "btn btn-secondary" %>
-    <%= link_to "パスワードをお忘れの場合", new_password_path(resource_name) %>
+    <%= link_to "パスワードをお忘れの場合", new_password_path(resource_name), class: "btn" %>
   </div>
 </div>

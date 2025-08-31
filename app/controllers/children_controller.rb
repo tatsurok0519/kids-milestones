@@ -1,6 +1,6 @@
 class ChildrenController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_child, only: [:show, :edit, :update, :destroy]
+  before_action :set_child, only: [:edit, :update, :destroy, :show, :select]
 
   # 一覧：自分の子だけ
   def index
@@ -9,7 +9,7 @@ class ChildrenController < ApplicationController
 
   # 詳細
   def show
-    # @child は set_child 済み（authorize 済み）
+    redirect_to edit_child_path(@child)
   end
 
   # 新規
@@ -72,8 +72,7 @@ class ChildrenController < ApplicationController
   # 自分の子だけから取得し、各アクションに応じて自動で権限判定
   # （show? / edit?→update? / destroy?）
   def set_child
-    @child = policy_scope(Child).find(params[:id])
-    authorize @child
+    @child = current_user.children.find(params[:id])
   end
 
   def child_params
