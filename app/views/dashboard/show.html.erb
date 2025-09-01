@@ -106,3 +106,7 @@
     </div>
   </div>
 </div>
+
+<% if @unseen_reward_ids.present? %>
+  <script>window.UNSEEN_REWARD_IDS = <%= raw @unseen_reward_ids.to_json %>;</script>
+<% end %>

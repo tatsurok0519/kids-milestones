@@ -29,8 +29,15 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
+    # 新規解放リワード（演出用）
     @new_rewards = RewardUnlocker.call(@child)
-    session[:reward_boot_ids] = Array(@new_rewards).map(&:id) if @new_rewards.present?
+    ids = Array(@new_rewards).map(&:id)
+
+    # ▼ ここを追加：未視聴としてセッションに貯める（加算/ユニーク）
+    if ids.any?
+      unseen = Array(session[:unseen_reward_ids])
+      session[:unseen_reward_ids] = (unseen + ids).uniq
+    end
 
     respond_ok
   rescue ActiveRecord::RecordNotFound

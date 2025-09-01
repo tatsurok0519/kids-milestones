@@ -11,13 +11,15 @@ class ChildrenController < ApplicationController
     authorize @child
   end
 
+  def show
+    # 迷い込んだURLは一覧へ返す
+    redirect_to children_path
+  end
+
   def create
-    @child = current_user.children.build(child_params)
-    authorize @child
+    @child = current_user.children.new(child_params)
 
     if @child.save
-      # 追加した子を選択状態に
-      select_current_child(@child)
       redirect_to children_path, notice: "子どもを登録しました。"
     else
       render :new, status: :unprocessable_entity
@@ -28,10 +30,13 @@ class ChildrenController < ApplicationController
   end
 
   def update
-    # 画像の削除フラグを先に見る
-    remove_flag = ActiveModel::Type::Boolean.new.cast(params.dig(:child, :remove_photo))
+    # フォームのチェックボックス値を安全に取り出し、child_params からは必ず除外する
+    raw_remove   = params.dig(:child, :remove_photo)
+    remove_flag  = ActiveModel::Type::Boolean.new.cast(raw_remove)
+    params[:child]&.delete(:remove_photo)  # ← 念のため混入を確実に除去
 
     if @child.update(child_params)
+      # チェックが付いていて、かつ添付があるときだけ削除
       @child.photo.purge_later if remove_flag && @child.photo.attached?
       redirect_to children_path, notice: "更新しました。"
     else
@@ -40,9 +45,7 @@ class ChildrenController < ApplicationController
   end
 
   def destroy
-    was_current = (current_child&.id == @child.id)
-    @child.destroy
-    select_current_child(nil) if was_current
+    @child.destroy!
     redirect_to children_path, notice: "削除しました。"
   end
 
@@ -55,6 +58,6 @@ class ChildrenController < ApplicationController
 
   # ← ここで :birthday を必ず許可
   def child_params
-    params.require(:child).permit(:name, :birthday, :photo, :remove_photo)
+    params.require(:child).permit(:name, :birthday, :photo)
   end
 end

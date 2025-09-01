@@ -28,9 +28,9 @@
 
                 <div style="margin-top:.5rem; display:flex; gap:.5rem; flex-wrap:wrap;">
                   <%= link_to "編集", edit_child_path(child), class:"btn btn-secondary" %>
-                  <%= button_to "削除", child_path(child),
+                  <%= button_to "削除する", child_path(child),
                         method: :delete,
-                        form: { data: { turbo_confirm: "本当に削除しますか？", turbo: false } },
+                        form: { data: { turbo_confirm: "※削除すると 写真 と 達成履歴（花丸） も一緒に削除されます。復元はできません。よろしいですか？" } },
                         class: "btn btn-danger" %>
                 </div>
               </div>

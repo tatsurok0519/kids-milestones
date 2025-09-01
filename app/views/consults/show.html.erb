@@ -1,6 +1,12 @@
 <div class="container main">
   <div class="card" style="padding:1rem;">
-    <div class="h2" style="margin:0 0 .5rem;">子育て相談</div>
+    <h2 class="h2" style="margin-top:0; display:flex; align-items:center; gap:.5rem;">
+      <span>子育て相談</span>
+      <span style="display:flex; gap:.25rem; margin-left:.5rem;">
+        <%= image_tag "illustrations/boy.png",  alt: "", width: 64, height: 64, class: "kid-inline" %>
+        <%= image_tag "illustrations/girl.png", alt: "", width: 64, height: 64, class: "kid-inline" %>
+      </span>
+    </h2>
 
     <form id="consult-form" style="display:flex; gap:.5rem; align-items:center;">
       <input id="consult-input" class="input" name="q" placeholder="いま悩んでいることを気軽に書いてください" style="flex:1;">

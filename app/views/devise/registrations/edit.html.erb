@@ -64,45 +64,4 @@
     <%= link_to "子どもを追加", new_child_path, class:"btn btn-primary" %>
     <%= link_to "子ども一覧", children_path, class:"btn btn-secondary" %>
   </div>
-
-  <% children =
-       if resource.respond_to?(:children)
-         resource.children.order(:id)
-       else
-         Child.where(user_id: resource.id).order(:id) # 保険
-       end %>
-
-  <% if children.any? %>
-    <div class="cards-grid">
-      <% children.each do |child| %>
-        <div class="card" style="padding:1rem;">
-          <div style="display:flex; gap:.75rem; align-items:center;">
-            <% if child.photo.attached? %>
-              <%= image_tag child.photo_thumb, alt: "#{child.name}の写真",
-                    style: "width:72px;height:72px;object-fit:cover;border-radius:.6rem;border:1px solid var(--border);" %>
-            <% else %>
-              <%= image_tag "illustrations/sun.png", alt: "", width: 72, height: 72,
-                    style: "border-radius:.6rem;border:1px solid var(--border);background:#f3f4f6;" %>
-            <% end %>
-
-            <div style="min-width:0;">
-              <div style="font-weight:700;"><%= child.name %></div>
-              <div class="text-muted" style="font-size:.9rem;margin-top:.2rem;">
-                <%= child.age_label %> / <%= child.age_band_label %>
-              </div>
-
-              <div style="margin-top:.5rem; display:flex; gap:.5rem; flex-wrap:wrap;">
-                <%= link_to "編集",  edit_child_path(child), class:"btn btn-secondary" %>
-                <%= link_to "削除",  child_path(child),
-                      data:{ turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
-                      class:"btn" %>
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <p>登録されたお子さまはまだいません。</p>
-  <% end %>
 </div>

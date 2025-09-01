@@ -1,15 +1,21 @@
-<%# 新規に解放されたリワードをトーストで通知。各リワード1つずつ表示。3秒で自動消去。 %>
+<% tier_ja = { "bronze" => "銅", "silver" => "銀", "gold" => "金" } %>
 
-<% tier_ja = { 'bronze' => '銅', 'silver' => '銀', 'gold' => '金' } %>
+<% Array(rewards).each do |r| %>
+  <%# 表示用値を安全に用意 %>
+  <% kind_label = (r.kind == "medal" ? "メダル" : "トロフィー") %>
+  <% tier_label = tier_ja[r.tier.to_s] || r.tier.to_s.presence || "" %>
+  <% icon_path  = (r.respond_to?(:icon_path) && r.icon_path.present?) ? r.icon_path : "icons/medal.png" %>
 
-<% rewards.each do |r| %>
-  <div class="toast reward-toast" data-timeout="3000">
-    <%= image_tag r.icon_path, alt: "", width: 28, height: 28, style: "flex:none" %>
+  <div
+    id="reward-toast-<%= r.id %>"
+    class="toast reward-toast"
+    role="status" aria-live="polite"
+    data-timeout="3000"
+    data-reward-id="<%= r.id %>"
+  >
+    <%= (image_tag icon_path, alt: "", width: 28, height: 28, style: "flex:none") rescue "" %>
     <div>
-      <strong>
-        <%= r.kind == 'medal' ? 'メダル' : 'トロフィー' %>（<%= tier_ja[r.tier] %>）
-      </strong>
-      を解放！
+      <strong><%= kind_label %><%= "（#{tier_label}）" if tier_label.present? %></strong> を解放！
       <% if r.respond_to?(:name) && r.name.present? %>
         <span><%= r.name %></span>
       <% end %>
@@ -18,8 +24,22 @@
 <% end %>
 
 <script>
-  // ダッシュボードのアイコンにアニメ用クラスを付ける
-  document.dispatchEvent(new CustomEvent("reward:unlocked", {
-    detail: { ids: <%= raw rewards.map(&:id).to_json %> }
-  }));
+  (function () {
+    // ① ダッシュボード側の演出トリガ（既存リスナー向け）
+    try {
+      document.dispatchEvent(new CustomEvent("reward:unlocked", {
+        detail: { ids: <%= raw Array(rewards).map(&:id).to_json %> }
+      }));
+    } catch (_) {}
+
+    // ② トーストの自動消去（重複初期化防止つき）
+    document.querySelectorAll(".reward-toast:not([data-initialized])").forEach(function(el){
+      el.setAttribute("data-initialized","1");
+      var ms = parseInt(el.getAttribute("data-timeout") || "3000", 10);
+      setTimeout(function(){
+        el.classList.add("is-leaving");           // ← CSS でフェードアウトさせたい場合用（任意）
+        setTimeout(function(){ el.remove(); }, 320); // フェード時間ぶん待って削除
+      }, isNaN(ms) ? 3000 : ms);
+    });
+  })();
 </script>

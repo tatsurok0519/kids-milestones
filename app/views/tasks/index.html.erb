@@ -14,7 +14,7 @@
         <% end %>
 
         <div style="min-width:200px;">
-          <h2 class="h2" style="margin:0 0 .25rem 0;">できるかな（標準タスク）</h2>
+          <h2 class="h2" style="margin:0 0 .25rem 0;">できるかな</h2>
           <div class="h2" style="font-size:1.1rem;margin:0;">
             <strong><%= current_child.name %></strong> さん
           </div>
@@ -34,7 +34,14 @@
       </p>
 
     <% else %>
-      <h2 class="h2" style="margin:0;">できるかな</h2>
+      <h2 class="h2" style="margin:0; display:flex; align-items:center; gap:.5rem;">
+        できるかな
+        <%= image_tag "illustrations/children.png",
+              alt: "",
+              width: 96, height: 96,                         # ← サイズをガチ固定
+              style: "transform:none; flex:none;"  # ← 少し傾ける（デカくならない）
+        %>
+      </h2>
       <p style="margin:.25rem 0 0;">
         ログインなしの「おためしモード」です。進捗はこの端末（ブラウザ）のみ保存されます。
         <%= link_to "保存やレポートを使うには登録", new_user_registration_path, class: "btn btn-primary", style: "margin-left:.5rem;" %>

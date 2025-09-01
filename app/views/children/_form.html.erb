@@ -49,10 +49,11 @@
               "aria-describedby":[p_hint,(p_err ? p_errid : nil)].compact.join(" "),
               onchange:"previewSelectedImage(this, 'photo-preview')" %>
 
-        <% if child.persisted? && child.photo.attached? %>
+        <% if child.photo.attached? %>
           <% rm_id = "#{f.object_name}_remove_photo" %>
           <label for="<%= rm_id %>" class="pill" style="cursor:pointer; user-select:none;">
-            <%= f.check_box :remove_photo, { id: rm_id }, "1", "0" %> 写真を削除（新しい写真を選ぶと上書き）
+            <%= check_box_tag "child[remove_photo]", "1", false, id: rm_id %>
+            写真を削除（新しい写真を選ぶと上書き）
           </label>
         <% end %>
       </div>

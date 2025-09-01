@@ -9,10 +9,16 @@
         <% Reward.where(kind: kind).order(:threshold).each do |rw| %>
           <% unlocked = @reward_unlock_ids.include?(rw.id) %>
           <div style="text-align:center;">
-            <%= image_tag rw.icon_path,
-                  alt: "#{label} #{rw.tier}",
-                  width: 56, height: 56,
-                  style: "filter: #{unlocked ? 'none' : 'grayscale(100%) opacity(0.35)'};" %>
+            <span
+              id="reward_icon_<%= rw.id %>"
+              class="reward-icon"
+              data-reward-id="<%= rw.id %>"
+              style="display:inline-flex; align-items:center; justify-content:center;">
+              <%= image_tag rw.icon_path,
+                    alt: "#{label} #{rw.tier}",
+                    width: 56, height: 56,
+                    style: "filter: #{unlocked ? 'none' : 'grayscale(100%) opacity(0.35)'};" %>
+            </span>
             <div style="font-size:.8rem; color:#6b7280">
               <%= unlocked ? "解放済" : "#{rw.threshold} 花丸" %>
             </div>

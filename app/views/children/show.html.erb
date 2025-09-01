@@ -16,8 +16,9 @@
 
   <div style="margin-top:1rem;display:flex;gap:.5rem;">
     <%= link_to "編集", edit_child_path(@child), class: "btn btn-secondary" %>
-    <%= link_to "削除する", @child,
-          data: { turbo_method: :delete, turbo_confirm: "※削除すると 写真（ストレージの実体） と 達成履歴（花丸） も一緒に削除されます。復元はできません。よろしいですか？" },
+    <%= button_to "削除する", child_path(@child),
+          method: :delete,
+          form: { data: { turbo_confirm: "※削除すると 写真 と 達成履歴（花丸） も一緒に削除されます。復元はできません。よろしいですか？" } },
           class: "btn btn-danger" %>
     <%= link_to "一覧へ戻る", children_path, class: "btn btn-primary" %>
   </div>

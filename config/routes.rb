@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   # 子ども選択はログイン時のみ許可にするのが安全（公開で必要なら外してください）
   authenticate :user do
-    resources :children, only: [:index, :new, :create, :edit, :update, :destroy] do
+    resources :children, only: [:index, :new, :create, :edit, :update, :destroy, :show] do
       post :select, on: :member
     end
   end
@@ -28,6 +28,8 @@ Rails.application.routes.draw do
   # ※もし resources 形式にしたいなら次の1行に置き換え、上の行は削除:
   # resources :achievements, only: [] { post :upsert, on: :collection }
 
+  post 'rewards/ack', to: 'rewards#ack_seen', as: :ack_rewards
+  
   # 相談（SSE）
   resource :consult, only: [:show] do
     get :stream, on: :collection

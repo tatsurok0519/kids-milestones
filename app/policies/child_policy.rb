@@ -7,6 +7,10 @@ class ChildPolicy < ApplicationPolicy
   def destroy? = show?
   def use?     = show?   # 既存用途互換
 
+  def destroy?
+    record.user_id == user.id
+  end
+
   class Scope < Scope
     def resolve
       user ? scope.where(user_id: user.id) : scope.none
