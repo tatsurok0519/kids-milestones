@@ -28,9 +28,11 @@
 
                 <div style="margin-top:.5rem; display:flex; gap:.5rem; flex-wrap:wrap;">
                   <%= link_to "編集", edit_child_path(child), class:"btn btn-secondary" %>
-                  <%= link_to "削除", child_path(child),
-                        data:{ turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
-                        class:"btn" %>
+                  <%= button_to "削除",
+                        child_path(child),
+                        method: :delete,
+                        form:  { data: { turbo_confirm: "本当に削除しますか？" } },
+                        class: "btn btn-danger" %>
                 </div>
               </div>
             </div>

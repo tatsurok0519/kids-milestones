@@ -9,34 +9,18 @@
   <% end %>
 
   <div style="margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
-    <%# がんばり中（2回押すと解除） %>
-    <%= button_to achievements_upsert_path(milestone_id: milestone.id, format: :html),
-          params: {
-            toggle: "working",
-            age_band: params[:age_band],
-            category: params[:category],
-            difficulty: params[:difficulty],
-            only_unachieved: params[:only_unachieved],
-            page: params[:page]
-          },
+    <%= button_to achievements_upsert_path(milestone_id: milestone.id, format: :turbo_stream),
+          params: { toggle: next_for_working,  ...略... },
           method: :post,
-          form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
+          form:   { data: { turbo_frame: dom_id(milestone, :controls) } },
           class:  "btn btn-secondary" do %>
       がんばり中
     <% end %>
 
-    <%# できた！（2回押すと解除） %>
-    <%= button_to achievements_upsert_path(milestone_id: milestone.id, format: :html),
-          params: {
-            toggle: "achieved",
-            age_band: params[:age_band],
-            category: params[:category],
-            difficulty: params[:difficulty],
-            only_unachieved: params[:only_unachieved],
-            page: params[:page]
-          },
+    <%= button_to achievements_upsert_path(milestone_id: milestone.id, format: :turbo_stream),
+          params: { toggle: next_for_achieved, ...略... },
           method: :post,
-          form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
+          form:   { data: { turbo_frame: dom_id(milestone, :controls) } },
           class:  "btn btn-primary" do %>
       できた！
     <% end %>

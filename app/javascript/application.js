@@ -6,6 +6,7 @@ import "@hotwired/turbo-rails"
 import "controllers"      // ← 重要。 "controllers/application" ではない
 import "photo_preview"
 import "chat_consult"
+import "channels"
 
 import * as ActiveStorage from "@rails/activestorage"
 ActiveStorage.start()

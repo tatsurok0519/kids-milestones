@@ -162,7 +162,7 @@
 
             <%# ▼▼ 常時表示ヒント（中身が無ければ既定文言） ▼▼ %>
             <% hint_raw =
-                 (defined?(milestone_hint_text) ? milestone_hint_text(ms) : nil) ||
+                 (milestones_has_hint_text_column? && defined?(milestone_hint_text) ? milestone_hint_text(ms) : nil) ||
                  ms.try(:description) %>
             <details class="hint-wrap" style="margin-top:.6rem;">
               <summary class="btn btn-hint"
