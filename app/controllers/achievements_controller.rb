@@ -2,42 +2,42 @@ class AchievementsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_child_and_milestone
 
+  # POST /achievements/upsert
+  # params:
+  # - toggle or state: "working" | "achieved"   （同じボタンの2回押しでクリア）
+  # - child_id（任意）/ milestone_id（必須）
+  # - 画面フィルタ維持: age_band/category/difficulty/only_unachieved/page
   def upsert
+    # Turbo Frameから来たら必ず turbo_stream を返す（全画面遷移を防止）
+    request.format = :turbo_stream if turbo_frame_request?
+
     state = (params[:state].presence || params[:toggle].presence).to_s
     ach = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
     authorize(ach, :upsert?)
 
     case state
     when "working"
-      if ach.working? && !ach.achieved?
-        ach.working     = false
-        ach.achieved    = false
-        ach.achieved_at = nil
+      if ach.working?
+        # 2回押しでクリア
+        ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
       else
-        ach.working     = true
-        ach.achieved    = false
-        ach.achieved_at = nil
+        ach.assign_attributes(working: true, achieved: false, achieved_at: nil)
       end
     when "achieved"
       if ach.achieved?
-        ach.working     = false
-        ach.achieved    = false
-        ach.achieved_at = nil
+        # 2回押しでクリア
+        ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
       else
-        ach.working     = false
-        ach.achieved    = true
+        ach.assign_attributes(working: false, achieved: true)
         ach.achieved_at ||= Time.current
       end
-    when "clear"
-      ach.working     = false
-      ach.achieved    = false
-      ach.achieved_at = nil
     else
       return respond_invalid_state
     end
 
     ach.save!
 
+    # 新規解放リワード（演出用）
     @new_rewards = RewardUnlocker.call(@child)
     ids = Array(@new_rewards).map(&:id)
     session[:reward_boot_ids] = ids if ids.any?
@@ -69,25 +69,19 @@ class AchievementsController < ApplicationController
     policy_scope(Achievement).find_by(child_id: @child.id, milestone_id: @milestone.id)
   end
 
+  # ---- レスポンス（Turbo / HTML / JSON） ----
   def respond_ok
     respond_to do |f|
       f.turbo_stream { render_controls(achievement: latest_achievement, status: :ok) }
       f.html do
-        if turbo_frame_request?
-          # フレームからの送信ならフレームをそのまま差し替える（遷移しない）
-          render partial: "tasks/controls_frame",
-                 locals:  { milestone: @milestone, achievement: latest_achievement },
-                 status:  :ok
-        else
-          flash[:notice] = "ごほうび解放！" if @new_rewards.present?
-          redirect_to tasks_path(
-            age_band:        params[:age_band],
-            category:        params[:category],
-            difficulty:      params[:difficulty],
-            only_unachieved: params[:only_unachieved],
-            page:            params[:page]
-          )
-        end
+        flash[:notice] = "ごほうび解放！" if @new_rewards.present?
+        redirect_to tasks_path(
+          age_band:        params[:age_band],
+          category:        params[:category],
+          difficulty:      params[:difficulty],
+          only_unachieved: params[:only_unachieved],
+          page:            params[:page]
+        )
       end
       f.json do
         a = latest_achievement
@@ -106,35 +100,20 @@ class AchievementsController < ApplicationController
   def respond_ng
     respond_to do |f|
       f.turbo_stream { render_controls(achievement: latest_achievement, status: :unprocessable_entity) }
-      f.html do
-        if turbo_frame_request?
-          render partial: "tasks/controls_frame",
-                 locals:  { milestone: @milestone, achievement: latest_achievement },
-                 status:  :unprocessable_entity
-        else
-          render plain: "unprocessable", status: :unprocessable_entity
-        end
-      end
-      f.json { render json: { error: "unprocessable" }, status: :unprocessable_entity }
+      f.html  { render plain: "unprocessable", status: :unprocessable_entity }
+      f.json  { render json: { error: "unprocessable" }, status: :unprocessable_entity }
     end
   end
 
   def respond_invalid_state
     respond_to do |f|
       f.turbo_stream { head :unprocessable_entity }
-      f.html do
-        if turbo_frame_request?
-          render partial: "tasks/controls_frame",
-                 locals:  { milestone: @milestone, achievement: latest_achievement },
-                 status:  :unprocessable_entity
-        else
-          render plain: "invalid state", status: :unprocessable_entity
-        end
-      end
-      f.json { render json: { error: "invalid state" }, status: :unprocessable_entity }
+      f.html  { render plain: "invalid state", status: :unprocessable_entity }
+      f.json  { render json: { error: "invalid state" }, status: :unprocessable_entity }
     end
   end
 
+  # 対象フレーム差し替え + 新規解放があればトースト追加
   def render_controls(achievement:, status:)
     streams = []
     streams << turbo_stream.update(
