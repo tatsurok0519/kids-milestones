@@ -8,13 +8,12 @@ class Child < ApplicationRecord
 
   validates :name, presence: true
   validates :birthday, presence: true
+  validate  :birthday_cannot_be_in_future
 
-  validate :birthday_cannot_be_in_future
+  validate  :photo_must_be_image
+  validate  :photo_size_limit
 
-  validate :photo_must_be_image
-  validate :photo_size_limit
-
-  # 画像形式の軽いチェック（PNG/JPEG/GIF）
+  # ==== 画像バリデーション ====
   def photo_must_be_image
     return unless photo.attached?
     unless photo.content_type.in?(%w[image/png image/jpeg image/jpg image/gif])
@@ -22,7 +21,6 @@ class Child < ApplicationRecord
     end
   end
 
-  # サイズ制限（例：5MB）
   def photo_size_limit
     return unless photo.attached?
     if photo.blob.byte_size > 5.megabytes
@@ -30,18 +28,27 @@ class Child < ApplicationRecord
     end
   end
 
-  # ===== リサイズ用ヘルパ =====
+  # ==== 画像ヘルパ（未保存や壊れた添付なら nil を返す）====
   def photo_thumb
-    return unless photo.attached?
-    photo.variant(resize_to_fill: [80, 80]).processed
+    safe_variant(80, 80)
   end
 
   def photo_card
-    return unless photo.attached?
-    photo.variant(resize_to_fill: [400, 300]).processed
+    safe_variant(400, 300)
   end
 
-  # 生後月齢（必要なら使用）
+  def safe_variant(w, h)
+    # レコード未保存・未添付・非可変(HEIC等)は弾く
+    return nil unless persisted?
+    return nil unless photo.attached? && photo.variable?
+
+    photo.variant(resize_to_fill: [w, h]).processed
+  rescue ActiveStorage::FileNotFoundError, ArgumentError => e
+    Rails.logger.warn("[Child#safe_variant] #{e.class}: #{e.message}")
+    nil
+  end
+
+  # ==== 年齢系 ====
   def age_in_months
     return nil unless birthday
     years  = Date.current.year  - birthday.year
@@ -50,7 +57,6 @@ class Child < ApplicationRecord
     years * 12 + months
   end
 
-  # 「◯歳◯か月」を返す（UI向け）
   def age_years_and_months
     return [nil, nil] unless birthday
     today  = Date.current
@@ -71,8 +77,6 @@ class Child < ApplicationRecord
     "#{y}歳#{m}か月"
   end
 
-  # 0–6歳帯のインデックス（0..5）を返す
-  # 例: 10ヶ月→0, 2歳3ヶ月→2, 7歳→5 に丸め（6歳以上は5-6歳帯に寄せる）
   def age_band_index
     m = age_in_months
     return 0 if m.nil?
@@ -81,13 +85,11 @@ class Child < ApplicationRecord
     idx > 5 ? 5 : idx
   end
 
-  # UI表示用ラベル（"0–1歳" など）
   def age_band_label
     i = age_band_index
     "#{i}–#{i + 1}歳"
   end
 
-  # その帯の月齢レンジ（例: 0→0..11, 2→24..35）
   def age_band_month_range
     i = age_band_index
     (i * 12)..(i * 12 + 11)
@@ -96,13 +98,13 @@ class Child < ApplicationRecord
   def achieved_count
     achievements.where(achieved: true).count
   end
-  
+
   private
+
   def birthday_cannot_be_in_future
     return unless birthday.present?
     if birthday > Date.current
       errors.add(:birthday, "は今日以前を選んでください")
     end
   end
-
 end

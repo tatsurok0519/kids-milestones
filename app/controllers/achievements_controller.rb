@@ -2,30 +2,22 @@ class AchievementsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_child_and_milestone
 
-  # POST /achievements/upsert
-  # params:
-  # - toggle or state: "working" | "achieved"   （同じボタンの2回押しでクリア）
-  # - child_id（任意）/ milestone_id（必須）
-  # - 画面フィルタ維持: age_band/category/difficulty/only_unachieved/page
   def upsert
-    # Turbo Frameから来たら必ず turbo_stream を返す（全画面遷移を防止）
     request.format = :turbo_stream if turbo_frame_request?
 
     state = (params[:state].presence || params[:toggle].presence).to_s
-    ach = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
+    ach   = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
     authorize(ach, :upsert?)
 
     case state
     when "working"
-      if ach.working?
-        # 2回押しでクリア
-        ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
-      else
-        ach.assign_attributes(working: true, achieved: false, achieved_at: nil)
-      end
+      ach.assign_attributes(
+        working:  !ach.working?,
+        achieved: false,
+        achieved_at: nil
+      )
     when "achieved"
       if ach.achieved?
-        # 2回押しでクリア
         ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
       else
         ach.assign_attributes(working: false, achieved: true)
@@ -37,28 +29,25 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
-    # 新規解放リワード（演出用）
     @new_rewards = RewardUnlocker.call(@child)
-    ids = Array(@new_rewards).map(&:id)
-    session[:reward_boot_ids] = ids if ids.any?
+    session[:reward_boot_ids] = Array(@new_rewards).map(&:id) if @new_rewards.present?
 
     respond_ok
   rescue ActiveRecord::RecordNotFound
+    Rails.logger.warn("[achievements#upsert] 404 child/milestone not found")
     head :not_found
   rescue Pundit::NotAuthorizedError
+    Rails.logger.warn("[achievements#upsert] 403 not authorized")
     head :forbidden
-  rescue ActiveRecord::RecordInvalid
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.warn("[achievements#upsert] 422 #{e.record.errors.full_messages.join(', ')}")
     respond_ng
   end
 
   private
 
   def set_child_and_milestone
-    @child = if params[:child_id].present?
-               Child.find(params[:child_id])
-             else
-               current_child
-             end
+    @child = params[:child_id].present? ? Child.find(params[:child_id]) : current_child
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
     authorize @child, :use?
 
@@ -69,7 +58,6 @@ class AchievementsController < ApplicationController
     policy_scope(Achievement).find_by(child_id: @child.id, milestone_id: @milestone.id)
   end
 
-  # ---- レスポンス（Turbo / HTML / JSON） ----
   def respond_ok
     respond_to do |f|
       f.turbo_stream { render_controls(achievement: latest_achievement, status: :ok) }
@@ -86,12 +74,9 @@ class AchievementsController < ApplicationController
       f.json do
         a = latest_achievement
         render json: {
-          id: a&.id,
-          child_id: a&.child_id || @child.id,
+          id: a&.id, child_id: a&.child_id || @child.id,
           milestone_id: @milestone.id,
-          working: a&.working,
-          achieved: a&.achieved,
-          achieved_at: a&.achieved_at
+          working: a&.working, achieved: a&.achieved, achieved_at: a&.achieved_at
         }, status: :ok
       end
     end
@@ -113,7 +98,6 @@ class AchievementsController < ApplicationController
     end
   end
 
-  # 対象フレーム差し替え + 新規解放があればトースト追加
   def render_controls(achievement:, status:)
     streams = []
     streams << turbo_stream.update(

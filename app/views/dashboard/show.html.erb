@@ -69,9 +69,9 @@
           <div class="rewards-line"
                style="display:flex; align-items:center; gap:.6rem; flex-wrap:nowrap;
                       margin-top:.35rem; overflow-x:auto; overflow-y:hidden;">
-            <span class="pill"><%= @child.age_label %></span>
-            <span class="pill"><%= @child.age_band_label %></span>
-            <span class="pill">花丸 <%= @flower_count %></span>
+            <span class="pill"><%= current_child.age_label %></span>
+            <span class="pill"><%= current_child.age_band_label %></span>
+            <span class="pill">花丸 <%= current_child.achieved_count %></span>
             <%= render "dashboard/rewards_row" %>  <!-- ← 名前の右に詰めて表示 -->
           </div>
         </div>
