@@ -13,3 +13,5 @@ pin "chat_consult",  to: "chat_consult.js",  preload: true
 
 # ActiveStorage を使う場合
 pin "@rails/activestorage", to: "activestorage.esm.js"
+
+pin "modal",      to: "modal.js",      preload: true

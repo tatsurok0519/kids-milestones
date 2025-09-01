@@ -1,0 +1,22 @@
+<%# locals: id:, title:, &block %>
+<div id="<%= id %>-backdrop"
+     class="modal-backdrop"
+     role="presentation"
+     aria-hidden="true"
+     data-modal-backdrop="<%= id %>"></div>
+
+<section id="<%= id %>"
+         class="modal-panel"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="<%= id %>-title"
+         hidden
+         data-modal-panel="<%= id %>">
+  <button type="button" class="modal-close" aria-label="閉じる" data-modal-close="<%= id %>">×</button>
+  <% if local_assigns[:title].present? %>
+    <h2 id="<%= id %>-title" class="h2" style="margin-top:0;"><%= title %></h2>
+  <% end %>
+  <div class="modal-body">
+    <%= yield %>
+  </div>
+</section>

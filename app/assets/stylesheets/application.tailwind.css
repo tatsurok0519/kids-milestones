@@ -398,3 +398,86 @@ summary.btn-hint::-webkit-details-marker {
 @media (max-width: 640px){
   .watering-illustration{ width: clamp(64px, 14vw, 96px) !important; }
 }
+
+/* ======== Mobile-first additions ======== */
+
+/* --- カード・グリッドの最小幅をスマホ寄りに（つめすぎ防止） --- */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* 220px -> 180px */
+  gap: .75rem;
+}
+@media (min-width: 641px){
+  .cards-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+}
+
+/* --- カードの内側余白を縮める（スマホ） --- */
+@media (max-width: 640px){
+  .card { padding: 1rem; }
+}
+
+/* --- 見出し／本文の微調整（スマホ） --- */
+@media (max-width: 640px){
+  .h2 { font-size: 1.05rem; }
+}
+
+/* --- ハンバーガー（モバイルナビ） --- */
+.nav-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: .6rem;
+  background: #fff; border: 1px solid var(--border);
+}
+@media (max-width: 640px){
+  .nav-toggle { display: inline-flex; }
+  .main-nav { display: none; width: 100%; }
+  .main-nav[data-open="true"] {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding-top: .5rem;
+  }
+  /* ナビ開時に背景スクロールを止める */
+  body.nav-open { overflow: hidden; }
+}
+
+/* --- 汎用モーダル（PC:中央／SP:ボトムシート） --- */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  display: none; z-index: 1000;
+}
+.modal-backdrop[data-open="true"] { display: block; }
+
+.modal-panel {
+  position: fixed; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 720px); max-height: 86vh; overflow: auto;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  padding: 1rem; z-index: 1001;
+}
+@media (max-width: 640px){
+  .modal-panel {
+    left: 0; right: 0; bottom: 0; top: auto;
+    transform: none;
+    width: 100%; max-height: 88vh; border-radius: 1rem 1rem 0 0;
+  }
+}
+
+/* モーダルの閉じるボタン（右上×） */
+.modal-close {
+  position: absolute; right: .5rem; top: .5rem;
+  width: 40px; height: 40px; border-radius: .6rem;
+  background: #fff; border: 1px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* 非クリティカル画像は遅延（念のための共通クラス） */
+img.lazy { content-visibility: auto; }
+
+/* モバイル開閉ボタンを隠す＋ナビは常時表示 */
+#mobile-nav-btn,
+.nav-toggle { display: none !important; }
+
+#mobile-nav-panel,
+[data-nav] { display: flex !important; gap: .5rem; flex-wrap: wrap; }

@@ -2,9 +2,9 @@
   <div class="container header-inner">
     <div class="brand">
       <%= image_tag "illustrations/sun.png",
-              alt: "",
-              class: "brand-logo",
-              width: 90, height: 90 %>
+            alt: "", class: "brand-logo",
+            width: 90, height: 90,
+            decoding: "async", fetchpriority: "high" %>
       <h1 class="brand-title">
         <%= link_to "こどもすくすくカード",
                     (respond_to?(:root_path) ? root_path : dashboard_path),
@@ -19,7 +19,8 @@
     <% consl_class = "btn btn-secondary" + (current_ctrl == "consults"  ? " is-active" : "") %>
     <% mypg_class  = "btn btn-secondary" + ((current_ctrl == "registrations" && action_name == "edit") ? " is-active" : "") %>
 
-    <nav class="main-nav">
+    <%# === ナビ（常時表示） === %>
+    <nav id="main-nav" class="main-nav">
       <%= link_to "ダッシュボード", dashboard_path,
                   class: dash_class,
                   "aria-current": (current_ctrl=="dashboard" ? "page" : nil) %>
@@ -28,12 +29,10 @@
                   class: tasks_class,
                   "aria-current": (current_ctrl=="tasks" ? "page" : nil) %>
 
-      <%# ★ そうだん（ConsultsController#show） %>
       <%= link_to "そうだん", consult_path,
                   class: consl_class,
                   "aria-current": (current_ctrl=="consults" ? "page" : nil) %>
 
-      <%# マイページ＝Deviseのユーザー編集 %>
       <%= link_to "マイページ", edit_user_registration_path, class: mypg_class %>
 
       <% if user_signed_in? %>
@@ -48,6 +47,11 @@
 </header>
 
 <style>
-/* ナビの「今いる場所」強調（お好みで） */
+/* ナビの「今いる場所」強調 */
 .btn.is-active { border-color:#60a5fa; background:#eff6ff; }
+/* スクリーンリーダー用（他で使っていれば残してOK） */
+.sr-only {
+  position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,1px,1px); white-space:nowrap; border:0;
+}
 </style>

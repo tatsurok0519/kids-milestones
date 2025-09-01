@@ -11,6 +11,8 @@ import "controllers";
 import "photo_preview";
 import "chat_consult";
 
+import "modal";
+
 // ActiveStorage を使うなら
 import * as ActiveStorage from "@rails/activestorage";
 ActiveStorage.start();

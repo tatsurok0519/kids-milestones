@@ -4,9 +4,9 @@
     <% if user_signed_in? && current_child %>
       <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
         <% if current_child.photo.attached? %>
-          <%= image_tag current_child.photo_card,
-                alt: "#{current_child.name}の写真",
-                style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
+          <%= attachment_img current_child.photo, variant: current_child.photo_card,
+                width: 400, height: 300, alt: "#{current_child.name}の写真",
+                style: "object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
         <% else %>
           <%= image_tag "illustrations/sun.png",
                 alt: "", size: "96x96",
@@ -156,8 +156,10 @@
               <!-- 未ログイン/デモ：右上バッジ（専用クラス） -->
               <div class="rw-badge-group" aria-hidden="true"
                    style="position:absolute; top:8px; right:8px; pointer-events:none;">
-                <%= image_tag 'icons/try.png',      alt: '', class: 'rw-badge rw-badge-try',  width: 44, height: 44 %>
-                <%= image_tag 'icons/hanamaru.png', alt: '', class: 'rw-badge rw-badge-achi', width: 44, height: 44 %>
+                <%= image_tag 'icons/try.png', alt: '', class: 'rw-badge rw-badge-try',
+                      width: 44, height: 44, loading: "lazy", decoding: "async" %>
+                <%= image_tag 'icons/hanamaru.png', alt: '', class: 'rw-badge rw-badge-achi',
+                      width: 44, height: 44, loading: "lazy", decoding: "async" %>
               </div>
 
               <!-- 未ログイン/デモ：おためし進捗ボタン -->
