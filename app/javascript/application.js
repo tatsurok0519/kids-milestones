@@ -1,20 +1,19 @@
-// app/javascript/application.js
 // Configure your import map in config/importmap.rb.
 // Read more: https://github.com/rails/importmap-rails
 
-// 順番重要：まず Turbo を通す
-import "@hotwired/turbo-rails"
+// まず Turbo
+import "@hotwired/turbo-rails";
 
-// Stimulus を使っているなら（任意）
-import "controllers"
+// Stimulus（使っていれば）
+import "controllers";
 
 // 自前JS
-import "photo_preview"
-import "chat_consult"   // ダミーでもOK
+import "photo_preview";
+import "chat_consult";
 
-// ActiveStorage を使うなら（任意）
-import * as ActiveStorage from "@rails/activestorage"
-ActiveStorage.start()
+// ActiveStorage を使うなら
+import * as ActiveStorage from "@rails/activestorage";
+ActiveStorage.start();
 
 /* ---------------------------
    ユーティリティ

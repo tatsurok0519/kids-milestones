@@ -384,3 +384,17 @@ details.hint-wrap > summary::-webkit-details-marker,
 summary.btn-hint::-webkit-details-marker {
   display: none;
 }
+
+/* --- Watering illustration: clamp size & always small --- */
+.watering-illustration{
+  width: clamp(72px, 10vw, 120px) !important;
+  height: auto !important;
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  z-index: 1 !important;
+  pointer-events: none;
+}
+@media (max-width: 640px){
+  .watering-illustration{ width: clamp(64px, 14vw, 96px) !important; }
+}
