@@ -37,10 +37,13 @@ class ChildrenController < ApplicationController
   end
 
   def destroy
-    authorize @child
-    @child.destroy
-    session[:current_child_id] = nil if session[:current_child_id] == @child.id
-    redirect_to children_path, notice: "削除しました。"
+    @child = current_user.children.find(params[:id])
+    @child.destroy!
+
+    # 削除した子が選択中だったらセッションを必ず空にする
+    session.delete(:current_child_id) if session[:current_child_id].to_i == @child.id
+
+    redirect_to children_path, notice: "子どもを削除しました。"
   end
 
   private

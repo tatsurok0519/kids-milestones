@@ -1,7 +1,6 @@
 class TasksController < ApplicationController
   before_action :set_breadcrumbs, only: :index
 
-  # --- ゲスト/デモ用 軽量モデル ---
   DemoMilestone = Struct.new(:id, :title, :category, :difficulty, :min_months, :max_months, :description, :hint_text) do
     def difficulty_stars
       d = difficulty.to_i.clamp(0, 3)
@@ -10,11 +9,9 @@ class TasksController < ApplicationController
     def age_band_labels
       mn = (min_months || 0).to_i
       mx = (max_months || 71).to_i
-      bands = []
-      s = (mn / 12).clamp(0, 5)
-      e = (([mx - 1, mn].max) / 12).clamp(0, 5)
-      (s..e).each { |i| bands << "#{i}–#{i + 1}歳" }
-      bands.uniq.join(" ")
+      s  = (mn / 12).clamp(0, 5)
+      e  = (([mx - 1, mn].max) / 12).clamp(0, 5)
+      (s..e).map { |i| "#{i}–#{i + 1}歳" }.uniq.join(" ")
     end
   end
   private_constant :DemoMilestone
@@ -22,20 +19,21 @@ class TasksController < ApplicationController
   def index
     Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
 
-    # 1) DB/テーブル存在を安全に確認
+    # 1) テーブル生存確認
     has_ms_table = data_source_exists_safely?("milestones")
     db_count     = has_ms_table ? safe { Milestone.unscoped.count } : nil
 
-    # 2) DB 未準備 or 0件 → だれであってもデモ表示
+    # 2) DB未準備 or 0件 → デモ表示（YAML）
     if !has_ms_table || db_count.nil? || db_count.zero?
       Rails.logger.warn("[tasks#index] DEMO FALLBACK: has_table=#{has_ms_table}, count=#{db_count.inspect}")
       @demo_mode = true
       return render_demo_from_yaml
     end
 
-    # 3) ここから通常処理（DBあり・1件以上）
-    try_backfill_hints_from_yaml! # ※DBが生きていることが確認できた後で呼ぶ
+    # 3) 通常表示
+    try_backfill_hints_from_yaml! # 本番のみ・必要時だけ
 
+    # --- 年齢帯 ---
     band_param = params[:age_band].presence
     if band_param == "all"
       @age_band_label = "全年齢"
@@ -50,27 +48,75 @@ class TasksController < ApplicationController
           0
         end
       @age_band_label = "#{@age_band_index}–#{@age_band_index + 1}歳"
-      scope = Milestone.for_age_band(@age_band_index)
+
+      # for_age_band スコープがあれば使う。無ければ min/max_months か age_band_index でフォールバック
+      if Milestone.respond_to?(:for_age_band) || Milestone.singleton_class.method_defined?(:for_age_band)
+        scope = Milestone.for_age_band(@age_band_index)
+      else
+        if column?(:min_months) && column?(:max_months)
+          band_min = @age_band_index * 12
+          band_max = (@age_band_index + 1) * 12
+          scope = Milestone.where("(COALESCE(min_months,0) < ?) AND (COALESCE(max_months,100000) >= ?)", band_max, band_min)
+        elsif column?(:age_band_index)
+          scope = Milestone.where(age_band_index: @age_band_index)
+        else
+          scope = Milestone.all # 最後の砦
+        end
+      end
     end
 
-    @categories      = Milestone.distinct.order(:category).pluck(:category).compact
-    @difficulties    = [1, 2, 3]
+    # --- フィルタUI用の選択肢 ---
+    @categories   = safe { Milestone.distinct.order(:category).pluck(:category).compact } || []
+    @difficulties = [1, 2, 3]
     @only_unachieved = params[:only_unachieved] == "1"
 
-    scope = scope.by_category(params[:category]).by_difficulty(params[:difficulty])
-    scope = scope.unachieved_for(current_child) if user_signed_in? && current_child && @only_unachieved
+    # --- カテゴリ・難易度 ---
+    if params[:category].present?
+      scope =
+        if scope.respond_to?(:by_category)
+          scope.by_category(params[:category])
+        else
+          scope.where(category: params[:category])
+        end
+    end
+    if params[:difficulty].present?
+      scope =
+        if scope.respond_to?(:by_difficulty)
+          scope.by_difficulty(params[:difficulty])
+        else
+          scope.where(difficulty: params[:difficulty])
+        end
+    end
 
-    @milestones = scope.order(:difficulty, :id).page(params[:page]).per(20)
+    # --- 未達成のみ（ログイン & 子ども選択時）---
+    if user_signed_in? && current_child && @only_unachieved
+      if scope.respond_to?(:unachieved_for)
+        scope = scope.unachieved_for(current_child)
+      else
+        done_ids = Achievement.where(child: current_child, achieved: true).select(:milestone_id)
+        scope = scope.where.not(id: done_ids)
+      end
+    end
 
+    # --- 取得・ページング ---
+    @milestones =
+      if scope.respond_to?(:page)
+        scope.order(:difficulty, :id).page(params[:page]).per(20)
+      else
+        scope.order(:difficulty, :id)
+      end
+
+    # --- 進捗まとめ（ログイン & 子ども選択時）---
     if user_signed_in? && current_child
       achs = Achievement.where(child: current_child, milestone_id: @milestones.select(:id))
       @ach_by_ms = achs.index_by(&:milestone_id)
     end
 
+    # --- 今日の子育てメッセージ ---
     @parent_tip = safe_parent_tip(user_signed_in? ? current_child : nil)
 
   rescue => e
-    # どこかで例外 → 500にせずデモで表示
+    # 例外はログだけ吐いてデモにフォールバック
     Rails.logger.error("[tasks#index] rescue #{e.class}: #{e.message}\n" + e.backtrace.take(12).join("\n"))
     @demo_mode = true
     render_demo_from_yaml
@@ -78,12 +124,15 @@ class TasksController < ApplicationController
 
   private
 
-  # ==== 強耐性ユーティリティ ====
   def safe
     yield
   rescue => e
-    Rails.logger.warn("[tasks#index] safe block skipped: #{e.class}: #{e.message}")
+    Rails.logger.warn("[tasks#index] safe skipped: #{e.class}: #{e.message}")
     nil
+  end
+
+  def column?(name)
+    Milestone.column_names.include?(name.to_s)
   end
 
   def data_source_exists_safely?(name)
@@ -100,13 +149,10 @@ class TasksController < ApplicationController
     "あせらず、できることからやってみましょう。"
   end
 
-  # ==== ヒントのバックフィル（DBが生きていて1件以上ある時だけ）====
   def try_backfill_hints_from_yaml!
     return unless Rails.env.production?
-
     need = safe { Milestone.unscoped.where(hint_text: [nil, ""]).limit(1).exists? }
     return unless need
-
     yaml_path = Rails.root.join("db", "seeds", "milestones.yml")
     return unless File.exist?(yaml_path)
 
@@ -116,7 +162,7 @@ class TasksController < ApplicationController
     Milestone.unscoped.where(hint_text: [nil, ""]).find_each do |m|
       src  = index[m.title] or next
       text = src["hint_text"].presence || src["hint"].presence or next
-      m.update_columns(hint_text: text) # バリデーションを回避して静かに更新
+      m.update_columns(hint_text: text)
       updated += 1
     end
     Rails.logger.warn("[tasks#index] backfilled hint_text for #{updated} milestones from YAML")
@@ -133,12 +179,7 @@ class TasksController < ApplicationController
     data =
       begin
         raw = File.exist?(yaml_path) ? File.read(yaml_path) : nil
-        if raw.nil?
-          Rails.logger.error("[tasks#index] YAML not found: #{yaml_path}")
-          []
-        else
-          YAML.safe_load(raw, permitted_classes: [Date, Time, Symbol], aliases: true) || []
-        end
+        raw ? (YAML.safe_load(raw, permitted_classes: [Date, Time, Symbol], aliases: true) || []) : []
       rescue => e
         Rails.logger.error("[tasks#index] YAML load error: #{e.class}: #{e.message}")
         []
@@ -155,7 +196,7 @@ class TasksController < ApplicationController
     end
 
     if (band = params[:age_band].presence) && band != "all"
-      i = band.to_i.clamp(0, 5)
+      i        = band.to_i.clamp(0, 5)
       band_min = i * 12
       band_max = (i + 1) * 12
       rows.select! do |m|
@@ -165,19 +206,20 @@ class TasksController < ApplicationController
       end
       @age_band_label = "#{i}–#{i + 1}歳"
     end
-    rows.select! { |m| m.category == params[:category] }               if params[:category].present?
-    rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i } if params[:difficulty].present?
+    rows.select! { |m| m.category.to_s == params[:category].to_s }         if params[:category].present?
+    rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i }     if params[:difficulty].present?
     rows.sort_by! { |m| [m.difficulty.to_i, m.id] }
 
-    if defined?(Kaminari)
-      @milestones = Kaminari.paginate_array(rows).page(params[:page]).per(20)
-    else
-      @milestones = rows
-    end
+    @milestones =
+      if defined?(Kaminari)
+        Kaminari.paginate_array(rows).page(params[:page]).per(20)
+      else
+        rows
+      end
 
     @categories   = rows.map(&:category).compact.uniq.sort
     @difficulties = [1, 2, 3]
-    @parent_tip   = safe_parent_tip(nil) # DBに触らない文言フォールバック
+    @parent_tip   = safe_parent_tip(nil)
 
     render :index
   end

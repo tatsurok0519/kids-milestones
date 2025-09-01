@@ -44,7 +44,27 @@ class ApplicationController < ActionController::Base
   
   # 現在選択中の子（nil 可）
   def current_child
+    return @current_child if defined?(@current_child)
+
+    cid = session[:current_child_id]
+    @current_child = Child.find_by(id: cid) if cid.present?
+
+    # すでに削除されていたらセッションを掃除して nil を返す
+    if cid.present? && @current_child.nil?
+      session.delete(:current_child_id)
+    end
     @current_child
+  end
+
+  # 選択変更用のヘルパ（任意）
+  def select_current_child(child)
+    if child.present?
+      session[:current_child_id] = child.id
+      @current_child = child
+    else
+      session.delete(:current_child_id)
+      @current_child = nil
+    end
   end
 
   # 自分の子のみをポリシースコープで取得し、セッションの child_id を検証・同期
