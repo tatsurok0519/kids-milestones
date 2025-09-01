@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   get "/home",           to: "home#index", as: :home
   get "/growth_policy",  to: "pages#growth_policy", as: :growth_policy
   get "mypage", to: "dashboard#show", as: :mypage
+  
 
   # 健康チェック
   get "up" => "rails/health#show", as: :rails_health_check

@@ -1,6 +1,6 @@
-<div>
-  <%# 右上バッジ（状態に応じて1つだけ表示） %>
-  <% if achievement&.working %>
+<div id="<%= dom_id(milestone, :controls) %>" style="position:relative">
+
+  <% if achievement&.working && !achievement&.achieved %>
     <%= image_tag "icons/try.png", alt: "", width: 48, height: 48,
           style: "position:absolute; top:8px; right:8px; pointer-events:none;" %>
   <% elsif achievement&.achieved %>
@@ -9,56 +9,36 @@
   <% end %>
 
   <div style="margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
-
-    <%# がんばり中 %>
-    <%= button_to achievements_upsert_path(milestone_id: milestone.id),
+    <%= button_to achievements_upsert_path(format: :turbo_stream, milestone_id: milestone.id),
           params: {
             toggle: "working",
-            age_band: params[:age_band],
-            category: params[:category],
-            difficulty: params[:difficulty],
+            child_id: (defined?(child) ? child&.id : nil),
+            age_band:        params[:age_band],
+            category:        params[:category],
+            difficulty:      params[:difficulty],
             only_unachieved: params[:only_unachieved],
-            page: params[:page]
+            page:            params[:page]
           },
           method: :post,
-          form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
-          class:  "btn btn-secondary" do %>
+          form:   { data: { turbo: "true", turbo_frame: dom_id(milestone, :controls), progress_form: true } },
+          class:  "btn btn-secondary #{'is-active' if achievement&.working && !achievement&.achieved}" do %>
       がんばり中
     <% end %>
 
-    <%# できた！ %>
-    <%= button_to achievements_upsert_path(milestone_id: milestone.id),
+    <%= button_to achievements_upsert_path(format: :turbo_stream, milestone_id: milestone.id),
           params: {
             toggle: "achieved",
-            age_band: params[:age_band],
-            category: params[:category],
-            difficulty: params[:difficulty],
+            child_id: (defined?(child) ? child&.id : nil),
+            age_band:        params[:age_band],
+            category:        params[:category],
+            difficulty:      params[:difficulty],
             only_unachieved: params[:only_unachieved],
-            page: params[:page]
+            page:            params[:page]
           },
           method: :post,
-          form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
-          class:  "btn btn-primary" do %>
+          form:   { data: { turbo: "true", turbo_frame: dom_id(milestone, :controls), progress_form: true } },
+          class:  "btn btn-primary #{'is-active' if achievement&.achieved}" do %>
       できた！
     <% end %>
-
-    <%# 未着手に戻す（状態がある時だけ） %>
-    <% if achievement.present? %>
-      <%= button_to achievements_upsert_path(milestone_id: milestone.id),
-            params: {
-              toggle: "clear",
-              age_band: params[:age_band],
-              category: params[:category],
-              difficulty: params[:difficulty],
-              only_unachieved: params[:only_unachieved],
-              page: params[:page]
-            },
-            method: :post,
-            form:   { data: { turbo_frame: dom_id(milestone, :controls), progress_form: true } },
-            class:  "btn" do %>
-        未着手に戻す
-      <% end %>
-    <% end %>
-
   </div>
 </div>
