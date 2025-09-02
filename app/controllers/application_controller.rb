@@ -21,6 +21,8 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  protect_from_forgery with: :exception
+
   protected
 
   def configure_permitted_parameters

@@ -23,3 +23,20 @@
 #   # Report violations without enforcing the policy.
 #   # config.content_security_policy_report_only = true
 # end
+
+# 初期化ファイル（ライト版）
+Rails.application.config.content_security_policy do |policy|
+  policy.default_src :self
+  policy.script_src  :self, :https, :unsafe_inline    # ← 当面OK。後でnonce化へ
+  policy.style_src   :self, :https, :unsafe_inline    # 既存の<style>も許可
+  policy.img_src     :self, :https, :data, :blob
+  policy.font_src    :self, :https, :data
+  policy.connect_src :self, :https
+  policy.object_src  :none
+  policy.frame_ancestors :self
+  policy.base_uri :self
+  policy.form_action :self
+end
+
+# ヘッダにもCSPを付ける
+Rails.application.config.content_security_policy_report_only = false

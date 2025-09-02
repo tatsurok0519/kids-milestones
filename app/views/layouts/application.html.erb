@@ -6,6 +6,7 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>   <!-- ←これだけでJSは読む -->
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
+    <%= csrf_meta_tags %>
   </head>
   <body>
     <!-- 共通ヘッダー -->
