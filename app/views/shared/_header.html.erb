@@ -3,7 +3,8 @@
     <div class="brand">
       <%= asset_img "illustrations/sun.png",
             alt: "", width: 90, height: 90,
-            decoding: "async", fetch: "high", class: "brand-logo" %>
+            decoding: "async", fetchpriority: "high",
+            class: "brand-logo" %>
       <h1 class="brand-title">
         <%= link_to "こどもすくすくカード",
                     (respond_to?(:root_path) ? root_path : dashboard_path),

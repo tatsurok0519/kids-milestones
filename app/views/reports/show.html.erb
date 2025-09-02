@@ -1,0 +1,78 @@
+<div class="card" style="margin-bottom:.75rem;">
+  <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+    <div style="flex:none;">
+      <%# 子ども写真（安全表示） %>
+      <% if @child&.photo&.attached? %>
+        <%= image_tag @child.photo_card, alt: "#{@child.name}の写真",
+              style: "width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
+      <% else %>
+        <%= image_tag "illustrations/sun.png", alt: "", width:96, height:96,
+              style: "border-radius:12px;border:1px solid var(--border);background:#f3f4f6;" %>
+      <% end %>
+    </div>
+
+    <div style="flex:1 1 auto; min-width:220px;">
+      <div class="h2" style="margin:0 0 .25rem 0;">ふりかえりレポート</div>
+      <div class="h2" style="font-size:1.1rem;margin:0;"><strong><%= @child&.name %></strong> さん</div>
+      <div class="text-muted" style="margin-top:.35rem;">
+        通算花丸：<%= @total_hanamaru %>
+      </div>
+    </div>
+
+    <!-- 印刷だけ残す -->
+    <div class="actions no-print" style="margin-left:auto; display:flex; gap:.5rem;">
+      <button type="button" class="btn btn-primary" onclick="window.print()">印刷する</button>
+    </div>
+  </div>
+</div>
+
+  <%# ごほうび（解放済みのみ） %>
+  <% if @reward_unlocks.any? %>
+    <div class="card" style="padding:1rem 1.25rem; margin:.75rem 0;">
+      <div class="label" style="margin-bottom:.4rem;">ごほうび</div>
+      <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+        <% @reward_unlocks.each do |ru| %>
+          <% r = ru.reward %>
+          <div style="text-align:center">
+            <%= asset_img r.icon_path, width:56, height:56, alt:"" %>
+            <div style="font-size:.8rem; color:#6b7280"><%= r.tier %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# 年齢帯ごとの達成項目 %>
+  <div class="card" style="padding:1rem 1.25rem; margin:.75rem 0;">
+    <div class="label" style="margin-bottom:.4rem;">年齢帯別の「できた！」</div>
+
+    <% if @by_band.blank? %>
+      <p>この期間の達成はありません。</p>
+    <% else %>
+      <% @by_band.sort_by { |label, _| label }.each do |label, rows| %>
+        <h3 style="font-size:1rem; margin:.6rem 0 .35rem;"><%= label %></h3>
+        <ul style="margin:.2rem 0 .8rem 1.1rem;">
+          <% rows.each do |a| %>
+            <li>
+              <strong><%= a.milestone&.title || "（項目名不明）" %></strong>
+              <% if (c = a.milestone&.category).present? %>
+                <span class="text-muted" style="font-size:.9rem">（<%= c %>）</span>
+              <% end %>
+              <% if a.achieved_at %>
+                <span class="text-muted" style="font-size:.85rem; margin-left:.25rem;">
+                  … <%= a.achieved_at.to_date %>
+                </span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<style>
+@media print {
+  .no-print { display: none !important; }   /* 印刷ボタンだけ隠す */
+}
+</style>

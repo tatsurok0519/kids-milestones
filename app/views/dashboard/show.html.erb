@@ -106,8 +106,16 @@
   <div class="card" style="padding:.75rem;">
     <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
       <%= link_to "できるかな一覧へ", tasks_path, class: "btn btn-primary" %>
-      <%= link_to "そうだんへ",        consult_path, class: "btn btn-primary" %>
-      <%= link_to "マイページ",        account_path, class: "btn" %>
+      <%= link_to "子育てそうだんへ", consult_path, class: "btn btn-primary" %>
+
+      <% if @child %>
+        <%= link_to "レポート（印刷）へ", child_report_path(@child), class: "btn btn-primary" %>
+      <% else %>
+        <%# 子ども未選択時の誘導（必要なら） %>
+        <%= link_to "レポート（印刷）へ", children_path, class: "btn btn-primary" %>
+      <% end %>
+
+      <%= link_to "マイページ", account_path, class: "btn" %>
     </div>
   </div>
 </div>

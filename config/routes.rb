@@ -1,41 +1,40 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  # 子ども選択はログイン時のみ許可にするのが安全（公開で必要なら外してください）
   authenticate :user do
-    resources :children, only: [:index, :new, :create, :edit, :update, :destroy, :show] do
-      post :select, on: :member
+    # 子ども管理はログイン必須に
+    resources :children do               # ← new/index/show/edit などが復活
+      resource :report, only: :show, controller: "reports"
     end
   end
 
   # ログイン後のダッシュボード
   get "/dashboard", to: "dashboard#show", as: :dashboard
+  get "mypage",     to: "dashboard#show", as: :mypage
 
   # 公開ページ（ログイン不要）
-  get "/tasks",          to: "tasks#index"
-  get "/chat",           to: "pages#chat"
-  get "/report",         to: "pages#report"
-  get "/home",           to: "home#index", as: :home
-  get "/growth_policy",  to: "pages#growth_policy", as: :growth_policy
-  get "mypage", to: "dashboard#show", as: :mypage
-  
+  get "/tasks",         to: "tasks#index"
+  get "/chat",          to: "pages#chat"
+  get "/report",        to: "pages#report"         # ←静的説明ページなら残してOK（helper: report_path）
+  get "/home",          to: "home#index",          as: :home
+  get "/growth_policy", to: "pages#growth_policy", as: :growth_policy
 
   # 健康チェック
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # 成績（アップサート）は1本に統一（↓どちらか一方でOK。ここでは明示ルート）
+  # 成績（アップサート）
   post "achievements/upsert", to: "achievements#upsert", as: :achievements_upsert
-  # ※もし resources 形式にしたいなら次の1行に置き換え、上の行は削除:
-  # resources :achievements, only: [] { post :upsert, on: :collection }
 
-  post 'rewards/ack', to: 'rewards#ack_seen', as: :ack_rewards
-  
+  # ごほうび既読
+  post "rewards/ack", to: "rewards#ack_seen", as: :ack_rewards
+
   # 相談（SSE）
   resource :consult, only: [:show] do
     get :stream, on: :collection
   end
-  get "consult",         to: "consults#show"
-  get "consult/stream",  to: "consults#stream"
+  # ↑上で定義しているので下の重複は削除
+  # get "consult",         to: "consults#show"
+  # get "consult/stream",  to: "consults#stream"
 
   # ログイン後のトップ
   authenticated :user do

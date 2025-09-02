@@ -502,3 +502,39 @@ img.lazy { content-visibility: auto; }
     width: 88px;
   }
 }
+
+/* ==== Print (A4) ==== */
+@page { size: A4; margin: 14mm; }
+
+@media print {
+  /* ヘッダーは必ず印刷する（見た目は簡素に） */
+  header.header-bar {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;      /* sticky/fixed 無効化 */
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 8pt 0 !important;
+  }
+  header.header-bar .brand-logo {
+    width: 48pt !important;
+    height: auto !important;
+  }
+  header.header-bar .brand-title {
+    font-size: 16pt !important;
+    margin: 0 !important;
+  }
+
+  /* ナビは印刷では要らない */
+  header.header-bar .main-nav { display: none !important; }
+
+  /* 画面専用は非表示。no-print はそのまま非表示（ヘッダーに付いていても上で強制表示） */
+  .only-screen { display: none !important; }
+  .no-print    { display: none !important; }
+  header.header-bar.no-print { display: block !important; } /* もし class="no-print" が付いていても出す */
+
+  /* 紙向けに少しだけ整える */
+  .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+  a { color:#000 !important; text-decoration: none !important; }
+}
