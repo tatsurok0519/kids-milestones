@@ -2,11 +2,14 @@
   <h2 class="h2"><%= @child.name %> のプロフィール</h2>
   <div style="display:flex;gap:1rem;align-items:center;">
     <% if @child.photo.attached? %>
-      <%= image_tag @child.photo_card,
+      <%= attachment_img @child.photo,
+            variant: @child.photo_card,
             alt: "#{@child.name}の写真",
-            style: "width:400px;height:300px;object-fit:cover;border-radius:12px;" %>
+            width: 400, height: 300,
+            lazy: false, fetch: "high",
+            style: "object-fit:cover;border-radius:12px;" %>
     <% else %>
-      <%= image_tag("illustrations/sun.png", size: "120x120", alt: "") rescue "" %>
+      <%= asset_img "illustrations/sun.png", alt: "", width: 120, height: 120 %>
     <% end %>
     <div>
       <div>誕生日：<%= @child.birthday %></div>

@@ -13,7 +13,7 @@
     data-timeout="3000"
     data-reward-id="<%= r.id %>"
   >
-    <%= (image_tag icon_path, alt: "", width: 28, height: 28, style: "flex:none") rescue "" %>
+    <%= asset_img r.icon_path, alt: "", width: 28, height: 28, style: "flex:none" %>
     <div>
       <strong><%= kind_label %><%= "（#{tier_label}）" if tier_label.present? %></strong> を解放！
       <% if r.respond_to?(:name) && r.name.present? %>

@@ -385,20 +385,6 @@ summary.btn-hint::-webkit-details-marker {
   display: none;
 }
 
-/* --- Watering illustration: clamp size & always small --- */
-.watering-illustration{
-  width: clamp(72px, 10vw, 120px) !important;
-  height: auto !important;
-  position: fixed !important;
-  right: 16px !important;
-  bottom: 16px !important;
-  z-index: 1 !important;
-  pointer-events: none;
-}
-@media (max-width: 640px){
-  .watering-illustration{ width: clamp(64px, 14vw, 96px) !important; }
-}
-
 /* ======== Mobile-first additions ======== */
 
 /* --- カード・グリッドの最小幅をスマホ寄りに（つめすぎ防止） --- */
@@ -481,3 +467,38 @@ img.lazy { content-visibility: auto; }
 
 #mobile-nav-panel,
 [data-nav] { display: flex !important; gap: .5rem; flex-wrap: wrap; }
+
+/* 「できるかな」のトグル用（色を明示） */
+.btn-secondary.is-active{
+  background:#fffdf4;
+  border-color: var(--accent-600);
+}
+.btn-primary.is-active{
+  background: var(--pri-600);
+  color:#fff;
+  border-color: transparent;
+}
+
+/* --- Force watering image to the bottom-right of the viewport --- */
+.watering-illustration{
+  position: fixed !important;
+  /* 上書きに強い指定（top/leftを確実に無効化） */
+  top: auto !important;
+  left: auto !important;
+  right: 16px !important;
+  bottom: 16px !important;
+
+  width: clamp(72px, 10vw, 110px);
+  z-index: 10;               /* コンテンツより前、トーストより後なら適宜調整 */
+  pointer-events: none;      /* クリックの邪魔をしない */
+  filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
+  opacity: .95;
+}
+
+@media (max-width: 640px){
+  .watering-illustration{
+    right: 12px !important;
+    bottom: 12px !important;
+    width: 88px;
+  }
+}

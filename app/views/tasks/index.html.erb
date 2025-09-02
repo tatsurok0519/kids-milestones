@@ -4,12 +4,14 @@
     <% if user_signed_in? && current_child %>
       <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
         <% if current_child.photo.attached? %>
-          <%= attachment_img current_child.photo, variant: current_child.photo_card,
-                width: 400, height: 300, alt: "#{current_child.name}の写真",
+          <%= attachment_img current_child.photo,
+                variant: current_child.photo_thumb,
+                alt: "#{current_child.name}の写真",
+                width: 96, height: 96,
                 style: "object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
         <% else %>
-          <%= image_tag "illustrations/sun.png",
-                alt: "", size: "96x96",
+          <%= asset_img "illustrations/sun.png", alt: "",
+                width: 96, height: 96,
                 style: "border-radius:12px;border:1px solid var(--border);background:#f3f4f6;" %>
         <% end %>
 

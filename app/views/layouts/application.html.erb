@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>   <!-- ←これだけでJSは読む -->
+    <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
   <body>
     <!-- 共通ヘッダー -->
@@ -12,8 +13,6 @@
 
     <!-- パンくず（設定があるときだけ） -->
     <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
-
-    <%= image_tag "illustrations/watering.png", alt: "水やり", class: "watering-illustration" %>
 
     <%# ===== 比べない育ちメッセージ バナー ===== %>
     <div id="growth-policy-banner" class="container" style="margin-top:.75rem;">
@@ -81,5 +80,10 @@
         <%= render "shared/reward_toast", rewards: Reward.where(id: @reward_boot_ids) %>
       <% end %>
     </div>
+
+    <%= asset_img "illustrations/watering.png",
+      alt: "水やり",
+      width: 110, height: 110,
+      class: "watering-illustration" %>
   </body>
 </html>

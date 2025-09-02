@@ -1,17 +1,12 @@
-# これもプリロード推奨
-pin "application", preload: true
+pin "application"
 
-# Turbo / Stimulus
-pin "@hotwired/turbo-rails",       to: "turbo.min.js",       preload: true
-pin "@hotwired/stimulus",          to: "stimulus.min.js",    preload: true
-pin "@hotwired/stimulus-loading",  to: "stimulus-loading.js", preload: true
-pin_all_from "app/javascript/controllers", under: "controllers"  # 使ってなくてもOK
+pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
+pin "@hotwired/stimulus", to: "stimulus.min.js", preload: true
+pin "@hotwired/stimulus-loading", to: "stimulus-loading.js", preload: true
+pin_all_from "app/javascript/controllers", under: "controllers"
 
-# 自前のモジュール（今回ポイント）
-pin "photo_preview", to: "photo_preview.js", preload: true
-pin "chat_consult",  to: "chat_consult.js",  preload: true
-
-# ActiveStorage を使う場合
+pin "mobile_nav", to: "mobile_nav.js"
+# （必要なら）pin "modal", to: "modal.js"
+pin "photo_preview", to: "photo_preview.js"
+pin "chat_consult",  to: "chat_consult.js"
 pin "@rails/activestorage", to: "activestorage.esm.js"
-
-pin "modal",      to: "modal.js",      preload: true

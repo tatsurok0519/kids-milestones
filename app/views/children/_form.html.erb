@@ -34,14 +34,15 @@
     <%= f.label :photo, "写真（任意）", class: "label" %>
 
     <div style="display:flex; gap:1rem; align-items:center; margin-bottom:.5rem;">
-      <%# 新規・保存失敗時は variant を呼ばずにプレースホルダを出す %>
-      <% if child.persisted? && (thumb = child.photo_thumb).present? %>
-        <%= image_tag thumb, id:"photo-preview", alt:"#{child.name}の写真",
-              style:"width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
+      <% thumb = child.photo_thumb %>
+      <% if child.photo.attached? && thumb.present? %>
+        <%= safe_blob_image_tag thumb, id: "photo-preview", alt: "#{child.name}の写真",
+              width: 96, height: 96,
+              style: "object-fit:cover;border-radius:12px;border:1px solid var(--border);" %>
       <% else %>
-        <img id="photo-preview" alt="選択した写真のプレビュー"
-            width="96" height="96"
-            style="object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;">
+        <%= asset_img "illustrations/sun.png", alt: "", width: 96, height: 96,
+              id: "photo-preview",
+              style: "object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f3f4f6;" %>
       <% end %>
 
       <div style="display:flex; flex-direction:column; gap:.5rem;">

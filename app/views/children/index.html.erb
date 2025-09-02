@@ -13,10 +13,12 @@
           <div class="card" style="padding:1rem;">
             <div style="display:flex; gap:.75rem; align-items:center;">
               <% if child.photo.attached? %>
-                <%= image_tag child.photo_thumb, alt: "#{child.name}の写真",
-                      style: "width:72px;height:72px;object-fit:cover;border-radius:.6rem;border:1px solid var(--border);" %>
+                <%= attachment_img child.photo,
+                      variant: child.photo_thumb,
+                      alt: "#{child.name}の写真", width: 72, height: 72,
+                      style: "object-fit:cover;border-radius:.6rem;border:1px solid var(--border);" %>
               <% else %>
-                <%= image_tag "illustrations/sun.png", alt: "", width: 72, height: 72,
+                <%= asset_img "illustrations/sun.png", alt: "", width: 72, height: 72,
                       style: "border-radius:.6rem;border:1px solid var(--border);background:#f3f4f6;" %>
               <% end %>
 

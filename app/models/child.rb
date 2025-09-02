@@ -29,12 +29,16 @@ class Child < ApplicationRecord
   end
 
   # ==== 画像ヘルパ（未保存や壊れた添付なら nil を返す）====
+  # 80x80 サムネ（一覧/チップ用）
   def photo_thumb
-    safe_variant(80, 80)
+    return unless photo.attached?
+    photo.variant(resize_to_fill: [80, 80]).processed
   end
 
+  # 400x300 カード用（ダッシュボード/タスク見出し）
   def photo_card
-    safe_variant(400, 300)
+    return unless photo.attached?
+    photo.variant(resize_to_fill: [400, 300]).processed
   end
 
   def safe_variant(w, h)
