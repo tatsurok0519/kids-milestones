@@ -4,7 +4,7 @@
 import "@hotwired/turbo-rails";
 import "controllers";
 
-import "mobile_nav";     // ← ここで読み込む
+import "./mobile_nav" 
 import "photo_preview";
 import "chat_consult";
 

@@ -172,6 +172,11 @@ Devise.setup do |config|
   # If true, extends the user's remember period when remembered via cookie.
   # config.extend_remember_period = false
 
+  # まずはHTMLを優先（422でTurboに乗らないようにする）
+  config.navigational_formats = ['*/*', :html]
+  # Turboを使う設計に戻すなら、安定後に:
+  # config.navigational_formats = ['*/*', :html, :turbo_stream]
+
   # Options to be passed to the created cookie. For instance, you can set
   # secure: true in order to force SSL only cookies.
   # config.rememberable_options = {}
