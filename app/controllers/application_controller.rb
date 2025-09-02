@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError do |_e|
     respond_to do |f|
       f.turbo_stream { head :forbidden }
-      f.html { redirect_back fallback_location: authenticated_root_path, alert: "権限がありません。" }
+      f.html { redirect_to "/403" }              # ← 統一
       f.json { render json: { error: "forbidden" }, status: :forbidden }
     end
   end

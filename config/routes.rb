@@ -46,6 +46,11 @@ Rails.application.routes.draw do
     root to: "pages#landing", as: :unauthenticated_root
   end
 
+  # エラーページ
+  %w[404 403 422 500].each do |code|
+    match code, to: "errors#show", via: :all, code: code
+  end
+
   # 参考：必要ならアカウントページ
   resource :account, only: [:show]
 end

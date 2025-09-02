@@ -1,0 +1,32 @@
+<div class="container main">
+  <div class="card" style="max-width:720px;margin:1.25rem auto; text-align:left;">
+    <div style="display:flex; gap:.75rem; align-items:flex-start;">
+      <%= asset_img "illustrations/sun.png", alt:"", width:32, height:32, style:"flex:none;margin-top:.1rem;" %>
+      <div style="flex:1;min-width:0;">
+        <h2 class="h2" style="margin:.1rem 0 .35rem;"><%= @title %>（<%= @code %>）</h2>
+        <p style="margin:.25rem 0 1rem; line-height:1.7;">
+          <%= @message %>
+        </p>
+
+        <div class="actions" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="history.back()">前のページに戻る</button>
+          <% if user_signed_in? %>
+            <%= link_to "ダッシュボードへ", dashboard_path, class:"btn btn-primary" %>
+          <% else %>
+            <%= link_to "トップへ", unauthenticated_root_path, class:"btn btn-primary" %>
+          <% end %>
+          <%= link_to "できるかな一覧", tasks_path, class:"btn" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 最悪CSSが読めなかった時のための最小フォールバック -->
+<style>
+  .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.55rem 1rem;border-radius:.7rem;
+       border:1px solid #ddd;background:#fff;text-decoration:none;color:#222;font-weight:700}
+  .btn-primary{background:var(--pri,#f29f05);color:#fff;border-color:transparent}
+  .btn-secondary{background:#fff;border-color:#ddd}
+  .card{background:#fff;border:1px solid var(--border,#eee);border-radius:1rem;box-shadow:0 10px 20px rgba(240,160,60,.12);padding:1.25rem}
+</style>
