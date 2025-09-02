@@ -1,7 +1,8 @@
 <div class="card" style="max-width:28rem;margin:0 auto;">
   <h2 class="h2">ログイン</h2>
 
-  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name),
+             html: { method: :post, data: { turbo: false } }) do |f| %>
     <%# ===== メール ===== %>
     <% e_id    = "#{f.object_name}_email" %>
     <% e_hint  = "#{e_id}_hint" %>
