@@ -24,11 +24,9 @@ class Milestone < ApplicationRecord
 
   # 未達成のみ（指定 child で achieved=true になっていないタスク）
   scope :unachieved_for, ->(child) {
-    if child.present?
-      where.not(id: child.achievements.where(achieved: true).select(:milestone_id))
-    else
-      all
-    end
+    left_outer_joins(:achievements)
+      .where('achievements.id IS NULL OR (achievements.child_id = ? AND achievements.achieved = ?)', child.id, false)
+      .distinct
   }
 
   # ===== バリデーション =====

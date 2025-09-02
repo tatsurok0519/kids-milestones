@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   include Devise::Controllers::Helpers
   include Pundit::Authorization
   include Breadcrumbs
+  include SqlProfiler
 
   # ※ グローバルの authenticate_user! は使わない（各コントローラで必要時に指定）
   before_action :configure_permitted_parameters, if: :devise_controller?

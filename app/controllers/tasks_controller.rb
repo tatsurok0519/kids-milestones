@@ -108,7 +108,9 @@ class TasksController < ApplicationController
 
     # --- 進捗まとめ（ログイン & 子ども選択時）---
     if user_signed_in? && current_child
-      achs = Achievement.where(child: current_child, milestone_id: @milestones.select(:id))
+      # 表示中のマイルストーンに対する達成レコードを 1 回で取得
+      achs = Achievement.where(child_id: current_child.id,
+                              milestone_id: @milestones.select(:id)).to_a
       @ach_by_ms = achs.index_by(&:milestone_id)
     end
 
