@@ -39,3 +39,6 @@
 !/app/assets/builds/application.css
 
 /node_modules
+
+# SQLite temporary files
+db/*.sqlite3-*
