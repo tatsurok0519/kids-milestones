@@ -1,5 +1,10 @@
-<footer style="margin-top:2rem; padding:.8rem 0; text-align:center;">
-  <span style="font-size:.9rem; color:#6b7280;">
-    &copy; <%= Time.current.year %> Kids Milestones
-  </span>
+<footer class="footer">
+  <div class="container" style="display:flex; gap:.75rem; flex-wrap:wrap; justify-content:space-between;">
+    <div>© <%= Time.current.year %> Kids Milestones</div>
+    <nav style="display:flex; gap:.75rem; flex-wrap:wrap;">
+      <%= link_to "利用規約", terms_path,   class: "link" %>
+      <%= link_to "プライバシー", privacy_path, class: "link" %>
+      <%= link_to "比べない育ち", growth_policy_path, class: "link" %>
+    </nav>
+  </div>
 </footer>

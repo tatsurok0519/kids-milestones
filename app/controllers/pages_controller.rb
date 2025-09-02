@@ -1,15 +1,24 @@
 class PagesController < ApplicationController
-  # 公開で見せたいので、認証は強制しない
-  skip_before_action :authenticate_user!, raise: false
+  # 公開ページ（未ログインでも見せたいもの）だけ認証をスキップ
+  # ApplicationController 側で authenticate_user! を強制していない環境でも安全な書き方にしておく
+  skip_before_action :authenticate_user!,
+                     only: %i[landing chat report growth_policy terms privacy],
+                     raise: false
+
   before_action :set_landing_breadcrumb, only: :landing
 
+  # --- 公開ページ ---
   def landing; end
-  def chat;  end
+  def chat; end
   def report; end
   def growth_policy; end
 
+  # 追加：法務表示（静的ページ）
+  def terms; end
+  def privacy; end
+
+  # --- マイページ（ゲストでも落ちないよう防御的に） ---
   def mypage
-    # 未ログインでも落ちないように分岐
     if user_signed_in?
       if current_user.respond_to?(:children)
         @children = current_user.children.order(:id)
@@ -18,7 +27,7 @@ class PagesController < ApplicationController
         @children = Child.where(user_id: current_user.id).order(:id)
       end
     else
-      @children = [] # ゲストは空配列。ビューでCTAを出す
+      @children = [] # ゲストは空配列。ビュー側でログイン導線を出す
     end
   end
 

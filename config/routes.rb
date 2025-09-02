@@ -53,4 +53,7 @@ Rails.application.routes.draw do
 
   # 参考：必要ならアカウントページ
   resource :account, only: [:show]
+
+  get "/terms",   to: "pages#terms",   as: :terms
+  get "/privacy", to: "pages#privacy", as: :privacy
 end

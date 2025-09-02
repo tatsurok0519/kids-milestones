@@ -479,30 +479,6 @@ img.lazy { content-visibility: auto; }
   border-color: transparent;
 }
 
-/* --- Force watering image to the bottom-right of the viewport --- */
-.watering-illustration{
-  position: fixed !important;
-  /* 上書きに強い指定（top/leftを確実に無効化） */
-  top: auto !important;
-  left: auto !important;
-  right: 16px !important;
-  bottom: 16px !important;
-
-  width: clamp(72px, 10vw, 110px);
-  z-index: 10;               /* コンテンツより前、トーストより後なら適宜調整 */
-  pointer-events: none;      /* クリックの邪魔をしない */
-  filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
-  opacity: .95;
-}
-
-@media (max-width: 640px){
-  .watering-illustration{
-    right: 12px !important;
-    bottom: 12px !important;
-    width: 88px;
-  }
-}
-
 /* ==== Print (A4) ==== */
 @page { size: A4; margin: 14mm; }
 
@@ -537,4 +513,30 @@ img.lazy { content-visibility: auto; }
   /* 紙向けに少しだけ整える */
   .card { box-shadow: none !important; border: 1px solid #ddd !important; }
   a { color:#000 !important; text-decoration: none !important; }
+}
+
+/* 水やりは画面右下に固定（クリック邪魔しない） */
+.watering-illustration{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 110px;
+  z-index: 0;
+  opacity: .9;
+  filter: drop-shadow(0 6px 12px rgba(240,160,60,.15));
+  pointer-events: none;           /* ← これで下のリンクが押せる */
+}
+
+/* フッター（右側に余白を確保してイラストと重ならないように） */
+.footer{
+  color: var(--muted);
+  font-size: .85rem;
+  padding: 1.25rem 0;
+  padding-right: 140px;           /* ← 右にスペースを作ってリンクを左へ */
+}
+
+/* 小さい画面では少し縮める */
+@media (max-width: 640px){
+  .watering-illustration{ width: 88px; right: 12px; bottom: 12px; }
+  .footer{ padding-right: 100px; }
 }
