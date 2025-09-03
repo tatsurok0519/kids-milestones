@@ -7,7 +7,7 @@ import "controllers";
 import "./mobile_nav"
 import "photo_preview";
 import "chat_consult";
-import "./tasks_controls";
+import "tasks_controls";
 
 import * as ActiveStorage from "@rails/activestorage";
 ActiveStorage.start();
