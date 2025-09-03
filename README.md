@@ -49,7 +49,7 @@ https://gyazo.com/fdd106043956cdae671ecc548b850711
 https://gyazo.com/edd4a1c2d62995e6d26afae967d5e0a3
 
 ごほうび解放トースト＆アイコン演出（未視聴キュー＆セッション保持）
-https://gyazo.com/eb0ebd9fc9f69c010e39db74d83b72a8
+https://gyazo.com/4f5d6292fb9363aae6006c27fa681350
 
 相談ページ（AIチャット）
 https://gyazo.com/ef714e6ea3f94f93ebcaf7dba9e90078
@@ -65,7 +65,7 @@ https://gyazo.com/2e200741b97c60073ed41a60320b8029
 
 # データベース設計（ER 図）
 
-
+https://gyazo.com/90fa23ba99653741413ac66d46cca9c7
 
 
 # 開発環境
@@ -82,22 +82,11 @@ https://gyazo.com/2e200741b97c60073ed41a60320b8029
 
 % git clone kids-milestones
 % cd kids-milestones
-
-2) Ruby / Node / DB の準備（必要に応じて）
-rbenv で Ruby 3.2、Node 18+、PostgreSQL or SQLite
-
-3) 依存インストール
-bundle install
-npm install  # または corepack enable / pnpm でも可
-
-4) DB セットアップ
-bin/rails db:setup   # schema + seeds
-
-5) Tailwind ビルド（開発中は別ターミナルで --watch でもOK）
-npm run build:css
-
-6) 起動
-bin/rails s
+% bundle install
+% npm install
+% bin/rails db:setup
+% npm run build:css
+% bin/rails s
 http://localhost:3000
 
 
