@@ -20,7 +20,7 @@ class ChildrenController < ApplicationController
     @child = current_user.children.new(child_params)
 
     if @child.save
-      redirect_to children_path, notice: "子どもを登録しました。"
+      redirect_to children_path, notice: "子どもを登録しました。", status: :see_other
     else
       render :new, status: :unprocessable_entity
     end
@@ -31,14 +31,24 @@ class ChildrenController < ApplicationController
 
   def update
     # フォームのチェックボックス値を安全に取り出し、child_params からは必ず除外する
-    raw_remove   = params.dig(:child, :remove_photo)
-    remove_flag  = ActiveModel::Type::Boolean.new.cast(raw_remove)
-    params[:child]&.delete(:remove_photo)  # ← 念のため混入を確実に除去
+    raw_remove  = params.dig(:child, :remove_photo)
+    remove_flag = ActiveModel::Type::Boolean.new.cast(raw_remove)
+    params[:child]&.delete(:remove_photo)
 
     if @child.update(child_params)
-      # チェックが付いていて、かつ添付があるときだけ削除
       @child.photo.purge_later if remove_flag && @child.photo.attached?
-      redirect_to children_path, notice: "更新しました。"
+
+      flash[:notice] = "お子さまの情報を更新しました。"
+      location = children_path
+
+      if turbo_frame_request?
+        # ★ ここが重要：303 + Turbo-Location + Location を明示
+        response.set_header("Turbo-Location", location)
+        response.set_header("Location",       location)
+        head :see_other
+      else
+        redirect_to location, status: :see_other
+      end
     else
       render :edit, status: :unprocessable_entity
     end
@@ -46,7 +56,7 @@ class ChildrenController < ApplicationController
 
   def destroy
     @child.destroy!
-    redirect_to children_path, notice: "削除しました。"
+    redirect_to children_path, notice: "削除しました。", status: :see_other
   end
 
   private

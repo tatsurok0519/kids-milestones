@@ -1,4 +1,8 @@
-<%= form_with model: child, local: true, html: { multipart: true } do |f| %>
+<%= form_with model: child,
+              local: true,
+              data: { turbo: false },
+              html: { multipart: true } do |f| %>
+
   <% if child.errors.any? %>
     <div class="flash alert" role="alert" style="margin-bottom:1rem;">
       <strong><%= child.errors.count %>件のエラーがあります：</strong>
