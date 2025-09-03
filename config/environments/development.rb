@@ -17,6 +17,13 @@ Rails.application.configure do
   # Enable server timing
   config.server_timing = true
 
+  # CSRF の Origin 厳格チェックはローカルでは切る
+  config.action_controller.forgery_protection_origin_check = false
+
+  # 生成URLのホスト/ポートを固定してズレを防ぐ（Devise が内部で使う）
+  config.action_controller.default_url_options = { host: "localhost", port: 3000 }
+  config.action_mailer.default_url_options    = { host: "localhost", port: 3000 }
+
   # Enable/disable caching. By default caching is disabled.
   # Run rails dev:cache to toggle caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?
