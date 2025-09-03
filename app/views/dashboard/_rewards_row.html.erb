@@ -1,8 +1,8 @@
 <%# 仕様:
   - 未解放は非表示
-  - 左寄せ/折返しなし（発光アニメが切れないよう overflow:visible）
+  - 左寄せ／発光アニメのため overflow:visible
   - 並び順: medal -> trophy / threshold 昇順
-  - data-reward-id は span と img の両方に付与（JSから確実に拾えるよう二重化）
+  - data-reward-id は span と img の両方に付与
 %>
 
 <%
@@ -26,10 +26,9 @@
 %>
 
 <% if items.any? %>
-  <div class="rewards-row"
+  <div class="rewards-row rewards-row--dashboard"
        style="display:flex; align-items:center; gap:.5rem;
-              flex-wrap:nowrap; white-space:nowrap; overflow:visible;
-              margin-left:.5rem;">
+              flex-wrap:nowrap; white-space:nowrap; overflow:visible;">
     <% items.each do |rw| %>
       <% size =
         if rw.kind == 'medal'
@@ -52,4 +51,15 @@
       </span>
     <% end %>
   </div>
+
+  <%# モバイルは折返し許可（PCは従来どおり1行） %>
+  <style>
+    @media (max-width: 560px){
+      .rewards-row--dashboard{
+        flex-wrap: wrap;
+        white-space: normal;
+        row-gap: .35rem;
+      }
+    }
+  </style>
 <% end %>
