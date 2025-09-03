@@ -23,7 +23,7 @@
           ),
           params: { toggle: "working" },
           method: :post,
-          form:   { data: { turbo: true, turbo_stream: true, turbo_submits_with: "更新中…" } },
+          form:   { data: { remote_ach: 1, turbo_stream: true } },
           class:  "btn btn-secondary #{'is-active' if working}",
           aria:   { pressed: working ? "true" : "false" }
         ) do %>
@@ -41,7 +41,7 @@
           ),
           params: { toggle: "achieved" },
           method: :post,
-          form:   { data: { turbo: true, turbo_stream: true, turbo_submits_with: "更新中…" } },
+          form:   { data: { remote_ach: 1, turbo_stream: true } },
           class:  "btn btn-primary #{'is-active' if achieved}",
           aria:   { pressed: achieved ? "true" : "false" }
         ) do %>
