@@ -149,7 +149,7 @@ class ConsultsController < ApplicationController
 
   def set_breadcrumbs
     if respond_to?(:add_crumb)
-      add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
+      add_crumb("メイン", dashboard_path) if user_signed_in?
       add_crumb("そうだん", consult_path)
     end
   end

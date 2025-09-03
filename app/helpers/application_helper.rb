@@ -9,7 +9,7 @@ module ApplicationHelper
     end
   end
 
-  # ダッシュボード等で使う花丸数
+  # メイン等で使う花丸数
   def hanamaru_count(child)
     return 0 unless child
     Achievement.where(child_id: child.id, achieved: true).count

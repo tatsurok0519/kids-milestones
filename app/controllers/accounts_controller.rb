@@ -1,7 +1,7 @@
 class AccountsController < ApplicationController
   before_action :authenticate_user!
   before_action -> {
-    add_crumb("ダッシュボード", dashboard_path)
+    add_crumb("メイン", dashboard_path)
     add_crumb("マイページ", account_path)
   }
 

@@ -228,7 +228,7 @@ class TasksController < ApplicationController
 
   def set_breadcrumbs
     return unless respond_to?(:add_crumb)
-    add_crumb("ダッシュボード", dashboard_path) if user_signed_in?
+    add_crumb("メイン", dashboard_path) if user_signed_in?
     desired_band = params[:age_band].presence || "all"
     add_crumb("できるかな", tasks_path(age_band: desired_band))
   end

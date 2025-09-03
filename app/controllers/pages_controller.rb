@@ -54,6 +54,6 @@ class PagesController < ApplicationController
         url_for(controller: :pages, action: :landing, only_path: true)
       end
 
-    add_crumb("ランディングページ", path)
+    add_crumb("はじめに", path)
   end
 end

@@ -8,7 +8,7 @@ module Breadcrumbs
     @breadcrumb_trail ||= []
   end
 
-  # 例: add_crumb "ダッシュボード", dashboard_path
+  # 例: add_crumb "メイン", dashboard_path
   def add_crumb(label, path = nil)
     breadcrumb_trail << [label, path]
   end

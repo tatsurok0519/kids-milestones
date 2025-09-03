@@ -7,7 +7,7 @@ module NavigationHelper
   end
 
   # パンくずを配列で描画
-  # 例: breadcrumbs([["ダッシュボード", dashboard_path], ["子ども", children_path], ["編集", nil]])
+  # 例: breadcrumbs([["メイン", dashboard_path], ["子ども", children_path], ["編集", nil]])
   def breadcrumbs(trail)
     return if trail.blank?
     content_tag(:nav, aria: { label: "breadcrumb" }, class: "breadcrumbs") do

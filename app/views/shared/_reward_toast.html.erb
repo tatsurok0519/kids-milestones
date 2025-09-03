@@ -25,7 +25,7 @@
 
 <script>
   (function () {
-    // ① ダッシュボード側の演出トリガ（既存リスナー向け）
+    // ① メイン側の演出トリガ（既存リスナー向け）
     try {
       document.dispatchEvent(new CustomEvent("reward:unlocked", {
         detail: { ids: <%= raw Array(rewards).map(&:id).to_json %> }

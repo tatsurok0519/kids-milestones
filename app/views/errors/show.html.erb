@@ -11,7 +11,7 @@
         <div class="actions" style="display:flex; gap:.5rem; flex-wrap:wrap;">
           <button class="btn btn-secondary" onclick="history.back()">前のページに戻る</button>
           <% if user_signed_in? %>
-            <%= link_to "ダッシュボードへ", dashboard_path, class:"btn btn-primary" %>
+            <%= link_to "メインへ", dashboard_path, class:"btn btn-primary" %>
           <% else %>
             <%= link_to "トップへ", unauthenticated_root_path, class:"btn btn-primary" %>
           <% end %>

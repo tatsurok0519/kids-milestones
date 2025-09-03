@@ -8,7 +8,7 @@ Rails.application.routes.draw do
     end
   end
 
-  # ログイン後のダッシュボード
+  # ログイン後のメイン
   get "/dashboard", to: "dashboard#show", as: :dashboard
   get "mypage",     to: "dashboard#show", as: :mypage
 

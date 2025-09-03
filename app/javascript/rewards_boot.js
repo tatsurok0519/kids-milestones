@@ -18,7 +18,7 @@
     });
   });
 
-  // ページ表示時（ダッシュボードに来たら）未視聴を再生してACK
+  // ページ表示時（メインに来たら）未視聴を再生してACK
   const fire = () => {
     const ids = Array.from(window.UNSEEN_REWARD_IDS || []);
     if (!ids.length) return;
