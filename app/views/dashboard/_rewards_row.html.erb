@@ -27,7 +27,9 @@
 
 <% if items.any? %>
   <div class="rewards-row"
-       style="display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap; white-space:nowrap; overflow:visible; margin-left:auto;">
+       style="display:flex; align-items:center; gap:.5rem;
+              flex-wrap:nowrap; white-space:nowrap; overflow:visible;
+              margin-left:.5rem;">
     <% items.each do |rw| %>
       <% size =
         if rw.kind == 'medal'

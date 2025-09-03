@@ -71,8 +71,9 @@
 
           <!-- チップ + ごほうび を同じ行に。右に詰めて表示 -->
           <div class="rewards-line"
-               style="display:flex; align-items:center; gap:.6rem; flex-wrap:nowrap;
-                      margin-top:.35rem; overflow-x:auto; overflow-y:hidden;">
+               style="display:flex; align-items:center; gap:.6rem;
+                      flex-wrap:wrap; justify-content:flex-start;
+                      margin-top:.35rem;">
             <span class="pill"><%= current_child.age_label %></span>
             <span class="pill"><%= current_child.age_band_label %></span>
             <span class="pill">花丸 <%= current_child.achieved_count %></span>
