@@ -173,7 +173,7 @@ Devise.setup do |config|
   # config.extend_remember_period = false
 
   # まずはHTMLを優先（422でTurboに乗らないようにする）
-  config.navigational_formats = ['*/*', :html]
+  config.navigational_formats = ['*/*', :html, :turbo_stream]
   # Turboを使う設計に戻すなら、安定後に:
   # config.navigational_formats = ['*/*', :html, :turbo_stream]
 
@@ -189,6 +189,8 @@ Devise.setup do |config|
   # one (and only one) @ exists in the given string. This is mainly
   # to give user feedback and not to assert the e-mail validity.
   config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
+
+  config.mailer_sender = "no-reply@kids-milestones.onrender.com"
 
   # ==> Configuration for :timeoutable
   # The time you want to timeout the user session without activity. After this

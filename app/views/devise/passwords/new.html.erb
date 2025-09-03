@@ -4,16 +4,37 @@
     登録したメールアドレスに、パスワード再設定用のリンクをお送りします。
   </p>
 
-  <%= form_for(resource, as: resource_name, url: password_path(resource_name)) do |f| %>
+  <%= form_for(
+        resource,
+        as: resource_name,
+        url: password_path(resource_name),
+        html: { method: :post, data: { turbo: false } }   # ← Turbo無効（redirect_to(nil)対策）
+      ) do |f| %>
+
     <%= render "devise/shared/error_messages", resource: resource %>
 
+    <%# ===== メールアドレス ===== %>
+    <% e_id    = "#{f.object_name}_email" %>
+    <% e_hint  = "#{e_id}_hint" %>
+    <% e_err   = resource.errors[:email].first %>
+    <% e_errid = "#{e_id}_error" %>
+
     <div class="field">
-      <label class="label" for="user_email">メールアドレス</label>
+      <%= f.label :email, "メールアドレス", class: "label" %>
       <%= f.email_field :email,
-            autofocus: true,
-            autocomplete: "email",
-            class: "input",
-            placeholder: "example@example.com" %>
+            id: e_id, class: "input",
+            autofocus: true, autocomplete: "email", inputmode: "email", required: true,
+            placeholder: "example@example.com",
+            "aria-describedby": [e_hint, (e_err ? e_errid : nil)].compact.join(" "),
+            "aria-invalid": e_err.present? %>
+      <p id="<%= e_hint %>" class="text-muted" style="font-size:.85rem;margin:.3rem 0 0;">
+        入力したアドレス宛に再設定用リンクを送ります。
+      </p>
+      <% if e_err.present? %>
+        <p id="<%= e_errid %>" style="color:#9b2c10;font-size:.85rem;margin:.25rem 0 0;">
+          <%= e_err %>
+        </p>
+      <% end %>
     </div>
 
     <div class="actions" style="margin-top:1rem;">
