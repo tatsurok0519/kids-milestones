@@ -1,5 +1,4 @@
-<div class="container main">
-  <!-- 子ども一覧（全員表示・タップで切替） -->
+<!-- 子ども一覧（全員表示・タップで切替） -->
   <div class="card" style="margin-bottom:.75rem;">
     <div class="h2" style="font-size:1.1rem;margin:0 0 .5rem;">お子さま</div>
 
@@ -77,7 +76,7 @@
             <span class="pill"><%= current_child.age_label %></span>
             <span class="pill"><%= current_child.age_band_label %></span>
             <span class="pill">花丸 <%= current_child.achieved_count %></span>
-            <%= render "dashboard/rewards_row" %>  <!-- ← 名前の右に詰めて表示 -->
+            <%= render "dashboard/rewards_row" %>  <!-- ← アイコン側は data-reward-id を付与しておく -->
           </div>
         </div>
       </div>
@@ -120,6 +119,31 @@
   </div>
 </div>
 
-<% if @unseen_reward_ids.present? %>
-  <script>window.UNSEEN_REWARD_IDS = <%= raw @unseen_reward_ids.to_json %>;</script>
+<%# --- ごほうび演出ブート + 既読ACK（非破壊公開→見終わったら既読） --- %>
+<% if @reward_boot_ids.present? %>
+  <div id="reward-boot" data-ids="<%= @reward_boot_ids.join(',') %>"></div>
+  <%= javascript_tag do %>
+    document.addEventListener("turbo:load", () => {
+      const boot = document.getElementById("reward-boot");
+      if (!boot) return;
+      const ids = (boot.dataset.ids || "").split(",").filter(Boolean);
+
+      // アイコンに発光アニメを付与（アイコン側は data-reward-id にIDを持たせておく）
+      ids.forEach((id) => {
+        document.querySelectorAll(`[data-reward-id="${id}"]`).forEach((el) => {
+          el.classList.add("reward-glow");
+        });
+      });
+
+      // 見終わったら既読（部分既読：今回表示分のみ）
+      fetch("<%= ack_rewards_path(format: :json) %>", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ ids: ids })
+      }).catch(() => {});
+    });
+  <% end %>
 <% end %>

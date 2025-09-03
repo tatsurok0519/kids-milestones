@@ -46,6 +46,8 @@ Rails.application.routes.draw do
     root to: "pages#landing", as: :unauthenticated_root
   end
 
+  post "ui/dismiss_banner", to: "pages#dismiss_banner", as: :dismiss_banner
+
   # エラーページ
   %w[404 403 422 500].each do |code|
     match code, to: "errors#show", via: :all, code: code

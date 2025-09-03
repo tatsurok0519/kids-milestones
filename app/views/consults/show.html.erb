@@ -9,10 +9,18 @@
     </h2>
 
     <form id="consult-form" style="display:flex; gap:.5rem; align-items:center;">
-      <input id="consult-input" class="input" name="q" placeholder="いま悩んでいることを気軽に書いてください" style="flex:1;">
-      <button class="btn btn-primary">送信</button>
+      <input id="consult-input" class="input" name="q" autocomplete="off"
+             placeholder="いま悩んでいることを気軽に書いてください" style="flex:1;" required>
+      <button type="submit" class="btn btn-primary">送信</button>
     </form>
 
+    <!-- 先頭に新しいQ&Aを積む置き場 -->
+    <section id="consult_messages" aria-live="polite" style="margin-top:1rem; display:flex; flex-direction:column; gap:.75rem;"></section>
+
+    <!-- 旧ログ（任意のフォールバック。あれば使う） -->
     <div id="consult-log" style="margin-top:.75rem; line-height:1.7; white-space:pre-wrap;"></div>
+
+    <!-- ストリームの正規URLはここから取る（直書き防止） -->
+    <div id="consult" data-stream-url="<%= stream_consult_path %>"></div>
   </div>
 </div>

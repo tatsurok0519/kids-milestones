@@ -1,51 +1,28 @@
-<div id="growth-policy-banner"
-     role="region" aria-label="比べない育ちのご案内"
-     style="position:relative;margin:0 0 .75rem 0;">
-  <div class="container">
-    <div class="card" style="padding:.75rem 1rem; border:1px solid #e8d9b3; background:#fff9e8;">
-      <div style="display:flex; gap:.75rem; align-items:flex-start;">
-        <%= asset_img "illustrations/sun.png", width:24, height:24,
-              style: "flex:none; margin-top:.15rem;" %>
+<% unless session[:hide_growth_banner] %>
+  <div id="growth-policy-banner"
+       role="region" aria-label="比べない育ちのご案内"
+       style="position:relative;margin:0 0 .75rem 0;">
+    <div class="container">
+      <div class="card" style="padding:.75rem 1rem; border:1px solid #e8d9b3; background:#fff9e8;">
+        <div style="display:flex; gap:.75rem; align-items:flex-start;">
+          <%= asset_img "illustrations/sun.png", width:24, height:24,
+                style: "flex:none; margin-top:.15rem;" %>
 
-        <div style="line-height:1.6;">
-          <strong>比べない育ち</strong>：発達は人それぞれ。できた／できないで評価せず、ゆっくりでも大丈夫。
-          医療的な不安はかかりつけへ。<%= link_to "くわしく", growth_policy_path, class: "link" %>
+          <div style="line-height:1.6;">
+            <strong>比べない育ち</strong>：発達は人それぞれ。できた／できないで評価せず、ゆっくりでも大丈夫。
+            医療的な不安はかかりつけへ。<%= link_to "くわしく", growth_policy_path, class: "link" %>
+          </div>
+
+          <!-- JS不要：Turbo Streams / HTML 両対応で確実に閉じる -->
+          <%= button_to "×",
+                dismiss_banner_path,
+                method: :post,
+                form: { data: { turbo_stream: true } },
+                title: "このお知らせを閉じる",
+                class: "btn",
+                style: "margin-left:auto; padding:.25rem .5rem; border:1px solid var(--border);" %>
         </div>
-
-        <!-- クリックだけで確実に閉じられる（JS初期化不要） -->
-        <button type="button"
-                data-close-growth-policy
-                aria-label="このお知らせを閉じる"
-                class="btn"
-                style="margin-left:auto; padding:.25rem .5rem; border:1px solid var(--border);"
-                onclick="(function(btn){
-                  try{ localStorage.setItem('growth_policy_dismissed_v2','1'); }catch(e){}
-                  var box = document.getElementById('growth-policy-banner');
-                  if(box) box.remove();
-                })(this)">
-          ×
-        </button>
       </div>
     </div>
   </div>
-</div>
-
-<script>
-  // 既に閉じたことがあるなら描画直後に非表示
-  (function(){
-    var KEY = "growth_policy_dismissed_v2";
-    function hideIfDismissed(){
-      try{
-        if(localStorage.getItem(KEY) === "1"){
-          var el = document.getElementById("growth-policy-banner");
-          if(el) el.remove();
-        }
-      }catch(e){}
-    }
-    hideIfDismissed();
-
-    // Turbo遷移でも念のため再チェック
-    document.addEventListener("turbo:load", hideIfDismissed);
-    document.addEventListener("DOMContentLoaded", hideIfDismissed);
-  })();
-</script>
+<% end %>

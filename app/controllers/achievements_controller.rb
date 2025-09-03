@@ -3,8 +3,6 @@ class AchievementsController < ApplicationController
   before_action :set_child_and_milestone
 
   def upsert
-    request.format = :turbo_stream if turbo_frame_request?
-
     state = (params[:state].presence || params[:toggle].presence).to_s
     ach   = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
     authorize(ach, :upsert?)
@@ -12,8 +10,8 @@ class AchievementsController < ApplicationController
     case state
     when "working"
       ach.assign_attributes(
-        working:  !ach.working?,
-        achieved: false,
+        working:     !ach.working?,
+        achieved:    false,
         achieved_at: nil
       )
     when "achieved"
@@ -29,11 +27,9 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
-    # 新規解放リワード（演出用）
+    # 新規解放リワード（演出用）をセッションに加算ユニークで積む
     @new_rewards = RewardUnlocker.call(@child)
     ids = Array(@new_rewards).map(&:id)
-
-    # ▼ ここを追加：未視聴としてセッションに貯める（加算/ユニーク）
     if ids.any?
       unseen = Array(session[:unseen_reward_ids])
       session[:unseen_reward_ids] = (unseen + ids).uniq
@@ -107,11 +103,13 @@ class AchievementsController < ApplicationController
 
   def render_controls(achievement:, status:)
     streams = []
-    streams << turbo_stream.update(
+    # ルート要素ごと置き換え（_controls 側に id="<%= dom_id(milestone, :controls) %>" がある想定）
+    streams << turbo_stream.replace(
       view_context.dom_id(@milestone, :controls),
       partial: "tasks/controls",
       locals:  { milestone: @milestone, achievement: achievement }
     )
+
     if @new_rewards.present?
       streams << turbo_stream.append(
         "toasts",
@@ -119,6 +117,7 @@ class AchievementsController < ApplicationController
         locals:  { rewards: @new_rewards }
       )
     end
+
     render turbo_stream: streams, status: status
   end
 end

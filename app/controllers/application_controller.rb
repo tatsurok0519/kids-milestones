@@ -40,12 +40,13 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # 未視聴リワードIDを「非破壊で」公開（既読クリアは RewardsController#ack_seen のみ）
   def expose_unseen_rewards
-    ids = Array(session[:unseen_reward_ids])
-    @reward_boot_ids   = ids.uniq
-    @unseen_reward_ids = @reward_boot_ids
+    ids = Array(session[:unseen_reward_ids]).map(&:to_i).uniq
+    @reward_boot_ids   = ids
+    @unseen_reward_ids = ids # 互換用（既存JSが参照していても動く）
   end
-  
+
   # 現在選択中の子（nil 可）
   def current_child
     return @current_child if defined?(@current_child)
@@ -97,7 +98,7 @@ class ApplicationController < ActionController::Base
       ENV["BASIC_AUTH_USER"].present? &&
       ENV["BASIC_AUTH_PASSWORD"].present? &&
       request.path != "/up" &&
-      !request.path.start_with?("/users")   # ← 追加：Devise系は除外
+      !request.path.start_with?("/users")   # ← Devise系は除外（CSRF/リダイレクト連鎖対策）
   end
 
   def basic_auth

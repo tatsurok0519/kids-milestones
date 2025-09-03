@@ -1,8 +1,7 @@
 class PagesController < ApplicationController
-  # 公開ページ（未ログインでも見せたいもの）だけ認証をスキップ
-  # ApplicationController 側で authenticate_user! を強制していない環境でも安全な書き方にしておく
+  # 公開ページ（未ログインでも見せたいもの）は認証スキップ
   skip_before_action :authenticate_user!,
-                     only: %i[landing chat report growth_policy terms privacy],
+                     only: %i[landing chat report growth_policy terms privacy dismiss_banner],
                      raise: false
 
   before_action :set_landing_breadcrumb, only: :landing
@@ -12,8 +11,6 @@ class PagesController < ApplicationController
   def chat; end
   def report; end
   def growth_policy; end
-
-  # 追加：法務表示（静的ページ）
   def terms; end
   def privacy; end
 
@@ -23,18 +20,28 @@ class PagesController < ApplicationController
       if current_user.respond_to?(:children)
         @children = current_user.children.order(:id)
       else
-        # 念のためのフォールバック（古い構成など）
         @children = Child.where(user_id: current_user.id).order(:id)
       end
     else
-      @children = [] # ゲストは空配列。ビュー側でログイン導線を出す
+      @children = []
+    end
+  end
+
+  # --- ガイドの×で閉じる（セッションに記録 & その場で非表示） ---
+  def dismiss_banner
+    session[:hide_growth_banner] = true
+    respond_to do |f|
+      # #growth-policy-banner をDOMから外す
+      f.turbo_stream { render turbo_stream: turbo_stream.remove("growth-policy-banner") }
+      f.html { redirect_back fallback_location: root_path }
+      f.json { render json: { ok: true }, status: :ok }
     end
   end
 
   private
 
   def set_landing_breadcrumb
-    return unless respond_to?(:add_crumb) # パンくず未導入環境で安全に無視
+    return unless respond_to?(:add_crumb)
 
     path =
       if respond_to?(:unauthenticated_root_path)

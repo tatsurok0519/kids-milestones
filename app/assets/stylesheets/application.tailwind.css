@@ -540,3 +540,11 @@ img.lazy { content-visibility: auto; }
   .watering-illustration{ width: 88px; right: 12px; bottom: 12px; }
   .footer{ padding-right: 100px; }
 }
+
+@keyframes rewardGlow {
+  0%   { transform: scale(1);   filter: drop-shadow(0 0 0px #ffd54f); }
+  50%  { transform: scale(1.18); filter: drop-shadow(0 0 16px #ffd54f); }
+  100% { transform: scale(1);   filter: drop-shadow(0 0 0px #ffd54f); }
+}
+.reward-glow { animation: rewardGlow 1200ms ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .reward-glow { animation: none; } }
