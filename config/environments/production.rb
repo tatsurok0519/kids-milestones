@@ -104,6 +104,8 @@ Rails.application.configure do
   # 逆プロキシ(LB/Cloudflare等)を挟む場合、必要なら:
   # config.action_dispatch.trusted_proxies = [IPAddr.new('10.0.0.0/8'), ...]
 
+  config.action_controller.forgery_protection_origin_check = false
+  
   # Enable DNS rebinding protection and other `Host` header attacks.
   # config.hosts = [
   #   "example.com",     # Allow requests from example.com

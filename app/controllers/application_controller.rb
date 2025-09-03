@@ -96,7 +96,8 @@ class ApplicationController < ActionController::Base
     Rails.env.production? &&
       ENV["BASIC_AUTH_USER"].present? &&
       ENV["BASIC_AUTH_PASSWORD"].present? &&
-      request.path != "/up" # ヘルスチェックは除外
+      request.path != "/up" &&
+      !request.path.start_with?("/users")   # ← 追加：Devise系は除外
   end
 
   def basic_auth

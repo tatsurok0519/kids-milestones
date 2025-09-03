@@ -43,24 +43,19 @@
 # 実装した機能
 
 ダッシュボード（子ども一覧/花丸/ごほうび行）
-
-例: https://gyazo.com/xxxxxxxx
+https://gyazo.com/fdd106043956cdae671ecc548b850711
 
 できるかな（がんばり中/できた！切替）
-
-例: https://gyazo.com/xxxxxxxx
+https://gyazo.com/edd4a1c2d62995e6d26afae967d5e0a3
 
 ごほうび解放トースト＆アイコン演出（未視聴キュー＆セッション保持）
+https://gyazo.com/eb0ebd9fc9f69c010e39db74d83b72a8
 
-例: https://gyazo.com/xxxxxxxx
-
-相談ページ（簡易チャットUI）
-
-例: https://gyazo.com/xxxxxxxx
+相談ページ（AIチャット）
+https://gyazo.com/ef714e6ea3f94f93ebcaf7dba9e90078
 
 ふりかえりレポート（@media print でA4最適化）
-
-例: https://gyazo.com/xxxxxxxx
+https://gyazo.com/2e200741b97c60073ed41a60320b8029
 
 
 # 実装予定の機能
