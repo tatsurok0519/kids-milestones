@@ -1,18 +1,18 @@
-// 相談SSEクライアント（新しいQ&Aを先頭に積む）
+// 相談SSEクライアント（新しいQ&Aを先頭に積む + JSONフォールバック）
 
-// --- guard: 多重登録防止（Turboで同一JSが複数回実行されるのをケア）
 if (!window.__consultSubmitBound) {
   window.__consultSubmitBound = true;
 
   let es = null;
 
-  // 小ユーティリティ
+  // --- utils ---
   const esc = (s) =>
-    String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    String(s).replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[ch]));
 
-  const appendText = (node, text) => node.insertAdjacentText("beforeend", text);
+  const appendText = (node, text) => node && node.insertAdjacentText("beforeend", text);
 
-  // Q&Aブロックを先頭に作る
   function prependTurn(container, questionText) {
     const turn = document.createElement("article");
     turn.className = "consult-turn consult-turn--new";
@@ -32,7 +32,25 @@ if (!window.__consultSubmitBound) {
     return turn.querySelector("[data-answer]");
   }
 
-  // 送信ハンドラ（イベント委譲）
+  async function fallbackAsk(q, answerEl, log) {
+    try {
+      const res = await fetch(`/consult/ask.json?q=${encodeURIComponent(q)}`, {
+        headers: { "Accept": "application/json" },
+        credentials: "same-origin",
+      });
+      const json = await res.json();
+      const txt = json?.answer || "（回答を取得できませんでした）";
+      if (answerEl) answerEl.textContent += txt;
+      appendText(log, `\n${txt}\n\n`);
+    } catch (e) {
+      if (answerEl) {
+        answerEl.insertAdjacentHTML("beforeend", `<div class="text-muted">（接続に失敗しました）</div>`);
+      }
+      appendText(log, "\n[接続に失敗しました]\n\n");
+    }
+  }
+
+  // --- handler ---
   document.addEventListener("submit", (e) => {
     const form = e.target.closest("#consult-form");
     if (!form) return;
@@ -43,54 +61,61 @@ if (!window.__consultSubmitBound) {
     if (!q) return;
 
     const container = document.getElementById("consult_messages");
-    const answerEl = container ? prependTurn(container, q) : null;
+    const answerEl  = container ? prependTurn(container, q) : null;
+    const log       = document.getElementById("consult-log");
+    const streamBox = document.querySelector("#consult[data-stream-url]");
+    const base      = streamBox?.dataset.streamUrl || "/consult/stream";
 
-    const log = document.querySelector("#consult-log") || null;
-    if (log) appendText(log, `👤 ${q}\n🤖 `);
+    appendText(log, `👤 ${q}\n🤖 `);
+    if (container) container.setAttribute("aria-busy", "true");
 
-    // 既存ストリームがあればクローズ
     try { es && es.close(); } catch (_) {}
 
-    // 正規URLは data-stream-url から
-    const base = document.querySelector("#consult[data-stream-url]")?.dataset.streamUrl || "/consult/stream";
+    // SSE 非対応ブラウザは即フォールバック
+    if (!window.EventSource) {
+      fallbackAsk(q, answerEl, log);
+      if (input) input.value = "";
+      if (container) container.setAttribute("aria-busy", "false");
+      return;
+    }
+
     es = new EventSource(`${base}?q=${encodeURIComponent(q)}`);
 
-    es.addEventListener("system", (ev) => {
-      // 接続確認イベント（必要ならUIに反映）
-      // console.debug("system:", ev.data);
-    });
+    // サーバ側の接続確認イベント（任意）
+    es.addEventListener("system", () => { /* no-op */ });
 
+    // 本文トークン
     es.addEventListener("token", (ev) => {
       if (answerEl) answerEl.insertAdjacentText("beforeend", ev.data);
-      if (log) appendText(log, ev.data);
+      appendText(log, ev.data);
     });
 
-    es.addEventListener("heartbeat", () => {
-      // ハートビートはログ出力に載せない（無視）
-    });
+    // ハートビートは無視
+    es.addEventListener("heartbeat", () => { /* no-op */ });
 
     const finalize = () => {
-      if (log) appendText(log, "\n\n");
+      appendText(log, "\n\n");
       try { es && es.close(); } catch (_) {}
       es = null;
-      if (container) container.scrollTop = 0;
+      if (container) {
+        container.scrollTop = 0;
+        container.setAttribute("aria-busy", "false");
+      }
     };
 
+    // 正常終了
     es.addEventListener("done", finalize);
 
+    // エラー → JSON フォールバック
     es.onerror = () => {
-      if (answerEl) {
-        answerEl.insertAdjacentHTML("beforeend", `<div class="text-muted">（接続が中断されました）</div>`);
-      }
-      if (log) appendText(log, "\n[接続が中断されました]\n\n");
-      finalize();
+      try { es && es.close(); } catch (_) {}
+      fallbackAsk(q, answerEl, log).finally(finalize);
     };
 
-    // 入力クリア
     if (input) input.value = "";
   });
 
-  // ページ離脱時はストリームを閉じる
+  // ページ離脱時にクリーンアップ
   document.addEventListener("turbo:before-render", () => { try { es && es.close(); } catch (_) {} });
   window.addEventListener("pagehide", () => { try { es && es.close(); } catch (_) {} });
 }

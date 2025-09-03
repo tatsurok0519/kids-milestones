@@ -15,12 +15,17 @@
     </form>
 
     <!-- 先頭に新しいQ&Aを積む置き場 -->
-    <section id="consult_messages" aria-live="polite" style="margin-top:1rem; display:flex; flex-direction:column; gap:.75rem;"></section>
+    <section id="consult_messages" aria-live="polite" aria-busy="false"
+             style="margin-top:1rem; display:flex; flex-direction:column; gap:.75rem;"></section>
 
-    <!-- 旧ログ（任意のフォールバック。あれば使う） -->
+    <!-- 旧ログ（フォールバック用。表示を嫌うなら display:none でもOK） -->
     <div id="consult-log" style="margin-top:.75rem; line-height:1.7; white-space:pre-wrap;"></div>
 
-    <!-- ストリームの正規URLはここから取る（直書き防止） -->
+    <!-- ストリームURLはここから取る（直書きしない） -->
     <div id="consult" data-stream-url="<%= stream_consult_path %>"></div>
+
+    <noscript>
+      <p class="text-muted" style="margin-top:.75rem;">※ JavaScript を有効にすると相談の回答がリアルタイムで表示されます。</p>
+    </noscript>
   </div>
 </div>

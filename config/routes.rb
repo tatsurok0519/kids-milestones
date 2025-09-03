@@ -31,6 +31,7 @@ Rails.application.routes.draw do
   # 相談（SSE）
   resource :consult, only: [:show] do
     get :stream, on: :collection
+    get :ask,    on: :collection
   end
   # ↑上で定義しているので下の重複は削除
   # get "consult",         to: "consults#show"
