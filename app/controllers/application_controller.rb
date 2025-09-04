@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError do |_e|
     respond_to do |f|
       f.turbo_stream { head :forbidden }
-      f.html { redirect_to "/403" }              # ← 統一
+      f.html { redirect_to "/403" }
       f.json { render json: { error: "forbidden" }, status: :forbidden }
     end
   end
@@ -44,7 +44,7 @@ class ApplicationController < ActionController::Base
   def expose_unseen_rewards
     ids = Array(session[:unseen_reward_ids]).map(&:to_i).uniq
     @reward_boot_ids   = ids
-    @unseen_reward_ids = ids # 互換用（既存JSが参照していても動く）
+    @unseen_reward_ids = ids
   end
 
   # 現在選択中の子（nil 可）
@@ -76,7 +76,6 @@ class ApplicationController < ActionController::Base
   def set_current_child
     return unless current_user
 
-    # 自分の子だけに限定（Pundit）
     @children = policy_scope(Child).with_attached_photo.order(:created_at)
 
     @current_child =
@@ -86,19 +85,24 @@ class ApplicationController < ActionController::Base
         @children.first
       end
 
-    # セッションと同期（削除等でズレた場合を自動修正）
     session[:current_child_id] = @current_child&.id
-
-    # 既存ビュー互換
     @selected_child = @current_child
   end
 
+  # --- 本番での Basic 認証をかける/外す判定（安全版） ---
   def basic_auth_applicable?
-    Rails.env.production? &&
-      ENV["BASIC_AUTH_USER"].present? &&
-      ENV["BASIC_AUTH_PASSWORD"].present? &&
-      request.path != "/up" &&
-      !request.path.start_with?("/users")   # ← Devise系は除外（CSRF/リダイレクト連鎖対策）
+    return false unless Rails.env.production?
+    return false unless ENV["BASIC_AUTH_USER"].present? && ENV["BASIC_AUTH_PASSWORD"].present?
+
+    # Devise 画面は全除外（ログイン/登録/パス再発行などがブロックされない）
+    return false if devise_controller?
+
+    path = request.path.to_s
+    # ヘルスチェックや静的配信は除外
+    return false if path == "/up"
+    return false if path.start_with?("/assets", "/packs", "/rails/active_storage")
+
+    true
   end
 
   def basic_auth
