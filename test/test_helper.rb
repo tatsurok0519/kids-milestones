@@ -3,8 +3,9 @@ require_relative "../config/environment"
 require "rails/test_help"
 
 class ActiveSupport::TestCase
-  # ここに共通ユーティリティを書いてOK
+  # fixtures :all  # フィクスチャを使うなら有効化
 end
 
-# System テストに UI ヘルパを読み込み
-Dir[File.join(__dir__, "system/support/**/*.rb")].sort.each { |f| require f }
+class ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+end
