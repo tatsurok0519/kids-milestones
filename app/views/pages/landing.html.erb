@@ -1,12 +1,9 @@
-<div class="min-h-screen bg-orange-50/40">
+<div class="landing-hero-bg min-h-screen bg-orange-50/40">
   <div class="mx-auto max-w-5xl px-4 py-12">
 
     <!-- ヒーロー -->
     <div class="grid md:grid-cols-2 gap-8 items-center">
       <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-orange-600 tracking-tight">
-          こどもすくすくカード
-        </h1>
         <p class="mt-3 text-gray-700 leading-relaxed">
           お子さまの「できた！」を、かわいく・かんたんに記録。<br>
           写真付きプロフィールと花丸（達成）で成長を見える化します。
@@ -16,18 +13,45 @@
           <%= link_to "できるかな体験", tasks_path(age_band: "all"),
                 class: "px-5 py-2.5 rounded-xl bg-orange-600 text-white font-semibold shadow hover:opacity-95" %>
           <%= link_to "そうだん体験", consult_path,
-                class: "px-5 py-2.5 rounded-xl bg-white border text-gray-700 font-semibold hover:bg-gray-50" %>
+                class: "px-5 py-2.5 rounded-xl bg-white/90 border text-gray-700 font-semibold hover:bg-white" %>
         </div>
       </div>
 
       <div class="relative">
-        <div class="rounded-2xl bg-white shadow p-6 border">
+        <div class="rounded-2xl bg-white/95 shadow p-6 border">
           <ul class="space-y-2 text-sm text-gray-700">
-            <li>未ログインでも体験できますが、保存はされません</li>
+            <li>未ログインでも体験できます</li>
           </ul>
         </div>
       </div>
     </div>
-
   </div>
 </div>
+
+<style>
+/* ここだけ置き換え */
+.landing-hero-bg::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* 右寄せ & 画像全体が入るように contain を使用 */
+  background: url("<%= asset_path('landing/first.png') %>") right center / contain no-repeat;
+  opacity: .3;                 /* 透明度 70% */
+  z-index: -1;
+  filter: saturate(1.02) brightness(1.02);
+}
+
+/* 読みやすさ補助の白ベール（そのままでOK） */
+.landing-hero-bg::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,.18), rgba(255,255,255,.28));
+  z-index: -1;
+}
+
+/* スマホは少し上寄せに（必要なら調整） */
+@media (max-width: 640px){
+  .landing-hero-bg::before{ background-position: right 10% center; }
+}
+</style>

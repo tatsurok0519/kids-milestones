@@ -1,28 +1,101 @@
-<% unless session[:hide_growth_banner] %>
-  <div id="growth-policy-banner"
-       role="region" aria-label="比べない育ちのご案内"
-       style="position:relative;margin:0 0 .75rem 0;">
-    <div class="container">
-      <div class="card" style="padding:.75rem 1rem; border:1px solid #e8d9b3; background:#fff9e8;">
-        <div style="display:flex; gap:.75rem; align-items:flex-start;">
-          <%= asset_img "illustrations/sun.png", width:24, height:24,
-                style: "flex:none; margin-top:.15rem;" %>
+<%# locals: floating: false, compact: false %>
+<% floating = local_assigns[:floating] || false %>
+<% compact  = local_assigns[:compact]  || false %>
 
-          <div style="line-height:1.6;">
-            <strong>比べない育ち</strong>：発達は人それぞれ。できた／できないで評価せず、ゆっくりでも大丈夫。
-            医療的な不安はかかりつけへ。<%= link_to "くわしく", growth_policy_path, class: "link" %>
+<div id="growth-policy-banner"
+     class="gp <%= 'gp--floating' if floating %> <%= 'gp--compact' if compact %>"
+     role="region" aria-label="比べない育ちのご案内">
+  <div class="gp__inner">
+    <div class="gp__card">
+      <div class="gp__row">
+        <%= asset_img "illustrations/sun.png", width:24, height:24, alt:"", class:"gp__icon" %>
+
+        <div class="gp__content">
+          <div class="gp__title">比べない育ちを大切に</div>
+          <div class="gp__text">
+            子どもの育ちは一人ひとりのペースで進みます。焦らず、その子の今の姿を大切にしましょう。
           </div>
-
-          <!-- JS不要：Turbo Streams / HTML 両対応で確実に閉じる -->
-          <%= button_to "×",
-                dismiss_banner_path,
-                method: :post,
-                form: { data: { turbo_stream: true } },
-                title: "このお知らせを閉じる",
-                class: "btn",
-                style: "margin-left:auto; padding:.25rem .5rem; border:1px solid var(--border);" %>
         </div>
+
+        <%= link_to "くわしく", growth_policy_path, class: "gp__btn" %>
+
+        <button type="button" class="gp__close" aria-label="このお知らせを閉じる"
+                onclick="(function(btn){
+                  try{ localStorage.setItem('growth_policy_dismissed_v2','1'); }catch(e){}
+                  var box = document.getElementById('growth-policy-banner');
+                  if(box) box.remove();
+                })(this)">×</button>
       </div>
     </div>
   </div>
-<% end %>
+</div>
+
+<style>
+/* ========== base ========== */
+.gp{ position:relative; margin:0 0 .75rem; }
+.gp__inner{ max-width: 60rem; margin: 0 auto; padding: 0 .5rem; }
+.gp__card{
+  border:1px solid #dbeafe;           /* 青系で軽め */
+  background: rgba(239,246,255,.90);  /* #eff6ff を少し透明に */
+  border-radius: .8rem;
+  box-shadow: 0 1px 0 rgba(15,23,42,.02);
+  padding: .9rem 1rem;
+}
+.gp__row{ display:flex; align-items:flex-start; gap:.75rem; }
+.gp__icon{ flex:none; margin-top:.1rem; }
+.gp__content{ flex:1 1 auto; min-width:0; }
+.gp__title{ font-weight:700; margin-bottom:.2rem; color:#0f172a; }
+.gp__text{ line-height:1.6; color:#334155; }
+.gp__btn{
+  flex:none;
+  margin-left:.5rem;
+  padding:.35rem .7rem;
+  border-radius:.7rem;
+  background:#2563eb; color:#fff; text-decoration:none; font-weight:600;
+  font-size:.92rem;
+}
+.gp__btn:hover{ opacity:.95 }
+.gp__close{
+  flex:none; margin-left:.25rem;
+  background:#fff; color:#334155;
+  border:1px solid #e5e7eb; border-radius:.5rem;
+  width:1.8rem; height:1.8rem; line-height:1.6rem; text-align:center;
+}
+
+/* ========== compact variant ========== */
+.gp.gp--compact .gp__inner{ max-width: 48rem; }          /* 横幅をやや絞る */
+.gp.gp--compact .gp__card{ padding:.6rem .75rem; }       /* パディング縮小 */
+.gp.gp--compact .gp__title{ font-size: .95rem; }         /* 全体に少し小さめ */
+.gp.gp--compact .gp__text { font-size: .94rem; }
+.gp.gp--compact .gp__btn  { font-size: .88rem; padding:.28rem .6rem; }
+.gp.gp--compact .gp__close{ transform: scale(.94); }
+
+/* ========== floating variant（必要なら）========== */
+.gp.gp--floating{
+  position:fixed; left:0; right:0; bottom:1rem; z-index: 50;
+}
+.gp.gp--floating .gp__inner{ max-width: 42rem; }
+.gp.gp--floating .gp__card{
+  background: rgba(255,255,255,.92);
+  border:1px solid #e5e7eb;
+}
+
+/* 既に閉じていれば自動で非表示 */
+</style>
+
+<script>
+(function(){
+  var KEY="growth_policy_dismissed_v2";
+  function hideIfDismissed(){
+    try{
+      if(localStorage.getItem(KEY)==="1"){
+        var el=document.getElementById("growth-policy-banner");
+        if(el) el.remove();
+      }
+    }catch(e){}
+  }
+  hideIfDismissed();
+  document.addEventListener("turbo:load", hideIfDismissed);
+  document.addEventListener("DOMContentLoaded", hideIfDismissed);
+})();
+</script>
