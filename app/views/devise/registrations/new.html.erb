@@ -62,7 +62,7 @@
             "aria-invalid": p_err.present? %>
       <p id="<%= p_hint %>" class="text-muted" style="font-size:.85rem; margin:.3rem 0 0;">
         <% if @minimum_password_length %>
-          <%= @minimum_password_length %>文字以上を推奨します。
+          <%= @minimum_password_length %>文字以上です。
         <% else %>
           できるだけ長く・推測されにくいものにしましょう。
         <% end %>
