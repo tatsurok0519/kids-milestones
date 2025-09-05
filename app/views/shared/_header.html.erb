@@ -1,14 +1,14 @@
-<header class="header-bar">
-  <div class="container header-inner">
-    <div class="brand">
+<header class="header-bar hero-honey-wave">
+  <div class="container header-inner" style="padding:.75rem 0 1.5rem;">
+    <div class="brand" style="display:flex; align-items:center; gap:.5rem;">
       <%= asset_img "illustrations/sun.png",
             alt: "", width: 90, height: 90,
             decoding: "async", fetchpriority: "high",
-            class: "brand-logo" %>
-      <h1 class="brand-title">
+            class: "brand-logo", style: "flex:none;" %>
+      <h1 class="brand-title" style="margin:0;">
         <%= link_to "こどもすくすくカード",
-                    (respond_to?(:root_path) ? root_path : dashboard_path),
-                    style: "text-decoration:none; color:inherit;" %>
+              (user_signed_in? ? authenticated_root_path : unauthenticated_root_path),
+              style: "text-decoration:none; color:inherit;" %>
       </h1>
     </div>
 
@@ -20,7 +20,7 @@
     <% mypg_class  = "btn btn-secondary" + ((current_ctrl == "registrations" && action_name == "edit") ? " is-active" : "") %>
 
     <%# === ナビ（常時表示） === %>
-    <nav id="main-nav" class="main-nav">
+    <nav id="main-nav" class="main-nav" style="display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
       <%= link_to "メイン", dashboard_path,
                   class: dash_class,
                   "aria-current": (current_ctrl=="dashboard" ? "page" : nil) %>
@@ -47,8 +47,37 @@
 </header>
 
 <style>
+/* --- はちみつ色のヒーロー帯 + 下端の白い波 --- */
+.hero-honey-wave{
+  position: relative;
+  background: linear-gradient(180deg, #FFF4C2 0%, #FFEAA0 100%);
+  isolation: isolate; /* 子要素の重なりを安定化 */
+}
+.hero-honey-wave::after{
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -1px; height: 48px;
+  background-repeat: repeat-x;
+  background-size: 1200px 48px;
+  /* 白い波（SVGをインライン） */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 48' preserveAspectRatio='none'><path fill='%23FFFFFF' d='M0,24 C150,0 300,48 450,24 C600,0 750,48 900,24 C1050,0 1200,48 1200,48 L0,48 Z'/></svg>");
+  pointer-events: none;
+}
+
+/* モバイルは波を少し浅く */
+@media (max-width: 480px){
+  .hero-honey-wave::after{ height: 36px; background-size: 900px 36px; }
+}
+
+/* 印刷時は真っ白（既存の印刷方針に合わせる） */
+@media print{
+  .hero-honey-wave{ background:#fff !important; }
+  .hero-honey-wave::after{ display:none !important; }
+}
+
 /* ナビの「今いる場所」強調（ナビ内だけに限定） */
 .main-nav .btn.is-active { border-color:#60a5fa; background:#eff6ff; }
+
 /* スクリーンリーダー用（他で使っていれば残してOK） */
 .sr-only {
   position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;

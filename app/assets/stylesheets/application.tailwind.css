@@ -548,3 +548,45 @@ img.lazy { content-visibility: auto; }
 }
 .reward-glow { animation: rewardGlow 1200ms ease-out 1; }
 @media (prefers-reduced-motion: reduce) { .reward-glow { animation: none; } }
+
+@layer utilities {
+  /* 1) ふんわり蜂蜜グラデ（ボディ向け） */
+  .bg-honey-gradient {
+    background: linear-gradient(180deg, #FFF7E0 0%, #FFFDF5 55%, #FFFFFF 100%);
+  }
+
+  /* 2) うっすらドット（重ね掛け用・パフォーマンス軽い） */
+  .bg-honey-dots {
+    background-image:
+      radial-gradient(rgba(255, 200, 60, .16) 1.5px, transparent 2px);
+    background-size: 24px 24px;
+  }
+
+  /* 3) ヒーローヘッダー：下端が波の帯（ヘッダー用） */
+  .hero-honey-wave {
+    position: relative;
+    background: linear-gradient(180deg, #FFF4C2 0%, #FFEAA0 100%);
+    isolation: isolate;            /* 子要素の重なりを安定化 */
+  }
+  .hero-honey-wave::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px; height: 48px;
+    background-repeat: repeat-x;
+    background-size: 1200px 48px;
+    /* 白い波（SVGをインライン） */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 48' preserveAspectRatio='none'><path fill='%23FFFFFF' d='M0,24 C150,0 300,48 450,24 C600,0 750,48 900,24 C1050,0 1200,48 1200,48 L0,48 Z'/></svg>");
+    pointer-events: none;
+  }
+
+  /* 4) モバイルの横スク時に背景が切れないように */
+  .bg-fixed-safe {
+    background-attachment: scroll; /* iOSでのパフォーマンス優先 */
+  }
+
+  /* 5) 印刷は真っ白に（既存の @media print 方針と整合） */
+  @media print {
+    .bg-honey-gradient, .bg-honey-dots, .hero-honey-wave { background: #fff !important; }
+    .hero-honey-wave::after { display: none !important; }
+  }
+}
