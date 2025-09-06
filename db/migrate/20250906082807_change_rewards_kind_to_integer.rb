@@ -1,8 +1,6 @@
 class ChangeRewardsKindToInteger < ActiveRecord::Migration[7.1]
   def up
-    adapter = ActiveRecord::Base.connection.adapter_name.downcase
-
-    # 1) 文字列kind→整数kind_iへコピー
+    # 1) 旧 kind(文字列/文字列数字) → kind_i(整数) へコピー
     add_column :rewards, :kind_i, :integer, null: false, default: 0
     execute <<~SQL
       UPDATE rewards
@@ -15,13 +13,17 @@ class ChangeRewardsKindToInteger < ActiveRecord::Migration[7.1]
          END;
     SQL
 
-    # 2) 古い index/column を外し、kind_i を kind にリネーム
-    remove_index :rewards, [:kind, :tier], if_exists: true
+    # 2) 既存 index を “名前指定” で確実に削除（どちらがある環境でもOK）
+    %i[index_rewards_on_kind_and_tier index_rewards_on_kind_and_tier_unique].each do |idx|
+      remove_index :rewards, name: idx, if_exists: true
+    end
+
+    # 3) 旧 kind を落として kind_i を kind にリネーム
     remove_column :rewards, :kind, :string
     rename_column :rewards, :kind_i, :kind
 
-    # 3) [kind,tier] 重複を除去（最小idを正とし、FKを付け替え）
-    #    まず reward_unlocks を keep_id 側へ張り替え。重複しそうなら skip。
+    # 4) (kind,tier) の重複行を整理
+    #    - 最小 id を正とし reward_unlocks のFKを付け替え（既存があればスキップ）
     execute <<~SQL
       WITH kept AS (
         SELECT MIN(id) AS keep_id, kind, tier
@@ -45,7 +47,7 @@ class ChangeRewardsKindToInteger < ActiveRecord::Migration[7.1]
              );
     SQL
 
-    # reward_unlocks の重複行を掃除（child_id,reward_id で1行に）
+    #    - reward_unlocks の重複( child_id, reward_id ) を1行に圧縮
     execute <<~SQL
       DELETE FROM reward_unlocks ru
        USING (
@@ -58,7 +60,7 @@ class ChangeRewardsKindToInteger < ActiveRecord::Migration[7.1]
          AND ru.id <> k.keep_id;
     SQL
 
-    # 重複 reward 行を削除（keep_id 以外）
+    #    - 重複 reward 行のダブりを削除
     execute <<~SQL
       DELETE FROM rewards r
        USING (
@@ -75,7 +77,7 @@ class ChangeRewardsKindToInteger < ActiveRecord::Migration[7.1]
        WHERE r.id = d.id;
     SQL
 
-    # 4) ユニークインデックスを作成
+    # 5) ユニーク index を作成（本命）
     add_index :rewards, [:kind, :tier], unique: true, name: "index_rewards_on_kind_and_tier"
   end
 
