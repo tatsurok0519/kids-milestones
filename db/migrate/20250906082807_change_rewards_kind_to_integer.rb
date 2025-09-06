@@ -2,108 +2,96 @@ class ChangeRewardsKindToInteger < ActiveRecord::Migration[7.1]
   def up
     adapter = ActiveRecord::Base.connection.adapter_name.downcase
 
-    if adapter.include?("sqlite")
-      # --- SQLite: テーブル入れ替え ---
-      execute "PRAGMA foreign_keys = OFF"
+    # 1) 文字列kind→整数kind_iへコピー
+    add_column :rewards, :kind_i, :integer, null: false, default: 0
+    execute <<~SQL
+      UPDATE rewards
+         SET kind_i = CASE kind
+           WHEN 'medal'   THEN 0
+           WHEN 'trophy'  THEN 1
+           WHEN 'special' THEN 2
+           WHEN '0' THEN 0 WHEN '1' THEN 1 WHEN '2' THEN 2
+           ELSE 0
+         END;
+    SQL
 
-      execute <<~SQL
-        CREATE TABLE rewards_new (
-          id          INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          kind        INTEGER NOT NULL DEFAULT 0,
-          tier        VARCHAR NOT NULL,
-          threshold   INTEGER NOT NULL,
-          icon_path   VARCHAR NOT NULL,
-          created_at  DATETIME NOT NULL,
-          updated_at  DATETIME NOT NULL
-        );
-      SQL
+    # 2) 古い index/column を外し、kind_i を kind にリネーム
+    remove_index :rewards, [:kind, :tier], if_exists: true
+    remove_column :rewards, :kind, :string
+    rename_column :rewards, :kind_i, :kind
 
-      execute <<~SQL
-        INSERT INTO rewards_new (id, kind, tier, threshold, icon_path, created_at, updated_at)
-        SELECT
-          id,
-          CASE
-            WHEN kind IN ('medal','0') THEN 0
-            WHEN kind IN ('trophy','1') THEN 1
-            WHEN kind IN ('special','2') THEN 2
-            WHEN icon_path LIKE 'icons/trophy_%' OR threshold IN (30,40,50) THEN 1
-            WHEN icon_path LIKE 'icons/medal_%'  OR threshold IN (5,10,20)  THEN 0
-            WHEN icon_path LIKE '%crown%' OR icon_path LIKE '%decoration%' OR icon_path LIKE '%hall_of_fame%' OR threshold IN (65,80,100) THEN 2
-            ELSE 0
-          END AS kind,
-          tier, threshold, icon_path, created_at, updated_at
-        FROM rewards;
-      SQL
+    # 3) [kind,tier] 重複を除去（最小idを正とし、FKを付け替え）
+    #    まず reward_unlocks を keep_id 側へ張り替え。重複しそうなら skip。
+    execute <<~SQL
+      WITH kept AS (
+        SELECT MIN(id) AS keep_id, kind, tier
+          FROM rewards
+         GROUP BY kind, tier
+      ),
+      dup AS (
+        SELECT r.id AS dup_id, r.kind, r.tier, k.keep_id
+          FROM rewards r
+          JOIN kept k ON k.kind = r.kind AND k.tier = r.tier
+         WHERE r.id <> k.keep_id
+      )
+      UPDATE reward_unlocks ru
+         SET reward_id = d.keep_id
+        FROM dup d
+       WHERE ru.reward_id = d.dup_id
+         AND NOT EXISTS (
+               SELECT 1 FROM reward_unlocks ru2
+                WHERE ru2.child_id = ru.child_id
+                  AND ru2.reward_id = d.keep_id
+             );
+    SQL
 
-      execute "ALTER TABLE rewards RENAME TO rewards_old;"
-      execute "ALTER TABLE rewards_new RENAME TO rewards;"
-      execute "DROP INDEX IF EXISTS index_rewards_on_kind_and_tier"
-      execute "CREATE UNIQUE INDEX IF NOT EXISTS index_rewards_on_kind_and_tier ON rewards(kind, tier);"
-      # 旧テーブルは即 drop せず退避（外部キー都合）
-      execute "ALTER TABLE rewards_old RENAME TO rewards_legacy_#{Time.now.to_i};"
-      execute "PRAGMA foreign_keys = ON"
-    else
-      # --- PostgreSQL/MySQL: 一般的な手順 ---
-      add_column :rewards, :kind_i, :integer, null: false, default: 0
+    # reward_unlocks の重複行を掃除（child_id,reward_id で1行に）
+    execute <<~SQL
+      DELETE FROM reward_unlocks ru
+       USING (
+         SELECT MIN(id) AS keep_id, child_id, reward_id
+           FROM reward_unlocks
+          GROUP BY child_id, reward_id
+       ) k
+       WHERE ru.child_id = k.child_id
+         AND ru.reward_id = k.reward_id
+         AND ru.id <> k.keep_id;
+    SQL
 
-      execute <<~SQL
-        UPDATE rewards
-           SET kind_i = CASE kind
-             WHEN 'medal' THEN 0
-             WHEN 'trophy' THEN 1
-             WHEN 'special' THEN 2
-             WHEN '0' THEN 0 WHEN '1' THEN 1 WHEN '2' THEN 2
-             ELSE 0
-           END;
-      SQL
+    # 重複 reward 行を削除（keep_id 以外）
+    execute <<~SQL
+      DELETE FROM rewards r
+       USING (
+         SELECT r2.id
+           FROM rewards r2
+           JOIN (
+                 SELECT MIN(id) AS keep_id, kind, tier
+                   FROM rewards
+                  GROUP BY kind, tier
+                ) k
+             ON k.kind = r2.kind AND k.tier = r2.tier
+          WHERE r2.id <> k.keep_id
+       ) d
+       WHERE r.id = d.id;
+    SQL
 
-      remove_index :rewards, [:kind, :tier] rescue nil
-      remove_column :rewards, :kind, :string
-      rename_column :rewards, :kind_i, :kind
-      add_index :rewards, [:kind, :tier], unique: true, name: "index_rewards_on_kind_and_tier"
-    end
+    # 4) ユニークインデックスを作成
+    add_index :rewards, [:kind, :tier], unique: true, name: "index_rewards_on_kind_and_tier"
   end
 
   def down
-    # ざっくり戻せるよう整数→文字列に戻す（最低限）
-    adapter = ActiveRecord::Base.connection.adapter_name.downcase
-
-    if adapter.include?("sqlite")
-      execute "PRAGMA foreign_keys = OFF"
-      execute <<~SQL
-        CREATE TABLE rewards_new (
-          id          INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          kind        VARCHAR NOT NULL,
-          tier        VARCHAR NOT NULL,
-          threshold   INTEGER NOT NULL,
-          icon_path   VARCHAR NOT NULL,
-          created_at  DATETIME NOT NULL,
-          updated_at  DATETIME NOT NULL
-        );
-      SQL
-      execute <<~SQL
-        INSERT INTO rewards_new (id, kind, tier, threshold, icon_path, created_at, updated_at)
-        SELECT id,
-               CASE kind WHEN 0 THEN 'medal' WHEN 1 THEN 'trophy' ELSE 'special' END,
-               tier, threshold, icon_path, created_at, updated_at
-          FROM rewards;
-      SQL
-      execute "ALTER TABLE rewards RENAME TO rewards_old;"
-      execute "ALTER TABLE rewards_new RENAME TO rewards;"
-      execute "DROP INDEX IF EXISTS index_rewards_on_kind_and_tier"
-      execute "CREATE UNIQUE INDEX IF NOT EXISTS index_rewards_on_kind_and_tier ON rewards(kind, tier);"
-      execute "DROP TABLE rewards_old;"
-      execute "PRAGMA foreign_keys = ON"
-    else
-      add_column    :rewards, :kind_s, :string, null: false, default: "medal"
-      execute <<~SQL
-        UPDATE rewards
-           SET kind_s = CASE kind WHEN 0 THEN 'medal' WHEN 1 THEN 'trophy' ELSE 'special' END;
-      SQL
-      remove_index  :rewards, name: "index_rewards_on_kind_and_tier" rescue nil
-      remove_column :rewards, :kind, :integer
-      rename_column :rewards, :kind_s, :kind
-      add_index     :rewards, [:kind, :tier], unique: true
-    end
+    remove_index :rewards, name: "index_rewards_on_kind_and_tier", if_exists: true
+    add_column :rewards, :kind_s, :string
+    execute <<~SQL
+      UPDATE rewards
+         SET kind_s = CASE kind
+           WHEN 0 THEN 'medal'
+           WHEN 1 THEN 'trophy'
+           ELSE 'special'
+         END;
+    SQL
+    remove_column :rewards, :kind
+    rename_column :rewards, :kind_s, :kind
+    add_index :rewards, [:kind, :tier], unique: true, name: "index_rewards_on_kind_and_tier", if_not_exists: true
   end
 end
