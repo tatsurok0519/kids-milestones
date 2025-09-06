@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_31_235558) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_06_082807) do
   create_table "achievements", force: :cascade do |t|
     t.integer "child_id", null: false
     t.integer "milestone_id", null: false
@@ -77,7 +77,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_31_235558) do
   create_table "reward_unlocks", force: :cascade do |t|
     t.integer "child_id", null: false
     t.integer "reward_id", null: false
-    t.datetime "unlocked_at", null: false
+    t.datetime "unlocked_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["child_id", "reward_id"], name: "index_reward_unlocks_on_child_and_reward_unique", unique: true
@@ -86,13 +86,23 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_31_235558) do
   end
 
   create_table "rewards", force: :cascade do |t|
+    t.integer "kind", default: 0, null: false
+    t.string "tier", null: false
+    t.integer "threshold", null: false
+    t.string "icon_path", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["kind", "tier"], name: "index_rewards_on_kind_and_tier", unique: true
+  end
+
+  create_table "rewards_legacy_1757152516", force: :cascade do |t|
     t.string "kind", null: false
     t.string "tier", null: false
     t.integer "threshold", null: false
     t.string "icon_path", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["kind", "tier"], name: "index_rewards_on_kind_and_tier", unique: true
+    t.index ["kind", "tier"], name: "index_rewards_on_kind_and_tier_unique", unique: true
     t.index ["threshold"], name: "index_rewards_on_threshold"
   end
 
@@ -115,5 +125,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_31_235558) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "children", "users"
   add_foreign_key "reward_unlocks", "children"
-  add_foreign_key "reward_unlocks", "rewards"
+  add_foreign_key "reward_unlocks", "rewards_legacy_1757152516", column: "reward_id"
 end

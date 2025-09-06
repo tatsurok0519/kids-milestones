@@ -49,7 +49,7 @@ ActiveRecord::Base.transaction do
       min_months, max_months = max_months, min_months
     end
 
-    # 自然キー（title + min/max ありの場合は三つ組、無ければ title 単独）
+    # 自然キー（title + min/max があれば三つ組）
     finder =
       if min_months.present? || max_months.present?
         { title: title, min_months: min_months, max_months: max_months }
@@ -81,6 +81,7 @@ total = Milestone.count
 puts "[seeds] milestones upserted -> created=#{created}, updated=#{updated}, skipped=#{skipped}, failed=#{failed}, total=#{total}"
 
 # ===== Rewards =====
+
 def upsert_reward!(kind:, tier:, threshold:, icon_path:)
   r = Reward.find_or_initialize_by(kind: kind, tier: tier)
   created = !r.persisted?
@@ -96,7 +97,7 @@ REWARD_SPECS = [
   { kind: "medal",  tier: "silver", threshold: 10, icon_path: "icons/medal_silver.png"  },
   { kind: "medal",  tier: "gold",   threshold: 20, icon_path: "icons/medal_gold.png"    },
 
-  # トロフィー（30/40/50）← ファイル名を統一（アンダースコア）
+  # トロフィー（30/40/50） ← ファイル名はアンダースコアで統一
   { kind: "trophy", tier: "bronze", threshold: 30, icon_path: "icons/trophy_bronze.png" },
   { kind: "trophy", tier: "silver", threshold: 40, icon_path: "icons/trophy_silver.png" },
   { kind: "trophy", tier: "gold",   threshold: 50, icon_path: "icons/trophy_gold.png"   },
@@ -111,17 +112,19 @@ r_created = 0
 r_updated = 0
 
 ActiveRecord::Base.transaction do
+  # もし過去に enum 不一致で kind=nil の変な行が残っていたら消してから upsert
+  Reward.where(kind: nil).delete_all
+
   REWARD_SPECS.each do |spec|
     status = upsert_reward!(**spec)
     r_created += 1 if status == :created
     r_updated += 1 if status == :updated
 
-    # 画像の存在チェック（開発/本番ともにパスの打ち間違い検出に役立つ）
+    # 画像の存在チェック（打ち間違い検出用）
     img_path = Rails.root.join("app/assets/images", spec[:icon_path])
     puts "[WARN] image not found: #{img_path}" unless File.exist?(img_path)
   end
 end
 
 puts "[seeds] rewards upserted -> created=#{r_created}, updated=#{r_updated}, total=#{REWARD_SPECS.size}"
-
 puts "[seeds] DONE"

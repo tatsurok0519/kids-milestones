@@ -25,6 +25,10 @@ Rails.application.routes.draw do
   # 成績（アップサート）
   post "achievements/upsert", to: "achievements#upsert", as: :achievements_upsert
 
+  resource :achievements, only: [] do
+    post :upsert
+  end
+
   # ごほうび既読
   post "rewards/ack", to: "rewards#ack_seen", as: :ack_rewards
 

@@ -1,34 +1,29 @@
-<%# 仕様:
-  - 解放済みのみ表示
-  - 左寄せ / 折返しなし（発光が切れないよう overflow:visible）
-  - 並び順: medal -> trophy -> special / threshold 昇順
-  - span と img の両方に data-reward-id を付与
-%>
-
 <%
-  unlocked_ids =
-    if defined?(@reward_unlock_ids) && @reward_unlock_ids.present?
-      Array(@reward_unlock_ids).map(&:to_i)
-    elsif defined?(current_child) && current_child.present?
-      RewardUnlock.where(child_id: current_child.id).pluck(:reward_id)
+  the_child =
+    if local_assigns.key?(:child)
+      child
+    elsif defined?(current_child)
+      current_child
+    end
+
+  achieved_count = the_child&.achievements&.where(achieved: true)&.count.to_i
+
+  items =
+    if achieved_count.positive?
+      Reward.where("threshold <= ?", achieved_count)
+            .ordered              # CASE kind(0/1/2), threshold, id
+            .to_a
+            .uniq(&:id)           # ★ kind ではなく id で一意化（安全）
     else
       []
     end
 
-  ordered = Reward.order(
-    Arel.sql("CASE kind WHEN 'medal' THEN 0 WHEN 'trophy' THEN 1 ELSE 2 END"),
-    :threshold
-  ).to_a
-
-  items = ordered.select { |rw| unlocked_ids.include?(rw.id) }
-
   size_map = {
-    "medal"   => { "bronze"=>48, "silver"=>56, "gold"=>56 },
-    # ← ★トロフィーは 3種とも同じサイズで統一
-    "trophy"  => { "bronze"=>80, "silver"=>80, "gold"=>80 },
-    # ← ★special 追加
-    "special" => { "crown"=>84, "decoration"=>84, "hall_of_fame"=>92 }
+    "medal"   => { "bronze" => 48, "silver" => 56, "gold" => 56 },
+    "trophy"  => { "bronze" => 80, "silver" => 80, "gold" => 80 },
+    "special" => { "crown" => 84, "decoration" => 84, "hall_of_fame" => 92 }
   }
+  default_size = 72
 %>
 
 <% if items.any? %>
@@ -36,14 +31,14 @@
        style="display:flex; align-items:center; gap:.5rem;
               flex-wrap:nowrap; white-space:nowrap; overflow:visible; margin-left:.5rem;">
     <% items.each do |rw| %>
-      <% size = size_map.dig(rw.kind, rw.tier) || 72 %>
-      <span
-        id="reward_icon_<%= rw.id %>"
-        class="reward-icon"
-        data-reward-id="<%= rw.id %>"
-        style="width:<%= size %>px; height:<%= size %>px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;">
+      <% size = size_map.dig(rw.kind, rw.tier) || default_size %>
+      <span id="reward_icon_<%= rw.id %>"
+            class="reward-icon"
+            data-reward-id="<%= rw.id %>"
+            style="width:<%= size %>px; height:<%= size %>px; display:inline-flex;
+                   align-items:center; justify-content:center; flex:0 0 auto;">
         <%= asset_img rw.icon_path,
-              alt: "ごほうび: #{rw.tier}",
+              alt: "",
               width: size, height: size,
               loading: "lazy", decoding: "async",
               style: "max-width:100%; max-height:100%; object-fit:contain; display:block;",
