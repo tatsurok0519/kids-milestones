@@ -9,11 +9,7 @@ class AchievementsController < ApplicationController
 
     case state
     when "working"
-      ach.assign_attributes(
-        working:     !ach.working?,
-        achieved:    false,
-        achieved_at: nil
-      )
+      ach.assign_attributes(working: !ach.working?, achieved: false, achieved_at: nil)
     when "achieved"
       if ach.achieved?
         ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
@@ -27,7 +23,7 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
-    # 新規解放リワード（演出用）をセッションに加算ユニークで積む
+    # 新規解放ごほうび → セッションへ積む
     @new_rewards = RewardUnlocker.call(@child)
     ids = Array(@new_rewards).map(&:id)
     if ids.any?
@@ -37,13 +33,10 @@ class AchievementsController < ApplicationController
 
     respond_ok
   rescue ActiveRecord::RecordNotFound
-    Rails.logger.warn("[achievements#upsert] 404 child/milestone not found")
     head :not_found
   rescue Pundit::NotAuthorizedError
-    Rails.logger.warn("[achievements#upsert] 403 not authorized")
     head :forbidden
-  rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.warn("[achievements#upsert] 422 #{e.record.errors.full_messages.join(', ')}")
+  rescue ActiveRecord::RecordInvalid
     respond_ng
   end
 
@@ -53,7 +46,6 @@ class AchievementsController < ApplicationController
     @child = params[:child_id].present? ? Child.find(params[:child_id]) : current_child
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
     authorize @child, :use?
-
     @milestone = Milestone.find(params.require(:milestone_id))
   end
 
@@ -62,35 +54,11 @@ class AchievementsController < ApplicationController
   end
 
   def respond_ok
-    respond_to do |f|
-      f.turbo_stream { render_controls(achievement: latest_achievement, status: :ok) }
-      f.html do
-        flash[:notice] = "ごほうび解放！" if @new_rewards.present?
-        redirect_to tasks_path(
-          age_band:        params[:age_band],
-          category:        params[:category],
-          difficulty:      params[:difficulty],
-          only_unachieved: params[:only_unachieved],
-          page:            params[:page]
-        )
-      end
-      f.json do
-        a = latest_achievement
-        render json: {
-          id: a&.id, child_id: a&.child_id || @child.id,
-          milestone_id: @milestone.id,
-          working: a&.working, achieved: a&.achieved, achieved_at: a&.achieved_at
-        }, status: :ok
-      end
-    end
+    render_controls(achievement: latest_achievement, status: :ok)
   end
 
   def respond_ng
-    respond_to do |f|
-      f.turbo_stream { render_controls(achievement: latest_achievement, status: :unprocessable_entity) }
-      f.html  { render plain: "unprocessable", status: :unprocessable_entity }
-      f.json  { render json: { error: "unprocessable" }, status: :unprocessable_entity }
-    end
+    render_controls(achievement: latest_achievement, status: :unprocessable_entity)
   end
 
   def respond_invalid_state
@@ -98,13 +66,13 @@ class AchievementsController < ApplicationController
       f.turbo_stream { head :unprocessable_entity }
       f.html  { render plain: "invalid state", status: :unprocessable_entity }
       f.json  { render json: { error: "invalid state" }, status: :unprocessable_entity }
+      f.any   { head :unprocessable_entity }
     end
   end
 
   def render_controls(achievement:, status:)
     streams = []
-    # ルート要素ごと置き換え（_controls 側に id="<%= dom_id(milestone, :controls) %>" がある想定）
-    streams << turbo_stream.replace(
+    streams << turbo_stream.update(
       view_context.dom_id(@milestone, :controls),
       partial: "tasks/controls",
       locals:  { milestone: @milestone, achievement: achievement }
@@ -116,8 +84,13 @@ class AchievementsController < ApplicationController
         partial: "shared/reward_toast",
         locals:  { rewards: @new_rewards }
       )
+      ids_csv = @new_rewards.map(&:id).join(",")
+      marker  = helpers.tag.div("", data: { reward_unlocked: ids_csv })
+      streams << turbo_stream.update("reward_animator", marker)
     end
 
-    render turbo_stream: streams, status: status
+    render turbo_stream: streams,
+           content_type: "text/vnd.turbo-stream.html",
+           status: status
   end
 end

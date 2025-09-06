@@ -1,8 +1,8 @@
 <% working  = achievement&.working %>
 <% achieved = achievement&.achieved %>
 
-<div id="<%= dom_id(milestone, :controls) %>">
-  <%# 右上バッジ表示 %>
+<%= turbo_frame_tag dom_id(milestone, :controls) do %>
+  <%# 右上バッジ %>
   <% if working %>
     <%= asset_img "icons/try.png", alt:"", width:44, height:44,
           style:"position:absolute; top:8px; right:8px; pointer-events:none;" %>
@@ -23,7 +23,7 @@
           ),
           params: { toggle: "working" },
           method: :post,
-          form:   { data: { remote_ach: 1, turbo_stream: true } },
+          form:   { data: { turbo: true, turbo_frame: dom_id(milestone, :controls) } },
           class:  "btn btn-secondary #{'is-active' if working}",
           aria:   { pressed: working ? "true" : "false" }
         ) do %>
@@ -41,11 +41,11 @@
           ),
           params: { toggle: "achieved" },
           method: :post,
-          form:   { data: { remote_ach: 1, turbo_stream: true } },
+          form:   { data: { turbo: true, turbo_frame: dom_id(milestone, :controls) } },
           class:  "btn btn-primary #{'is-active' if achieved}",
           aria:   { pressed: achieved ? "true" : "false" }
         ) do %>
       できた！
     <% end %>
   </div>
-</div>
+<% end %>

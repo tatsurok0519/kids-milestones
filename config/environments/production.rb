@@ -6,64 +6,68 @@ Rails.application.configure do
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
-  # Eager load code on boot.
+  # Eager load code on boot (threads / copy-on-write に有利)
   config.eager_load = true
 
-  # Full error reports are disabled and caching is turned on.
+  # 本番は詳細エラー非表示＋キャッシュ有効
   config.consider_all_requests_local       = false
   config.action_controller.perform_caching = true
 
-  # config.require_master_key = true
-
-  # Serve static files from /public.
+  # /public 配下の静的ファイルを配信
   config.public_file_server.enabled = true
 
-  # Do not fallback to assets pipeline if a precompiled asset is missed.
+  # プリコンパイル漏れでアセットにフォールバックしない
   config.assets.compile = false
 
-  # Active Storage
+  # Active Storage（Cloudinary）
   config.active_storage.service = :cloudinary
   # config.active_storage.variant_processor = :mini_magick
 
-  # Force SSL (HSTS / secure cookies).
+  # HTTPS を強制（HSTS / secure cookies）
   config.force_ssl = true
 
-  # Logging
-  config.logger = ActiveSupport::Logger.new(STDOUT)
-    .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
-    .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
+  # ログ出力（STDOUT）
+  config.logger = ActiveSupport::TaggedLogging.new(
+    ActiveSupport::Logger.new(STDOUT).tap { _1.formatter = ::Logger::Formatter.new }
+  )
   config.log_tags  = [:request_id]
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
-  # Mailer
+  # ===== Action Mailer 設定 =====
   config.action_mailer.perform_caching = false
 
-  # ★ 本番はメール送信を有効化
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.raise_delivery_errors = true
+  host = ENV.fetch("APP_HOST", "kids-milestones.onrender.com")
+  config.action_mailer.default_url_options = { host: host, protocol: "https" }
+  config.action_mailer.asset_host         = "https://#{host}"
+  Rails.application.routes.default_url_options[:host] = host
 
-  # 受信リンクのホスト名（必須）
-  config.action_mailer.default_url_options = {
-    host: ENV.fetch("APP_HOST", "kids-milestones.onrender.com"),
-    protocol: "https"
-  }
-  config.action_mailer.asset_host = "https://#{ENV.fetch("APP_HOST", "kids-milestones.onrender.com")}"
+  # 環境変数が揃っていれば SMTP、本番変数が未設定なら test にフォールバック
+  smtp_present =
+    ENV["SMTP_ADDRESS"].present? &&
+    ENV["SMTP_USERNAME"].present? &&
+    ENV["SMTP_PASSWORD"].present?
 
-  # Rails.url_helpers での既定ホスト（Deviseの内部でも使われる場面があるため念のため）
-  Rails.application.routes.default_url_options[:host] =
-    ENV.fetch("APP_HOST", "kids-milestones.onrender.com")
-
-  # ★ SMTP 設定（環境変数で与える）
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address:              ENV.fetch("SMTP_ADDRESS"),                       # 例: "smtp.sendgrid.net"
-    port:                 Integer(ENV.fetch("SMTP_PORT", "587")),          # 多くは 587
-    domain:               ENV.fetch("SMTP_DOMAIN", "kids-milestones.onrender.com"),
-    user_name:            ENV.fetch("SMTP_USERNAME"),                      # 例: "apikey"（SendGrid）
-    password:             ENV.fetch("SMTP_PASSWORD"),                      # 例: SendGridのAPIキー
-    authentication:       (ENV["SMTP_AUTH"].presence&.to_sym || :login),   # :plain / :login など
-    enable_starttls_auto: ENV.fetch("SMTP_ENABLE_STARTTLS", "true") != "false"
-  }
+  if smtp_present
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address:              ENV["SMTP_ADDRESS"],                      # 例: "smtp.gmail.com"
+      port:                 (ENV["SMTP_PORT"] || 587).to_i,
+      domain:               ENV["SMTP_DOMAIN"] || host,               # 例: "kids-milestones.onrender.com"
+      user_name:            ENV["SMTP_USERNAME"],                     # 例: Gmailアドレス or "apikey"
+      password:             ENV["SMTP_PASSWORD"],                     # 例: アプリパスワード / APIキー
+      authentication:       (ENV["SMTP_AUTH"].presence&.to_sym || :plain),
+      enable_starttls_auto: ENV.fetch("SMTP_ENABLE_STARTTLS", "true") != "false",
+      open_timeout:         10,
+      read_timeout:         20
+    }
+  else
+    # ここに来る場合は seed 等でも落ちないよう配送停止
+    config.action_mailer.perform_deliveries   = false
+    config.action_mailer.raise_delivery_errors = false
+    config.action_mailer.delivery_method      = :test
+  end
 
   # I18n
   config.i18n.fallbacks = true
@@ -71,20 +75,21 @@ Rails.application.configure do
   # Deprecations
   config.active_support.report_deprecations = false
 
-  # Schema dump
+  # マイグレーション後の schema.rb ダンプなし
   config.active_record.dump_schema_after_migration = false
 
-  # 例外時に /404 /403 などへルーティング
+  # 例外時に /404 /403 などにルーティング
   config.exceptions_app = routes
 
   # 逆プロキシを挟む場合のみ必要に応じて
   # config.action_dispatch.trusted_proxies = [IPAddr.new('10.0.0.0/8'), ...]
 
-  # CSRFのOriginチェックを緩める（必要に応じて）
+  # CSRF の Origin チェックを緩める（外部フォーム等の誤検知対策）
   config.action_controller.forgery_protection_origin_check = false
 
-  # 起動後にAPP_HOSTをログ出力（確認用）
+  # 起動時に値をログへ（確認用）
   config.after_initialize do
     Rails.logger.info("APP_HOST=#{ENV['APP_HOST'].inspect}")
+    Rails.logger.info("MAILER_MODE=#{smtp_present ? 'smtp' : 'test'}")
   end
 end

@@ -174,8 +174,12 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------------------------
-   ごほうび：Turbo Stream → カスタムイベント化（互換用）
+   ごほうび：Turbo Stream → カスタムイベント化（確実版）
+   - turbo:before-stream-render でも拾う
+   - さらに #reward_animator のDOM更新を MutationObserver で監視
 --------------------------- */
+
+// 既存: Turbo Stream イベントで拾う
 document.addEventListener("turbo:before-stream-render", (ev) => {
   const ts = ev.target;
   if (!(ts instanceof Element)) return;
@@ -193,6 +197,36 @@ document.addEventListener("turbo:before-stream-render", (ev) => {
   const ids = payload.split(",").map(s => parseInt(s, 10)).filter(n => !isNaN(n));
   if (ids.length) document.dispatchEvent(new CustomEvent("reward:unlocked", { detail: { ids } }));
 });
+
+// 追加: DOM 監視でも拾う（取り逃しゼロ）
+function installRewardObserver() {
+  const host = document.getElementById("reward_animator");
+  if (!host || host.__observerInstalled) return;
+  host.__observerInstalled = true;
+
+  const obs = new MutationObserver((muts) => {
+    muts.forEach((m) => {
+      m.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+        const carrier = node.matches?.("[data-reward-unlocked]") ? node
+                       : node.querySelector?.("[data-reward-unlocked]");
+        if (!carrier) return;
+
+        const payload = carrier.getAttribute("data-reward-unlocked") || "";
+        const ids = payload.split(",").map(s => parseInt(s, 10)).filter(n => !isNaN(n));
+        if (ids.length) {
+          document.dispatchEvent(new CustomEvent("reward:unlocked", { detail: { ids } }));
+          try { host.innerHTML = ""; } catch(_) {}
+        }
+      });
+    });
+  });
+
+  obs.observe(host, { childList: true, subtree: true });
+}
+document.addEventListener("turbo:load",   installRewardObserver);
+document.addEventListener("turbo:render", installRewardObserver);
+document.addEventListener("DOMContentLoaded", installRewardObserver);
 
 /* ---------------------------
    ごほうび：新規解放アイコンをアニメ（少しゆっくり）
@@ -229,7 +263,7 @@ document.addEventListener("reward:unlocked", (e) => {
     img.addEventListener("animationend", onEnd, true);
 
     // CSS 側の duration を長めにしている前提で、解除も長めに
-    setTimeout(() => el.classList.remove("anim-unlock"), 3400); // ← ここを 1800ms → 3400ms に
+    setTimeout(() => el.classList.remove("anim-unlock"), 3400);
   });
 });
 

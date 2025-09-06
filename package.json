@@ -2,10 +2,11 @@
   "name": "app",
   "private": true,
   "devDependencies": {
-    "tailwindcss": "^4.1.12"
+    "tailwindcss": "^4.1.12",
+    "@tailwindcss/cli": "^4.1.12"
   },
   "scripts": {
-    "build:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
-    "watch:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --watch"
+    "build:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/tailwind.css --minify",
+    "watch:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/tailwind.css --watch"
   }
 }

@@ -1,12 +1,11 @@
 <%# 仕様:
-  - 未解放は非表示
-  - 左寄せ／発光アニメのため overflow:visible
-  - 並び順: medal -> trophy / threshold 昇順
-  - data-reward-id は span と img の両方に付与
+  - 解放済みのみ表示
+  - 左寄せ / 折返しなし（発光が切れないよう overflow:visible）
+  - 並び順: medal -> trophy -> special / threshold 昇順
+  - span と img の両方に data-reward-id を付与
 %>
 
 <%
-  # --- 開放済みIDの取得 ---
   unlocked_ids =
     if defined?(@reward_unlock_ids) && @reward_unlock_ids.present?
       Array(@reward_unlock_ids).map(&:to_i)
@@ -16,34 +15,35 @@
       []
     end
 
-  # --- 表示対象 Reward の並び順 ---
   ordered = Reward.order(
-    Arel.sql("CASE kind WHEN 'medal' THEN 0 ELSE 1 END"),
+    Arel.sql("CASE kind WHEN 'medal' THEN 0 WHEN 'trophy' THEN 1 ELSE 2 END"),
     :threshold
   ).to_a
 
   items = ordered.select { |rw| unlocked_ids.include?(rw.id) }
+
+  size_map = {
+    "medal"   => { "bronze"=>48, "silver"=>56, "gold"=>56 },
+    # ← ★トロフィーは 3種とも同じサイズで統一
+    "trophy"  => { "bronze"=>80, "silver"=>80, "gold"=>80 },
+    # ← ★special 追加
+    "special" => { "crown"=>84, "decoration"=>84, "hall_of_fame"=>92 }
+  }
 %>
 
 <% if items.any? %>
-  <div class="rewards-row rewards-row--dashboard"
+  <div class="rewards-row"
        style="display:flex; align-items:center; gap:.5rem;
-              flex-wrap:nowrap; white-space:nowrap; overflow:visible;">
+              flex-wrap:nowrap; white-space:nowrap; overflow:visible; margin-left:.5rem;">
     <% items.each do |rw| %>
-      <% size =
-        if rw.kind == 'medal'
-          rw.tier == 'bronze' ? 48 : 56
-        else
-          { 'bronze'=>64, 'silver'=>72, 'gold'=>80 }[rw.tier]
-        end %>
-
+      <% size = size_map.dig(rw.kind, rw.tier) || 72 %>
       <span
         id="reward_icon_<%= rw.id %>"
         class="reward-icon"
         data-reward-id="<%= rw.id %>"
         style="width:<%= size %>px; height:<%= size %>px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;">
         <%= asset_img rw.icon_path,
-              alt: "ごほうび: #{rw.tier} #{rw.kind}",
+              alt: "ごほうび: #{rw.tier}",
               width: size, height: size,
               loading: "lazy", decoding: "async",
               style: "max-width:100%; max-height:100%; object-fit:contain; display:block;",
@@ -51,15 +51,4 @@
       </span>
     <% end %>
   </div>
-
-  <%# モバイルは折返し許可（PCは従来どおり1行） %>
-  <style>
-    @media (max-width: 560px){
-      .rewards-row--dashboard{
-        flex-wrap: wrap;
-        white-space: normal;
-        row-gap: .35rem;
-      }
-    }
-  </style>
 <% end %>

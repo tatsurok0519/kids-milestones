@@ -1,6 +1,7 @@
 require "yaml"
 require "active_support/core_ext/hash/indifferent_access"
 
+# ===== Milestones =====
 path = Rails.root.join("db/seeds/milestones.yml")
 abort "[seeds] milestones.yml not found: #{path}" unless File.exist?(path)
 
@@ -14,7 +15,7 @@ updated = 0
 skipped = 0
 failed  = 0
 
-# ▼ CLEAR=1 のときは FK を考慮して安全に全消し
+# CLEAR=1 のときは（外部キー配慮で）Milestone と Achievement を全消し
 if ENV["CLEAR"] == "1"
   puts "[seeds] CLEAR=1 -> deleting achievements then milestones"
   ActiveRecord::Base.connection.disable_referential_integrity do
@@ -77,26 +78,50 @@ ActiveRecord::Base.transaction do
 end
 
 total = Milestone.count
-puts "[seeds] upserted -> created=#{created}, updated=#{updated}, skipped=#{skipped}, failed=#{failed}, total=#{total}"
+puts "[seeds] milestones upserted -> created=#{created}, updated=#{updated}, skipped=#{skipped}, failed=#{failed}, total=#{total}"
 
 # ===== Rewards =====
-rewards = [
-  # メダル（5/10/20）
-  { kind: "medal",  tier: "bronze", threshold: 5,  icon_path: "icons/medal_bronze.png" },
-  { kind: "medal",  tier: "silver", threshold: 10, icon_path: "icons/medal_silver.png" },
-  { kind: "medal",  tier: "gold",   threshold: 20, icon_path: "icons/medal_gold.png" },
-
-  # トロフィー（30/40/50）
-  { kind: "trophy", tier: "bronze", threshold: 30, icon_path: "icons/trophy-bronze.png" },
-  { kind: "trophy", tier: "silver", threshold: 40, icon_path: "icons/trophy_silver.png" },
-  { kind: "trophy", tier: "gold",   threshold: 50, icon_path: "icons/trophy_gold.png" },
-]
-
-rewards.each do |row|
-  r = Reward.find_or_initialize_by(kind: row[:kind], tier: row[:tier])
-  r.threshold = row[:threshold]
-  r.icon_path = row[:icon_path]
+def upsert_reward!(kind:, tier:, threshold:, icon_path:)
+  r = Reward.find_or_initialize_by(kind: kind, tier: tier)
+  created = !r.persisted?
+  r.threshold = threshold
+  r.icon_path = icon_path
   r.save!
+  created ? :created : :updated
 end
 
-puts "[seeds] rewards upserted: #{rewards.size}"
+REWARD_SPECS = [
+  # メダル（5/10/20）
+  { kind: "medal",  tier: "bronze", threshold: 5,  icon_path: "icons/medal_bronze.png"  },
+  { kind: "medal",  tier: "silver", threshold: 10, icon_path: "icons/medal_silver.png"  },
+  { kind: "medal",  tier: "gold",   threshold: 20, icon_path: "icons/medal_gold.png"    },
+
+  # トロフィー（30/40/50）← ファイル名を統一（アンダースコア）
+  { kind: "trophy", tier: "bronze", threshold: 30, icon_path: "icons/trophy_bronze.png" },
+  { kind: "trophy", tier: "silver", threshold: 40, icon_path: "icons/trophy_silver.png" },
+  { kind: "trophy", tier: "gold",   threshold: 50, icon_path: "icons/trophy_gold.png"   },
+
+  # スペシャル（65/80/100）
+  { kind: "special", tier: "crown",        threshold: 65,  icon_path: "icons/crown.png"         },
+  { kind: "special", tier: "decoration",   threshold: 80,  icon_path: "icons/decoration.png"    },
+  { kind: "special", tier: "hall_of_fame", threshold: 100, icon_path: "icons/hall_of_fame.png"  },
+]
+
+r_created = 0
+r_updated = 0
+
+ActiveRecord::Base.transaction do
+  REWARD_SPECS.each do |spec|
+    status = upsert_reward!(**spec)
+    r_created += 1 if status == :created
+    r_updated += 1 if status == :updated
+
+    # 画像の存在チェック（開発/本番ともにパスの打ち間違い検出に役立つ）
+    img_path = Rails.root.join("app/assets/images", spec[:icon_path])
+    puts "[WARN] image not found: #{img_path}" unless File.exist?(img_path)
+  end
+end
+
+puts "[seeds] rewards upserted -> created=#{r_created}, updated=#{r_updated}, total=#{REWARD_SPECS.size}"
+
+puts "[seeds] DONE"
