@@ -98,7 +98,7 @@ REWARD_SPECS = [
   { kind: "medal",  tier: "gold",   threshold: 20, icon_path: "icons/medal_gold.png"    },
 
   # トロフィー（30/40/50） ← ファイル名はアンダースコアで統一
-  { kind: "trophy", tier: "bronze", threshold: 30, icon_path: "icons/trophy_bronze.png" },
+  { kind: "trophy", tier: "bronze", threshold: 30, icon_path: "icons/trophy_bronze_v2.png" },
   { kind: "trophy", tier: "silver", threshold: 40, icon_path: "icons/trophy_silver.png" },
   { kind: "trophy", tier: "gold",   threshold: 50, icon_path: "icons/trophy_gold.png"   },
 
