@@ -1,10 +1,20 @@
-<% tier_ja = { "bronze" => "銅", "silver" => "銀", "gold" => "金" } %>
+<% tier_ja     = { "bronze" => "銅", "silver" => "銀", "gold" => "金" } %>
+<% special_ja  = { "crown" => "クラウン", "decoration" => "勲章", "hall_of_fame" => "殿堂入り" } %>
 
 <% Array(rewards).each do |r| %>
-  <%# 表示用値を安全に用意 %>
-  <% kind_label = (r.kind == "medal" ? "メダル" : "トロフィー") %>
-  <% tier_label = tier_ja[r.tier.to_s] || r.tier.to_s.presence || "" %>
-  <% icon_path  = (r.respond_to?(:icon_path) && r.icon_path.present?) ? r.icon_path : "icons/medal.png" %>
+  <%# ===== 表示ラベルを安全につくる ===== %>
+  <% kind_str  = r.kind.to_s %>                       <%# enum想定: "medal" / "trophy" / "special" %>
+  <% tier_str  = r.tier.to_s %>
+
+  <% if kind_str == "special" %>
+    <% main_label = special_ja[tier_str] || "スペシャル" %> <%# 例: クラウン / 勲章 / 殿堂入り %>
+  <% else %>
+    <% base = (kind_str == "medal" ? "メダル" : "トロフィー") %>
+    <% tier = tier_ja[tier_str] %>
+    <% main_label = tier.present? ? "#{base}（#{tier}）" : base %>  <%# 例: メダル（銅） / トロフィー（金） %>
+  <% end %>
+
+  <% icon_path = (r.respond_to?(:icon_path) && r.icon_path.present?) ? r.icon_path : "icons/medal.png" %>
 
   <div
     id="reward-toast-<%= r.id %>"
@@ -13,9 +23,9 @@
     data-timeout="3000"
     data-reward-id="<%= r.id %>"
   >
-    <%= asset_img r.icon_path, alt: "", width: 28, height: 28, style: "flex:none" %>
+    <%= asset_img icon_path, alt: "", width: 28, height: 28, style: "flex:none" %>
     <div>
-      <strong><%= kind_label %><%= "（#{tier_label}）" if tier_label.present? %></strong> を解放！
+      <strong><%= main_label %></strong> を解放！
       <% if r.respond_to?(:name) && r.name.present? %>
         <span><%= r.name %></span>
       <% end %>
@@ -25,20 +35,20 @@
 
 <script>
   (function () {
-    // ① メイン側の演出トリガ（既存リスナー向け）
+    // ① 既存の演出トリガ
     try {
       document.dispatchEvent(new CustomEvent("reward:unlocked", {
         detail: { ids: <%= raw Array(rewards).map(&:id).to_json %> }
       }));
     } catch (_) {}
 
-    // ② トーストの自動消去（重複初期化防止つき）
+    // ② トースト自動消去
     document.querySelectorAll(".reward-toast:not([data-initialized])").forEach(function(el){
       el.setAttribute("data-initialized","1");
       var ms = parseInt(el.getAttribute("data-timeout") || "3000", 10);
       setTimeout(function(){
-        el.classList.add("is-leaving");           // ← CSS でフェードアウトさせたい場合用（任意）
-        setTimeout(function(){ el.remove(); }, 320); // フェード時間ぶん待って削除
+        el.classList.add("is-leaving");
+        setTimeout(function(){ el.remove(); }, 320);
       }, isNaN(ms) ? 3000 : ms);
     });
   })();

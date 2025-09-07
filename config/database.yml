@@ -6,6 +6,8 @@ development:
   <<: *default
   adapter: sqlite3
   database: db/development.sqlite3
+  pool: 10
+  timeout: 15000   # ← 15秒待つ（デフォ5秒）
 
 test:
   <<: *default
