@@ -1,4 +1,5 @@
 <%
+  # 表示対象の子
   the_child =
     if local_assigns.key?(:child)
       child
@@ -6,18 +7,26 @@
       current_child
     end
 
-  achieved_count = the_child&.achievements&.where(achieved: true)&.count.to_i
+  items = []
+  if the_child
+    achieved_count = the_child.achievements.where(achieved: true).count
 
-  items =
-    if achieved_count.positive?
-      Reward.where("threshold <= ?", achieved_count)
-            .ordered              # CASE kind(0/1/2), threshold, id
-            .to_a
-            .uniq(&:id)           # ★ kind ではなく id で一意化（安全）
-    else
-      []
-    end
+    # enum(kind) は整数なので整数で並び替える
+    kind_order_sql = Arel.sql(
+      "CASE kind " \
+      "WHEN #{Reward.kinds['medal']}  THEN 0 " \
+      "WHEN #{Reward.kinds['trophy']} THEN 1 " \
+      "ELSE 2 END"
+    )
 
+    # 花丸数に達しているものを全部表示（Unlock 表には依存しない）
+    items = Reward.where("threshold <= ?", achieved_count)
+                  .order(kind_order_sql, :threshold, :id)
+                  .to_a
+                  .uniq { |r| [r.kind, r.tier] } # 念のため一意化
+  end
+
+  # アイコンサイズ
   size_map = {
     "medal"   => { "bronze" => 48, "silver" => 56, "gold" => 56 },
     "trophy"  => { "bronze" => 80, "silver" => 80, "gold" => 80 },
@@ -26,17 +35,37 @@
   default_size = 72
 %>
 
+<%# ---- レスポンシブCSS（小画面: 折り返し / 大画面: 一列） ---- %>
+<style>
+  .rewards-row {
+    display:flex;
+    align-items:center;
+    gap:.5rem .6rem;      /* col / row 両方の隙間 */
+    row-gap:.6rem;
+    flex-wrap:wrap;       /* まずは小画面デフォで折り返す */
+    margin-left:.5rem;
+    justify-content:flex-start;
+  }
+  .rewards-row .reward-icon {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;        /* アイコン幅は固定、縮ませない */
+  }
+  /* 768px 以上は一列表示に固定 */
+  @media (min-width: 768px) {
+    .rewards-row { flex-wrap:nowrap; }
+  }
+</style>
+
 <% if items.any? %>
-  <div class="rewards-row"
-       style="display:flex; align-items:center; gap:.5rem;
-              flex-wrap:nowrap; white-space:nowrap; overflow:visible; margin-left:.5rem;">
+  <div class="rewards-row">
     <% items.each do |rw| %>
       <% size = size_map.dig(rw.kind, rw.tier) || default_size %>
       <span id="reward_icon_<%= rw.id %>"
             class="reward-icon"
             data-reward-id="<%= rw.id %>"
-            style="width:<%= size %>px; height:<%= size %>px; display:inline-flex;
-                   align-items:center; justify-content:center; flex:0 0 auto;">
+            style="width:<%= size %>px; height:<%= size %>px;">
         <%= asset_img rw.icon_path,
               alt: "",
               width: size, height: size,

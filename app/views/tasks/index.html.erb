@@ -41,9 +41,8 @@
         できるかな
         <%= image_tag "illustrations/children.png",
               alt: "",
-              width: 96, height: 96,                         # ← サイズをガチ固定
-              style: "transform:none; flex:none;"  # ← 少し傾ける（デカくならない）
-        %>
+              width: 96, height: 96,
+              style: "transform:none; flex:none;" %>
       </h2>
       <p style="margin:.25rem 0 0;">
         ログインなしの「おためしモード」です。進捗はこの端末（ブラウザ）のみ保存されます。
@@ -137,63 +136,8 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.75rem;">
         <% @milestones.each do |ms| %>
           <% ach = (defined?(@ach_by_ms) && @ach_by_ms) ? @ach_by_ms[ms.id] : nil %>
-
-          <div class="milestone-card <%= 'is-working'  if ach&.working %> <%= 'is-achieved' if ach&.achieved %>"
-               data-id="<%= ms.id %>"
-               style="position:relative;border:1px solid var(--border);border-radius:.8rem;padding:.9rem;background:#fff;">
-
-            <div style="font-weight:700;"><%= ms.title %></div>
-
-            <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
-              <span class="pill"><%= ms.category.presence || "未分類" %></span>
-              <span class="pill"><%= ms.age_band_labels %></span>
-              <span class="pill"><%= ms.difficulty_stars %></span>
-            </div>
-
-            <% if user_signed_in? && current_child && !@demo_mode %>
-              <!-- ログイン時：進捗コントロール -->
-              <turbo-frame id="<%= dom_id(ms, :controls) %>">
-                <%= render "tasks/controls", milestone: ms, achievement: ach %>
-              </turbo-frame>
-            <% else %>
-              <!-- 未ログイン/デモ：右上バッジ（専用クラス） -->
-              <div class="rw-badge-group" aria-hidden="true"
-                   style="position:absolute; top:8px; right:8px; pointer-events:none;">
-                <%= image_tag 'icons/try.png', alt: '', class: 'rw-badge rw-badge-try',
-                      width: 44, height: 44, loading: "lazy", decoding: "async" %>
-                <%= image_tag 'icons/hanamaru.png', alt: '', class: 'rw-badge rw-badge-achi',
-                      width: 44, height: 44, loading: "lazy", decoding: "async" %>
-              </div>
-
-              <!-- 未ログイン/デモ：おためし進捗ボタン -->
-              <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
-                <button class="btn btn-secondary btn-working" type="button">がんばり中</button>
-                <button class="btn btn-primary btn-achieved"  type="button">できた！</button>
-              </div>
-            <% end %>
-
-            <%# ▼▼ 常時表示ヒント（中身が無ければ既定文言） ▼▼ %>
-            <% hint_raw =
-                 (milestones_has_hint_text_column? && defined?(milestone_hint_text) ? milestone_hint_text(ms) : nil) ||
-                 ms.try(:description) %>
-            <details class="hint-wrap" style="margin-top:.6rem;">
-              <summary class="btn btn-hint"
-                      style="display:inline-flex; border:1px dashed var(--border); cursor:pointer;">
-                ヒント
-              </summary>
-              <div class="hint-box"
-                  style="margin-top:.5rem; padding:.6rem; border:1px dashed var(--border);
-                         border-radius:.6rem; background:#fffaf5; color:#7a4a00; font-size:.9rem;">
-                <% if hint_raw.present? %>
-                  <%= hint_raw %>
-                <% else %>
-                  <%= simple_format("ヒントは準備中です") %>
-                <% end %>
-              </div>
-            </details>
-            <%# ▲▲ ヒントここまで ▲▲ %>
-
-          </div>
+          <!-- 外側で枠を作らず、部分テンプレだけ呼ぶ -->
+          <%= render "tasks/card", milestone: ms, achievement: ach %>
         <% end %>
       </div>
 
@@ -210,7 +154,7 @@
 </div>
 
 <%# ★ 未ログイン or デモモードのときだけ、デモ保存のJS/CSSを読み込む %>
-<% if !user_signed_in? || @demo_mode %>
+<% if !user_signed_in? || (defined?(@demo_mode) && @demo_mode) %>
   <script>
   (function(){
     const KEY = "try_progress_v1";
@@ -242,14 +186,65 @@
   </script>
 
   <style>
+  /* 既存：おためしバッジ制御 */
   .rw-badge { display: none; }
   .milestone-card.is-working  .rw-badge-try  { display: block; }
   .milestone-card.is-achieved .rw-badge-achi { display: block; }
+
+  /* ▼▼ ヒントのレイアウト（カード内いっぱい） ▼▼
+     1行目: [thumb][button]、2行目: [body body]（本文が2列ぶち抜き）
+  */
+  .rw-hint {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    grid-template-areas:
+      "thumb btn"
+      "body  body";
+    column-gap: .75rem;
+    row-gap: .5rem;
+    align-items: start;
+  }
+  .rw-hint > summary { grid-area: btn; justify-self: start; display: inline-flex; }
+  .rw-hint__thumb     { grid-area: thumb; }
+  .rw-hint__body      { grid-area: body; }
+
+  /* サムネ無しカードは1カラム（ボタン→本文の縦並び） */
+  .rw-hint[data-has-thumb="false"] {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "btn"
+      "body";
+  }
+
+  /* 既存：summary のデフォルト三角を消す */
   details > summary { list-style: none; }
   details > summary::-webkit-details-marker { display: none; }
   </style>
 <% else %>
   <style>
+  /* ▼▼ ヒントのレイアウト（カード内いっぱい） ▼▼ */
+  .rw-hint {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    grid-template-areas:
+      "thumb btn"
+      "body  body";
+    column-gap: .75rem;
+    row-gap: .5rem;
+    align-items: start;
+  }
+  .rw-hint > summary { grid-area: btn; justify-self: start; display: inline-flex; }
+  .rw-hint__thumb     { grid-area: thumb; }
+  .rw-hint__body      { grid-area: body; }
+
+  .rw-hint[data-has-thumb="false"] {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "btn"
+      "body";
+  }
+
+  /* 既存：summary のデフォルト三角を消す */
   details > summary { list-style: none; }
   details > summary::-webkit-details-marker { display: none; }
   </style>
