@@ -70,12 +70,11 @@ https://gyazo.com/90fa23ba99653741413ac66d46cca9c7
 
 # 開発環境
 
-・フロントエンド
-・バックエンド
-・インフラ
-・テスト
-・テキストエディタ
-・タスク管理
+・フロントエンド: HTML, CSS, JavaScript 
+・バックエンド: Ruby on Rails 7.1 / Ruby 3.2
+・データベース: PostgreSQL（本番） / SQLite3（開発）
+・ホスティング/インフラ: Render
+・バージョン管理・コミュニケーション: GitHub / Slack
 
 
 # ローカルでの動作方法
