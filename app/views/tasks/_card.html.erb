@@ -1,4 +1,4 @@
-<%= turbo_frame_tag dom_id(milestone, :card) do %>
+<%= turbo_frame_tag "card_#{dom_id(milestone)}" do %>
   <% ach = achievement %>
 
   <div class="milestone-card <%= 'is-working'  if ach&.working %> <%= 'is-achieved' if ach&.achieved %>"

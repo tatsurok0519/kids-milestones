@@ -1,7 +1,7 @@
 <%# locals: milestone, achievement, frame_id %>
 <% working  = achievement&.working %>
 <% achieved = achievement&.achieved %>
-<% target_frame_id = (defined?(frame_id) && frame_id.presence) || dom_id(milestone, :card) %>
+<% target_frame_id = (defined?(frame_id) && frame_id.presence) || "card_#{dom_id(milestone)}" %>
 
 <% if working %>
   <%= asset_img "icons/try.png", alt: "", width: 44, height: 44,

@@ -28,7 +28,7 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
-    # ごほうび
+    # ごほうび判定
     @new_rewards = RewardUnlocker.call(@child)
     if @new_rewards.present?
       ids = @new_rewards.map(&:id)
@@ -36,7 +36,6 @@ class AchievementsController < ApplicationController
     end
 
     respond_ok
-
   rescue ActiveRecord::RecordNotFound
     head :not_found
   rescue Pundit::NotAuthorizedError
@@ -47,10 +46,13 @@ class AchievementsController < ApplicationController
 
   private
 
+  # ===== helpers =============================================================
+
   def set_child_and_milestone
     @child = params[:child_id].present? ? Child.find(params[:child_id]) : current_child
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
     authorize @child, :use?
+
     @milestone = Milestone.find(params.require(:milestone_id))
   end
 
@@ -58,10 +60,15 @@ class AchievementsController < ApplicationController
     policy_scope(Achievement).find_by(child_id: @child.id, milestone_id: @milestone.id)
   end
 
-  # ★ Frame 要求ならフレーム HTMLを、そうでなければ Stream を返す
+  # ★ カードのフレームIDをここで一元管理（カード側と必ず一致させる）
+  def card_frame_id
+    "card_#{view_context.dom_id(@milestone)}"  # => 例: "card_milestone_24"
+  end
+
+  # Frame要求ならフレームHTML、そうでなければTurbo Streamを返す
   def render_card(achievement:, status:)
     if turbo_frame_request?
-      # tasks/_card は先頭で <%= turbo_frame_tag dom_id(milestone, :card) %> を含む
+      # tasks/_card は <%= turbo_frame_tag "card_#{dom_id(milestone)}" %> を含むこと
       render partial: "tasks/card",
              locals:  { milestone: @milestone, achievement: achievement },
              layout:  false,
@@ -69,9 +76,9 @@ class AchievementsController < ApplicationController
     else
       streams = []
 
-      # カード全体を置換
+      # カード全体を置換（target は card_frame_id に統一）
       streams << turbo_stream.replace(
-        view_context.dom_id(@milestone, :card),
+        card_frame_id,
         partial: "tasks/card",
         locals:  { milestone: @milestone, achievement: achievement }
       )
@@ -115,8 +122,9 @@ class AchievementsController < ApplicationController
 
   def respond_invalid_state
     respond_to do |f|
-      f.turbo_stream { head :unprocessable_entity }
-      f.html         { render plain: "invalid state", status: :unprocessable_entity }
+      # Frame要求で head を返すと "Content missing" になるため、カードを返す
+      f.turbo_stream { render_card(achievement: latest_achievement, status: :unprocessable_entity) }
+      f.html         { render_card(achievement: latest_achievement, status: :unprocessable_entity) }
       f.json         { render json: { error: "invalid state" }, status: :unprocessable_entity }
     end
   end
