@@ -1,8 +1,9 @@
 <%# locals: milestone, achievement, frame_id %>
 <% working  = achievement&.working %>
 <% achieved = achievement&.achieved %>
-<% target_frame_id = (defined?(frame_id) && frame_id.presence) || "card_#{dom_id(milestone)}" %>
+<% target_frame_id = (defined?(frame_id) && frame_id.presence) || task_card_frame_id(milestone) %>
 
+<%# 右上バッジ %>
 <% if working %>
   <%= asset_img "icons/try.png", alt: "", width: 44, height: 44,
         style: "position:absolute; top:8px; right:8px; pointer-events:none;" %>

@@ -1,4 +1,4 @@
-<%= turbo_frame_tag "card_#{dom_id(milestone)}" do %>
+<%= turbo_frame_tag task_card_frame_id(milestone) do %>
   <% ach = achievement %>
 
   <div class="milestone-card <%= 'is-working'  if ach&.working %> <%= 'is-achieved' if ach&.achieved %>"
@@ -16,11 +16,11 @@
     </div>
 
     <% if user_signed_in? && defined?(current_child) && current_child && !(defined?(@demo_mode) && @demo_mode) %>
-      <!-- ログイン時：進捗コントロール（※内側の turbo-frame は不要） -->
+      <!-- ログイン時：進捗コントロール（内側 frame は持たない） -->
       <%= render "tasks/controls",
             milestone: milestone,
             achievement: ach,
-            frame_id: dom_id(milestone, :card) %>
+            frame_id: task_card_frame_id(milestone) %>
     <% else %>
       <!-- 未ログイン/デモ：右上バッジ -->
       <div class="rw-badge-group" aria-hidden="true"

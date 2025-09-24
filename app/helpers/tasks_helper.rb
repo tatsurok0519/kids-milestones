@@ -1,4 +1,13 @@
 module TasksHelper
+  # dom_id をこのモジュール内で確実に使えるように
+  include ActionView::RecordIdentifier
+
+  # ===== Turbo Frame ID（一元化） =====
+  # カード用フレームIDは必ずこれを使う（例: "card_milestone_24"）
+  def task_card_frame_id(milestone)
+    "card_#{dom_id(milestone)}"
+  end
+
   # ===== ヒント文の取得（既存ロジック） =====
   def milestone_hint_text(ms)
     if ms.respond_to?(:hint_text) && ms.hint_text.present?
