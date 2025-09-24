@@ -12,7 +12,8 @@
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
-  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe">
+  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
+        data-controller="reward-animator">
     <!-- 共通ヘッダー -->
     <%= render "shared/header" %>
 

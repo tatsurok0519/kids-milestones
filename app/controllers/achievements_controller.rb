@@ -72,12 +72,17 @@ class AchievementsController < ApplicationController
     task_card_frame_id(@milestone) # => "card_milestone_#{@milestone.id}"
   end
 
-  # つねに <turbo-frame> HTML（tasks/_card）を返す
+  # つねに <turbo-frame> を返すメソッド
   def render_card_html(status:, note:)
     Rails.logger.info("[ach-upsert] hdr.Turbo-Frame=#{request.headers['Turbo-Frame']} expected=#{card_frame_id} note=#{note}")
+
     render partial: "tasks/card",
-           locals:  { milestone: @milestone, achievement: latest_achievement },
-           layout:  false,
-           status:  status
+          locals:  {
+            milestone:   @milestone,
+            achievement: latest_achievement,
+            new_rewards: @new_rewards # ← これを追加
+          },
+          layout: false,
+          status: status
   end
 end
