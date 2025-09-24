@@ -1,10 +1,9 @@
 import { Controller } from "@hotwired/stimulus";
 
-// <body data-controller="reward-animator"> の想定
+// <body data-controller="reward-animator">
 export default class extends Controller {
   connect() {
     document.addEventListener("turbo:frame-load", (e) => {
-      // 置換された <turbo-frame> 内をスキャン
       this.processMarkers(e.target);
     });
   }
@@ -16,24 +15,34 @@ export default class extends Controller {
     this.ensureToastHost();
 
     markers.forEach((el) => {
-      const toastHTML = el.dataset.toastHtml || "";
-      // 1) 右上トーストを追加
-      this.toasts.insertAdjacentHTML("beforeend", toastHTML);
+      const idsCsv = (el.dataset.rewardUnlocked || "").trim();
+      if (idsCsv) this.showToast(idsCsv);
 
-      // 2) 演出（必要なら既存の関数を呼ぶ）
-      this.fireAnimation(el.dataset.rewardUnlocked || "");
+      // ちょい演出
+      this.fireAnimation();
 
-      // 3) 2度発火しないよう削除
-      el.remove();
+      el.remove(); // 二重発火防止
     });
   }
 
-  fireAnimation(idsCsv) {
-    // ここで既存の演出（紙吹雪など）を呼んでもOK
-    // ひとまず簡易ハイライト
+  showToast(idsCsv) {
+    const div = document.createElement("div");
+    div.className = "toast";
+    div.style.cssText =
+      "background:#fff;border:1px solid var(--border);border-radius:.6rem;" +
+      "padding:.6rem .8rem;box-shadow:0 6px 24px rgba(0,0,0,.08);";
+    div.innerHTML =
+      `<div style="font-weight:700;">ごほうび解放！</div>
+       <div style="font-size:.9rem;color:#555;">ID: ${idsCsv}</div>`;
+    this.toasts.appendChild(div);
+
+    // 5秒で自動消去
+    setTimeout(() => div.remove(), 5000);
+  }
+
+  fireAnimation() {
     document.body.classList.add("reward-pulse");
     setTimeout(() => document.body.classList.remove("reward-pulse"), 900);
-    // console.debug("reward unlocked:", idsCsv);
   }
 
   ensureToastHost() {
@@ -51,7 +60,5 @@ export default class extends Controller {
     }
   }
 
-  get toasts() {
-    return document.getElementById("toasts");
-  }
+  get toasts() { return document.getElementById("toasts"); }
 }
