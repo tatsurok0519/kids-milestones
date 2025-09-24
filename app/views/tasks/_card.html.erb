@@ -81,5 +81,10 @@
     </div>
     <%# ▲▲ ヒント + 小イラスト ▲▲ %>
 
+    <%# === ごほうび演出マーカー（あるときだけ / ★フレーム内★） ===== %>
+    <% if defined?(new_rewards) && new_rewards.present? %>
+      <%= tag.div nil, hidden: true, data: { reward_unlocked: new_rewards.map(&:id).join(",") } %>
+    <% end %>
+
   </div>
 <% end %>

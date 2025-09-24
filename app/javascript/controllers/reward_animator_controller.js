@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
 
-// <body data-controller="reward-animator">
 export default class extends Controller {
   connect() {
     document.addEventListener("turbo:frame-load", (e) => {
@@ -17,11 +16,8 @@ export default class extends Controller {
     markers.forEach((el) => {
       const idsCsv = (el.dataset.rewardUnlocked || "").trim();
       if (idsCsv) this.showToast(idsCsv);
-
-      // ちょい演出
       this.fireAnimation();
-
-      el.remove(); // 二重発火防止
+      el.remove();
     });
   }
 
@@ -35,8 +31,6 @@ export default class extends Controller {
       `<div style="font-weight:700;">ごほうび解放！</div>
        <div style="font-size:.9rem;color:#555;">ID: ${idsCsv}</div>`;
     this.toasts.appendChild(div);
-
-    // 5秒で自動消去
     setTimeout(() => div.remove(), 5000);
   }
 
