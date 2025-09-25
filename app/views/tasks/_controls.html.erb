@@ -30,6 +30,7 @@
   <%= button_to(
         achievements_upsert_path(
           milestone_id: milestone.id,
+          debug_reward: 1,  # ← これを一時追加（テスト後は削除）
           **request.query_parameters.symbolize_keys.slice(:age_band, :category, :difficulty, :only_unachieved, :page)
         ),
         params: { toggle: "achieved" },
