@@ -98,14 +98,9 @@ class AchievementsController < ApplicationController
     Rails.logger.info("[ach-upsert] status=#{status} note=#{note} hdr.Turbo-Frame=#{request.headers['Turbo-Frame']} frame_id=#{frame_id}")
 
     if @milestone
-      render partial: "tasks/card",
-             locals:  {
-               milestone:   @milestone,
-               achievement: latest_achievement_silent,
-               new_rewards: @new_rewards          # ★必ず渡す
-             },
-             layout: false,
-             status: status
+        render partial: "tasks/card",
+              locals: { milestone: @milestone, achievement: latest_achievement_silent, new_rewards: @new_rewards },
+              layout: false, status: status
     else
       # milestone すら取得失敗時の最終保険
       html = view_context.tag.turbo_frame(id: frame_id) do
