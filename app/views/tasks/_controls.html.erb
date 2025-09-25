@@ -1,10 +1,10 @@
-<%# locals: milestone, achievement, frame_id %>
+<%# app/views/tasks/_controls.html.erb - 最小/堅牢版 %>
 <% working  = achievement&.working %>
 <% achieved = achievement&.achieved %>
-<% target_frame_id = (defined?(frame_id) && frame_id.presence) || task_card_frame_id(milestone) %>
 
+<%# 右上バッジ %>
 <% if working %>
-  <%= asset_img "icons/try.png", alt:"", width:44, height:44,
+  <%= asset_img "icons/try.png",     alt:"", width:44, height:44,
         style:"position:absolute; top:8px; right:8px; pointer-events:none;" %>
 <% elsif achieved %>
   <%= asset_img "icons/hanamaru.png", alt:"", width:44, height:44,
@@ -12,25 +12,33 @@
 <% end %>
 
 <div style="margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
-  <%= button_to achievements_upsert_path(milestone_id: milestone.id,
-                                         age_band: params[:age_band], category: params[:category],
-                                         difficulty: params[:difficulty],
-                                         only_unachieved: params[:only_unachieved], page: params[:page]),
-        params: { toggle: "working" }, method: :post,
-        form:   { data: { turbo: true, turbo_frame: target_frame_id } },
+
+  <%= button_to(
+        achievements_upsert_path(
+          milestone_id: milestone.id,
+          **request.query_parameters.symbolize_keys.slice(:age_band, :category, :difficulty, :only_unachieved, :page)
+        ),
+        params: { toggle: "working" },
+        method: :post,
+        form:   { data: { turbo: true, turbo_frame: task_card_frame_id(milestone) } },
         class:  "btn btn-secondary #{'is-active' if working}",
-        aria:   { pressed: working ? "true" : "false" } do %>
+        aria:   { pressed: working ? "true" : "false" }
+      ) do %>
     がんばり中
   <% end %>
 
-  <%= button_to achievements_upsert_path(milestone_id: milestone.id,
-                                         age_band: params[:age_band], category: params[:category],
-                                         difficulty: params[:difficulty],
-                                         only_unachieved: params[:only_unachieved], page: params[:page]),
-        params: { toggle: "achieved" }, method: :post,
-        form:   { data: { turbo: true, turbo_frame: target_frame_id } },
+  <%= button_to(
+        achievements_upsert_path(
+          milestone_id: milestone.id,
+          **request.query_parameters.symbolize_keys.slice(:age_band, :category, :difficulty, :only_unachieved, :page)
+        ),
+        params: { toggle: "achieved" },
+        method: :post,
+        form:   { data: { turbo: true, turbo_frame: task_card_frame_id(milestone) } },
         class:  "btn btn-primary #{'is-active' if achieved}",
-        aria:   { pressed: achieved ? "true" : "false" } do %>
+        aria:   { pressed: achieved ? "true" : "false" }
+      ) do %>
     できた！
   <% end %>
+
 </div>
