@@ -1,58 +1,45 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
+  static targets = []
+
   connect() {
-    document.addEventListener("turbo:frame-load", (e) => {
-      this.processMarkers(e.target);
-    });
+    // 初回 & フレーム更新後の両方でスキャン
+    this.scan();
+    document.addEventListener("turbo:frame-load", () => this.scan());
+    document.addEventListener("turbo:load",       () => this.scan());
   }
 
-  processMarkers(root) {
-    const markers = root.querySelectorAll("[data-reward-unlocked]");
+  scan() {
+    const markers = document.querySelectorAll('[data-reward-unlocked]');
     if (!markers.length) return;
 
-    this.ensureToastHost();
-
     markers.forEach((el) => {
-      const idsCsv = (el.dataset.rewardUnlocked || "").trim();
-      if (idsCsv) this.showToast(idsCsv);
-      this.fireAnimation();
-      el.remove();
+      try {
+        const ids  = (el.dataset.rewardUnlocked || "").trim();
+        // ① template 内の HTML を優先
+        const tmpl = el.querySelector('template[data-reward-toast]');
+        let html   = tmpl ? tmpl.innerHTML : null;
+
+        // ② 互換: data-toast-html（旧実装）
+        if (!html && el.dataset.toastHtml) {
+          html = el.dataset.toastHtml; // 旧属性（あればそのまま使う）
+        }
+
+        // ③ 最後の砦: フォールバック文
+        if (!html) {
+          html = `<div class="toast">ごほうび解放！ <small>ID: ${ids}</small></div>`;
+        }
+
+        // トーストレイヤへ追加
+        const layer = document.getElementById("toasts");
+        if (layer) layer.insertAdjacentHTML("beforeend", html);
+
+        // 1回使ったら削除（再発火防止）
+        el.remove();
+      } catch (e) {
+        console.error("[reward-animator] failed:", e);
+      }
     });
   }
-
-  showToast(idsCsv) {
-    const div = document.createElement("div");
-    div.className = "toast";
-    div.style.cssText =
-      "background:#fff;border:1px solid var(--border);border-radius:.6rem;" +
-      "padding:.6rem .8rem;box-shadow:0 6px 24px rgba(0,0,0,.08);";
-    div.innerHTML =
-      `<div style="font-weight:700;">ごほうび解放！</div>
-       <div style="font-size:.9rem;color:#555;">ID: ${idsCsv}</div>`;
-    this.toasts.appendChild(div);
-    setTimeout(() => div.remove(), 5000);
-  }
-
-  fireAnimation() {
-    document.body.classList.add("reward-pulse");
-    setTimeout(() => document.body.classList.remove("reward-pulse"), 900);
-  }
-
-  ensureToastHost() {
-    if (!this.toasts) {
-      const host = document.createElement("div");
-      host.id = "toasts";
-      host.style.position = "fixed";
-      host.style.top = "14px";
-      host.style.right = "14px";
-      host.style.zIndex = "9999";
-      host.style.display = "flex";
-      host.style.flexDirection = "column";
-      host.style.gap = "8px";
-      document.body.appendChild(host);
-    }
-  }
-
-  get toasts() { return document.getElementById("toasts"); }
 }

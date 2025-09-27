@@ -81,14 +81,14 @@
     </div>
     <%# ▲▲ ヒント + 小イラスト ▲▲ %>
 
-    <%# === ごほうび演出マーカー（あるときだけ / ★フレーム内★） ===== %>
+    <%# === ごほうび演出マーカー（あるときだけ） ============================ %>
     <% if defined?(new_rewards) && new_rewards.present? %>
-      <%= tag.div nil,
-          hidden: true,
-          data: {
-            reward_unlocked: new_rewards.map(&:id).join(","),
-            toast_html:      j(render("shared/reward_toast", rewards: new_rewards))
-          } %>
+      <div hidden
+          data-reward-unlocked="<%= new_rewards.map(&:id).join(',') %>">
+        <template data-reward-toast>
+          <%= render "shared/reward_toast", rewards: new_rewards %>
+        </template>
+      </div>
     <% end %>
 
   </div>
