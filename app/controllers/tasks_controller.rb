@@ -30,10 +30,10 @@ class TasksController < ApplicationController
       return render_demo_from_yaml
     end
 
-    # 3) 通常表示
+    # 3) 通常表示（必要なら hint_text の穴埋め）
     try_backfill_hints_from_yaml! # 本番のみ・必要時だけ
 
-    # --- 年齢帯 ---
+    # === 年齢帯 ===
     band_param = params[:age_band].presence
     if band_param == "all"
       @age_band_label = "全年齢"
@@ -49,7 +49,6 @@ class TasksController < ApplicationController
         end
       @age_band_label = "#{@age_band_index}–#{@age_band_index + 1}歳"
 
-      # for_age_band スコープがあれば使う。無ければ min/max_months か age_band_index でフォールバック
       if Milestone.respond_to?(:for_age_band) || Milestone.singleton_class.method_defined?(:for_age_band)
         scope = Milestone.for_age_band(@age_band_index)
       else
@@ -60,17 +59,17 @@ class TasksController < ApplicationController
         elsif column?(:age_band_index)
           scope = Milestone.where(age_band_index: @age_band_index)
         else
-          scope = Milestone.all # 最後の砦
+          scope = Milestone.all
         end
       end
     end
 
-    # --- フィルタUI用の選択肢 ---
+    # === フィルタUI選択肢（N+1関係なし、小さめクエリ） ===
     @categories   = safe { Milestone.distinct.order(:category).pluck(:category).compact } || []
     @difficulties = [1, 2, 3]
     @only_unachieved = params[:only_unachieved] == "1"
 
-    # --- カテゴリ・難易度 ---
+    # === カテゴリ・難易度 ===
     if params[:category].present?
       scope =
         if scope.respond_to?(:by_category)
@@ -88,17 +87,19 @@ class TasksController < ApplicationController
         end
     end
 
-    # --- 未達成のみ（ログイン & 子ども選択時）---
+    # === 未達成のみ（ログイン & 子ども選択時）===
     if user_signed_in? && current_child && @only_unachieved
       if scope.respond_to?(:unachieved_for)
         scope = scope.unachieved_for(current_child)
       else
+        # サブクエリで達成済み milestone を除外（N+1回避）
         done_ids = Achievement.where(child: current_child, achieved: true).select(:milestone_id)
         scope = scope.where.not(id: done_ids)
       end
     end
 
-    # --- 取得・ページング ---
+    # === 取得・ページング ===
+    # ※ ここでは includes は付けない（後段で “表示中IDだけ” achievements を一括取得するため）
     @milestones =
       if scope.respond_to?(:page)
         scope.order(:difficulty, :id).page(params[:page]).per(20)
@@ -106,15 +107,17 @@ class TasksController < ApplicationController
         scope.order(:difficulty, :id)
       end
 
-    # --- 進捗まとめ（ログイン & 子ども選択時）---
-    if user_signed_in? && current_child
-      # 表示中のマイルストーンに対する達成レコードを 1 回で取得
-      achs = Achievement.where(child_id: current_child.id,
-                              milestone_id: @milestones.select(:id)).to_a
+    # === N+1対策の肝：表示中マイルストーンに対する達成レコードを 1 クエリで回収 ===
+    if user_signed_in? && current_child && @milestones.present?
+      achs = Achievement
+               .where(child_id: current_child.id, milestone_id: @milestones.select(:id))
+               .to_a
       @ach_by_ms = achs.index_by(&:milestone_id)
+    else
+      @ach_by_ms = {}
     end
 
-    # --- 今日の子育てメッセージ ---
+    # === 今日の子育てメッセージ ===
     @parent_tip = safe_parent_tip(user_signed_in? ? current_child : nil)
 
   rescue => e
@@ -208,8 +211,8 @@ class TasksController < ApplicationController
       end
       @age_band_label = "#{i}–#{i + 1}歳"
     end
-    rows.select! { |m| m.category.to_s == params[:category].to_s }         if params[:category].present?
-    rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i }     if params[:difficulty].present?
+    rows.select! { |m| m.category.to_s == params[:category].to_s }     if params[:category].present?
+    rows.select! { |m| m.difficulty.to_i == params[:difficulty].to_i } if params[:difficulty].present?
     rows.sort_by! { |m| [m.difficulty.to_i, m.id] }
 
     @milestones =
