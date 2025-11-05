@@ -19,6 +19,8 @@ Rails.application.configure do
   # プリコンパイル漏れでアセットにフォールバックしない
   config.assets.compile = false
 
+  # Active Storage（Cloudinary）
+  config.active_storage.service = :cloudinary
   # どのストレージを使うかを環境変数で切り替え（amazon / cloudinary / local）
   config.active_storage.service = (ENV["ACTIVE_STORAGE_SERVICE"] || "local").to_sym
   # config.active_storage.variant_processor = :mini_magick
