@@ -1,9 +1,11 @@
 name: Daily Green Commit
 
 on:
-  # 毎日 09:00 JST（= 00:00 UTC）に実行
   schedule:
-    - cron: "0 0 * * *"
+    # 毎日 09:00 / 12:00 / 22:00 に実行（JST）
+    - cron: "0 0 * * *"     # 09:00 JST（= 00:00 UTC）
+    - cron: "0 3 * * *"     # 12:00 JST（= 03:00 UTC）
+    - cron: "0 13 * * *"    # 22:00 JST（= 13:00 UTC）
   # 手動テストできるように
   workflow_dispatch:
 
