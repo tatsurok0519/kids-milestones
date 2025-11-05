@@ -21,6 +21,8 @@ Rails.application.configure do
 
   # Active Storage（Cloudinary）
   config.active_storage.service = :cloudinary
+  # どのストレージを使うかを環境変数で切り替え（amazon / cloudinary / local）
+  config.active_storage.service = (ENV["ACTIVE_STORAGE_SERVICE"] || "local").to_sym
   # config.active_storage.variant_processor = :mini_magick
 
   # HTTPS を強制（HSTS / secure cookies）
@@ -40,6 +42,9 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: host, protocol: "https" }
   config.action_mailer.asset_host         = "https://#{host}"
   Rails.application.routes.default_url_options[:host] = host
+  # URL 生成に使うホスト（例: 35.74.176.51 またはドメイン名）
+  Rails.application.routes.default_url_options[:host] = ENV["APP_HOST"] if ENV["APP_HOST"]
+  config.action_mailer.default_url_options = { host: ENV["APP_HOST"] } if ENV["APP_HOST"]
 
   # 環境変数が揃っていれば SMTP、本番変数が未設定なら test にフォールバック
   smtp_present =
@@ -93,3 +98,4 @@ Rails.application.configure do
     Rails.logger.info("MAILER_MODE=#{smtp_present ? 'smtp' : 'test'}")
   end
 end
+
