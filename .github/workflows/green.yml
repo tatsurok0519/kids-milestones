@@ -1,0 +1,48 @@
+name: Daily Green Commit
+
+on:
+  # 毎日 09:00 JST（= 00:00 UTC）に実行
+  schedule:
+    - cron: "0 0 * * *"
+  # 手動テストできるように
+  workflow_dispatch:
+
+permissions:
+  contents: write  # pushする権限
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set timezone to JST
+        run: sudo timedatectl set-timezone Asia/Tokyo
+
+      - name: Prepare log file
+        run: |
+          # 学習ログを書き込むファイル（無ければ作る）
+          LOG_FILE="LOG.md"
+          touch "$LOG_FILE"
+
+          today=$(date +'%Y-%m-%d')
+          # 今日分が既に書かれていたらスキップ（多重実行対策）
+          if grep -q "$today" "$LOG_FILE"; then
+            echo "Already logged for $today. Skipping append."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "- ${today} 学習メモ：自動草生やし" >> "$LOG_FILE"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+        id: prep
+
+      - name: Commit & Push (only when updated)
+        if: steps.prep.outputs.skip == 'false'
+        run: |
+          today=$(date +'%Y-%m-%d')
+          git config user.name  "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add LOG.md
+          git commit -m "chore(green): ${today} auto commit"
+          git push
