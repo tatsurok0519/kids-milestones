@@ -84,8 +84,10 @@
     <%# === ごほうび演出マーカー（あるときだけ） ============================ %>
     <% if defined?(new_rewards) && new_rewards.present? %>
       <div hidden
-          data-reward-unlocked="<%= new_rewards.map(&:id).join(',') %>">
-        <template data-reward-toast>
+          data-controller="reward-once"
+          data-reward-once-user-id-value="<%= current_user&.id || 0 %>"
+          data-reward-once-reward-ids-value="<%= new_rewards.map(&:id).join(',') %>">
+        <template data-reward-once-target="toast">
           <%= render "shared/reward_toast", rewards: new_rewards %>
         </template>
       </div>
