@@ -1,19 +1,28 @@
+# --- テスト用（ローカルの tmp 配下）---
 test:
   service: Disk
   root: <%= Rails.root.join("tmp/storage") %>
 
+# --- 開発用（ローカルの storage 配下）---
 local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-# --- AWS S3 用（EC2で使用）---
+# --- 本番：AWS S3（EC2 で使用）---
+#   認証は「EC2のIAMロール」を優先。ローカル/CIなどIAMが無い環境では
+#   ENVの ACCESS_KEY / SECRET_KEY が使われます（どちらも未設定でOK）。
 amazon:
   service: S3
-  region: <%= ENV["AWS_REGION"] || "ap-northeast-1" %> # 東京リージョン
-  bucket: <%= ENV["AWS_S3_BUCKET"] || "kids-milestones-production" %>
-  access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
-  secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
+  region: <%= ENV.fetch("AWS_REGION", "ap-northeast-1") %>        # 東京
+  bucket: <%= ENV.fetch("AWS_S3_BUCKET", "kids-milestones-production") %>
+  access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>                  # EC2では空でOK
+  secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>          # EC2では空でOK
+  # ※ 画像をS3の公開URLで配信したい場合は ↓ を有効化（必要なときだけ）
+  # public: true
 
-# --- Cloudinary（Render用・バックアップとして残す）---
+# --- 予備：Cloudinary（Renderで使う/バックアップ構成）---
 cloudinary:
   service: Cloudinary
+  cloud_name: <%= ENV["CLOUDINARY_CLOUD_NAME"] %>
+  api_key:    <%= ENV["CLOUDINARY_API_KEY"] %>
+  api_secret: <%= ENV["CLOUDINARY_API_SECRET"] %>
