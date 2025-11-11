@@ -30,32 +30,14 @@ class Child < ApplicationRecord
     end
   end
 
-  # ==== 画像アクセサ（加工せず “そのまま” 返す）============================
-  # 加工（variant.processed）による ActiveStorage::IntegrityError を避けるため、
-  # ここでは添付そのものを返すだけにします。表示側は ApplicationHelper#attachment_img
-  # が安全にプレースホルダへフォールバックします。
-
-  # 一覧/チップ等で使うサムネ相当
+  # ==== 画像アクセサ（加工せず添付そのものを返す）==========================
   def photo_thumb
     photo if photo.attached?
   end
 
-  # ダッシュボード/カード等で使う大きめ画像相当
   def photo_card
     photo if photo.attached?
   end
-
-  # もし将来、どうしてもサーバ側でリサイズしたい場合は、
-  # 下のメソッドのコメントを外し、「.processed」を付けない/救済付きで扱ってください。
-  #
-  # def safe_variant(w, h)
-  #   return nil unless persisted?
-  #   return nil unless photo.attached? && photo.variable?
-  #   photo.variant(resize_to_fill: [w, h]) # ← .processed は付けない
-  # rescue ActiveStorage::FileNotFoundError, ArgumentError => e
-  #   Rails.logger.warn("[Child#safe_variant] #{e.class}: #{e.message}")
-  #   nil
-  # end
 
   # ==== 年齢系 ==============================================================
   def age_in_months
