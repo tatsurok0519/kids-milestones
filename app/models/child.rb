@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Child < ApplicationRecord
   belongs_to :user
   has_many :achievements, dependent: :destroy
@@ -13,7 +15,7 @@ class Child < ApplicationRecord
   validate  :photo_must_be_image
   validate  :photo_size_limit
 
-  # ==== 画像バリデーション ====
+  # ==== 画像バリデーション ==================================================
   def photo_must_be_image
     return unless photo.attached?
     unless photo.content_type.in?(%w[image/png image/jpeg image/jpg image/gif])
@@ -28,31 +30,34 @@ class Child < ApplicationRecord
     end
   end
 
-  # ==== 画像ヘルパ（未保存や壊れた添付なら nil を返す）====
-  # 80x80 サムネ（一覧/チップ用）
+  # ==== 画像アクセサ（加工せず “そのまま” 返す）============================
+  # 加工（variant.processed）による ActiveStorage::IntegrityError を避けるため、
+  # ここでは添付そのものを返すだけにします。表示側は ApplicationHelper#attachment_img
+  # が安全にプレースホルダへフォールバックします。
+
+  # 一覧/チップ等で使うサムネ相当
   def photo_thumb
-    return unless photo.attached?
-    photo.variant(resize_to_fill: [80, 80]).processed
+    photo if photo.attached?
   end
 
-  # 400x300 カード用（ダッシュボード/タスク見出し）
+  # ダッシュボード/カード等で使う大きめ画像相当
   def photo_card
-    return unless photo.attached?
-    photo.variant(resize_to_fill: [400, 300]).processed
+    photo if photo.attached?
   end
 
-  def safe_variant(w, h)
-    # レコード未保存・未添付・非可変(HEIC等)は弾く
-    return nil unless persisted?
-    return nil unless photo.attached? && photo.variable?
+  # もし将来、どうしてもサーバ側でリサイズしたい場合は、
+  # 下のメソッドのコメントを外し、「.processed」を付けない/救済付きで扱ってください。
+  #
+  # def safe_variant(w, h)
+  #   return nil unless persisted?
+  #   return nil unless photo.attached? && photo.variable?
+  #   photo.variant(resize_to_fill: [w, h]) # ← .processed は付けない
+  # rescue ActiveStorage::FileNotFoundError, ArgumentError => e
+  #   Rails.logger.warn("[Child#safe_variant] #{e.class}: #{e.message}")
+  #   nil
+  # end
 
-    photo.variant(resize_to_fill: [w, h]).processed
-  rescue ActiveStorage::FileNotFoundError, ArgumentError => e
-    Rails.logger.warn("[Child#safe_variant] #{e.class}: #{e.message}")
-    nil
-  end
-
-  # ==== 年齢系 ====
+  # ==== 年齢系 ==============================================================
   def age_in_months
     return nil unless birthday
     years  = Date.current.year  - birthday.year
