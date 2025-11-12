@@ -90,14 +90,6 @@
             class: "input",
             onchange: "this.form.submit()" %>
 
-      <!-- 未達成のみ -->
-      <label class="label" for="only_unachieved" style="display:flex;align-items:center;gap:.35rem;">
-        <%= check_box_tag :only_unachieved, "1", @only_unachieved,
-              onchange: "this.form.submit()",
-              disabled: !(user_signed_in? && current_child) %>
-        未達成のみ
-      </label>
-
       <% if current_user && current_child %>
         <span class="pill" style="margin-left:.25rem;">
           選択中：<strong><%= current_child.name %></strong>
