@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <title>こどもすくすくカード</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="utf-8" />
+    <title><%= content_for?(:title) ? yield(:title) : "こどもすくすくカード" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <%# --- どちらの方式でもTurboが入るように両方読む --- %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true, nonce: true %>
-    <%= javascript_importmap_tags %>
+    <%# --- ここが超重要：どちらか必ず当たるように“両方”出す --- %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+    <%= (javascript_importmap_tags rescue nil) %>
+
+    <%# 画像の先読みなど（任意） %>
+    <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
-  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
-        data-controller="reward-animator">
+  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe" data-controller="reward-animator">
     <%= render "shared/header" %>
     <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
     <%= render("shared/growth_policy_banner") unless content_for?(:hide_growth_banner) %>
@@ -36,7 +40,6 @@
         <%= render "shared/reward_toast", rewards: Reward.where(id: @reward_boot_ids) %>
       <% end %>
     </div>
-
     <div id="reward_animator" hidden aria-hidden="true"></div>
 
     <%= asset_img "illustrations/watering.png",

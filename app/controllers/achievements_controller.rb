@@ -1,26 +1,19 @@
 class AchievementsController < ApplicationController
   include TasksHelper
-
   before_action :authenticate_user!
   around_action  :wrap_with_frame_response
   before_action  :set_child_and_milestone
 
   # POST /achievements/upsert
-  # params:
-  #   milestone_id [req]
-  #   toggle or state: "working" | "achieved"
-  #   (dev) debug_reward=1  … 強制でトーストを出す検証用
+  # params: milestone_id, toggle|state ("working"|"achieved"), (dev) debug_reward
   def upsert
     state = (params[:state].presence || params[:toggle].presence).to_s
     ach   = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
 
     case state
     when "working"
-      if ach.working?
-        ach.assign_attributes(working: false)
-      else
-        ach.assign_attributes(working: true, achieved: false, achieved_at: nil)
-      end
+      ach.assign_attributes(working: !ach.working?, achieved: (ach.working? ? ach.achieved : false))
+      ach.achieved_at = nil unless ach.achieved?
     when "achieved"
       if ach.achieved?
         ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
@@ -34,7 +27,7 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
-    # ---- ごほうび判定（失敗しても画面更新は続行）----
+    # ごほうび（失敗しても画面更新は継続）
     @new_rewards = []
     begin
       unlocked     = RewardUnlocker.call(@child)
@@ -47,18 +40,14 @@ class AchievementsController < ApplicationController
       Rails.logger.error("[RewardUnlocker] #{e.class}: #{e.message}")
       @new_rewards = []
     end
-
-    # 開発用: 強制でトースト確認
-    if params[:debug_reward].present? && @new_rewards.blank?
-      @new_rewards = [Reward.where(kind: %w[medal trophy special]).first].compact
-    end
+    @new_rewards = [Reward.where(kind: %w[medal trophy special]).first].compact if params[:debug_reward].present? && @new_rewards.blank?
 
     render_card_html(status: :ok, note: "ok")
   end
 
   private
 
-  # 例外が出ても“必ず”元の <turbo-frame> 宛に HTML を返す
+  # どこで例外が出ても “必ず” フレームHTMLで返す
   def wrap_with_frame_response
     yield
   rescue => e
@@ -67,14 +56,8 @@ class AchievementsController < ApplicationController
   end
 
   def set_child_and_milestone
-    @child =
-      if params[:child_id].present?
-        Child.find(params[:child_id])
-      else
-        current_child
-      end
+    @child = params[:child_id].present? ? Child.find(params[:child_id]) : current_child
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
-
     @milestone = Milestone.find(params.require(:milestone_id))
   end
 
@@ -85,35 +68,27 @@ class AchievementsController < ApplicationController
     nil
   end
 
-  # 呼び出し元の Turbo Frame に確実に応答する（ここがキモ）
+  # 呼び出し元 <turbo-frame> に確実に応答する
   def render_card_html(status:, note:)
     @milestone ||= Milestone.find_by(id: params[:milestone_id])
 
-    # Turbo の期待フレームID（ヘッダ優先 → ヘルパ → フォールバック）
+    # Turbo が差し替える対象ID（ヘッダ優先 / デフォは task_card_xxx）
     frame_id = request.headers["Turbo-Frame"].presence ||
                task_card_frame_id(@milestone) ||
-               "card_milestone_#{params[:milestone_id]}"
+               "task_card_#{params[:milestone_id]}"
 
-    Rails.logger.info(
-      "[ach-upsert] status=#{status} note=#{note} hdr.Turbo-Frame=#{request.headers['Turbo-Frame']} frame_id=#{frame_id}"
-    )
+    Rails.logger.info("[ach-upsert] status=#{status} note=#{note} hdr.Turbo-Frame=#{request.headers['Turbo-Frame']} frame_id=#{frame_id}")
 
-    # ▼ 重要：常に <turbo-frame id="..."> を返す
-    html = view_context.tag.turbo_frame(id: frame_id) do
-      if @milestone
-        view_context.render(
-          partial: "tasks/card", # カード全体を返すのが安全（controls だけでなく）
-          locals: {
-            milestone:   @milestone,
-            achievement: latest_achievement_silent,
-            new_rewards: @new_rewards
-          }
-        )
-      else
+    if @milestone
+      render partial: "tasks/card",
+             locals: { milestone: @milestone, achievement: latest_achievement_silent, new_rewards: @new_rewards },
+             layout: false, status: status
+    else
+      # milestone すら取得失敗時の保険：空フレームを返す
+      html = view_context.tag.turbo_frame(id: frame_id) do
         view_context.content_tag(:div, "更新できませんでした", style: "padding:.6rem;")
       end
+      render html: html, layout: false, status: status
     end
-
-    render html: html, layout: false, status: status
   end
 end
