@@ -1,10 +1,15 @@
 class AchievementsController < ApplicationController
   include TasksHelper
+
   before_action :authenticate_user!
-  before_action :set_child_and_milestone
+  around_action  :wrap_with_frame_response
+  before_action  :set_child_and_milestone
 
   # POST /achievements/upsert
-  # params: milestone_id, toggle|state("working"|"achieved"), (dev) debug_reward
+  # params:
+  #   milestone_id [req]
+  #   toggle or state: "working" | "achieved"
+  #   (dev) debug_reward=1  … 強制でトーストを出す検証用
   def upsert
     state = (params[:state].presence || params[:toggle].presence).to_s
     ach   = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
@@ -24,12 +29,12 @@ class AchievementsController < ApplicationController
         ach.achieved_at ||= Time.current
       end
     else
-      return render_stream_error(:unprocessable_entity)
+      return render_card_html(status: :unprocessable_entity, note: "invalid_state")
     end
 
     ach.save!
 
-    # ごほうび判定（失敗しても画面更新は継続）
+    # ---- ごほうび判定（失敗しても画面更新は続行）----
     @new_rewards = []
     begin
       unlocked     = RewardUnlocker.call(@child)
@@ -43,31 +48,33 @@ class AchievementsController < ApplicationController
       @new_rewards = []
     end
 
+    # 開発用: 強制でトースト確認
     if params[:debug_reward].present? && @new_rewards.blank?
       @new_rewards = [Reward.where(kind: %w[medal trophy special]).first].compact
     end
 
-    respond_to do |format|
-      format.turbo_stream do
-        render turbo_stream: turbo_stream.update(
-          task_card_frame_id(@milestone),
-          partial: "tasks/controls",
-          locals: { milestone: @milestone, achievement: ach }
-        )
-      end
-      # 直アクセス等は元の画面へ戻す
-      format.html { redirect_back fallback_location: tasks_path, status: :see_other }
-    end
-  rescue => e
-    Rails.logger.error("[achievements#upsert] rescued #{e.class}: #{e.message}")
-    render_stream_error(:internal_server_error)
+    render_card_html(status: :ok, note: "ok")
   end
 
   private
 
+  # 例外が出ても“必ず”元の <turbo-frame> 宛に HTML を返す
+  def wrap_with_frame_response
+    yield
+  rescue => e
+    Rails.logger.error("[achievements#upsert] rescued #{e.class}: #{e.message}")
+    render_card_html(status: :internal_server_error, note: "rescued")
+  end
+
   def set_child_and_milestone
-    @child = params[:child_id].present? ? Child.find(params[:child_id]) : current_child
+    @child =
+      if params[:child_id].present?
+        Child.find(params[:child_id])
+      else
+        current_child
+      end
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
+
     @milestone = Milestone.find(params.require(:milestone_id))
   end
 
@@ -78,20 +85,35 @@ class AchievementsController < ApplicationController
     nil
   end
 
-  def render_stream_error(status)
-    respond_to do |format|
-      format.turbo_stream do
-        render turbo_stream: turbo_stream.update(
-          task_card_frame_id(@milestone || Milestone.new(id: params[:milestone_id])),
-          partial: "tasks/controls",
+  # 呼び出し元の Turbo Frame に確実に応答する（ここがキモ）
+  def render_card_html(status:, note:)
+    @milestone ||= Milestone.find_by(id: params[:milestone_id])
+
+    # Turbo の期待フレームID（ヘッダ優先 → ヘルパ → フォールバック）
+    frame_id = request.headers["Turbo-Frame"].presence ||
+               task_card_frame_id(@milestone) ||
+               "card_milestone_#{params[:milestone_id]}"
+
+    Rails.logger.info(
+      "[ach-upsert] status=#{status} note=#{note} hdr.Turbo-Frame=#{request.headers['Turbo-Frame']} frame_id=#{frame_id}"
+    )
+
+    # ▼ 重要：常に <turbo-frame id="..."> を返す
+    html = view_context.tag.turbo_frame(id: frame_id) do
+      if @milestone
+        view_context.render(
+          partial: "tasks/card", # カード全体を返すのが安全（controls だけでなく）
           locals: {
-            milestone: (@milestone || Milestone.find_by(id: params[:milestone_id])),
-            achievement: latest_achievement_silent
-          },
-          status: status
+            milestone:   @milestone,
+            achievement: latest_achievement_silent,
+            new_rewards: @new_rewards
+          }
         )
+      else
+        view_context.content_tag(:div, "更新できませんでした", style: "padding:.6rem;")
       end
-      format.html { redirect_back fallback_location: tasks_path, status: :see_other }
     end
+
+    render html: html, layout: false, status: status
   end
 end
