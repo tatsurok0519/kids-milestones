@@ -8,15 +8,14 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <!-- CSS（Asset Pipeline） -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <!-- ★ 重要：Turbo を Sprockets 経由で“確実に”読み込む -->
+    <!-- ▼ 重要：Turbo を Asset Pipeline から“だけ”読み込む。importmap と application.js は読まない -->
     <%= javascript_include_tag "turbo.min", defer: true %>
     <%= javascript_include_tag "@hotwired--turbo-rails", defer: true %>
+    <!-- ▲ 上の2つは precompile 済み（/public/assets に fingerprint 付きで存在します） -->
 
-    <!-- ※ importmap は一旦オフにします。後で直します。 -->
-    <!-- LAYOUT_MARKER:turbo-sprockets-fallback -->
+    <!-- LAYOUT_MARKER:turbo-only-v1 -->
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
