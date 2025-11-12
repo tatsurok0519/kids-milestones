@@ -186,14 +186,10 @@
   </script>
 
   <style>
-  /* 既存：おためしバッジ制御 */
   .rw-badge { display: none; }
   .milestone-card.is-working  .rw-badge-try  { display: block; }
   .milestone-card.is-achieved .rw-badge-achi { display: block; }
 
-  /* ▼▼ ヒントのレイアウト（カード内いっぱい） ▼▼
-     1行目: [thumb][button]、2行目: [body body]（本文が2列ぶち抜き）
-  */
   .rw-hint {
     display: grid;
     grid-template-columns: 88px 1fr;
@@ -208,7 +204,6 @@
   .rw-hint__thumb     { grid-area: thumb; }
   .rw-hint__body      { grid-area: body; }
 
-  /* サムネ無しカードは1カラム（ボタン→本文の縦並び） */
   .rw-hint[data-has-thumb="false"] {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -216,13 +211,11 @@
       "body";
   }
 
-  /* 既存：summary のデフォルト三角を消す */
   details > summary { list-style: none; }
   details > summary::-webkit-details-marker { display: none; }
   </style>
 <% else %>
   <style>
-  /* ▼▼ ヒントのレイアウト（カード内いっぱい） ▼▼ */
   .rw-hint {
     display: grid;
     grid-template-columns: 88px 1fr;
@@ -244,7 +237,6 @@
       "body";
   }
 
-  /* 既存：summary のデフォルト三角を消す */
   details > summary { list-style: none; }
   details > summary::-webkit-details-marker { display: none; }
   </style>

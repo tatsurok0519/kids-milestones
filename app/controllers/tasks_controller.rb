@@ -89,12 +89,23 @@ class TasksController < ApplicationController
 
     # === 未達成のみ（ログイン & 子ども選択時）===
     if user_signed_in? && current_child && @only_unachieved
-      if scope.respond_to?(:unachieved_for)
-        scope = scope.unachieved_for(current_child)
-      else
-        # サブクエリで達成済み milestone を除外（N+1回避）
-        done_ids = Achievement.where(child: current_child, achieved: true).select(:milestone_id)
-        scope = scope.where.not(id: done_ids)
+      begin
+        if scope.respond_to?(:unachieved_for)
+          scope = scope.unachieved_for(current_child)
+        else
+          if data_source_exists_safely?("achievements")
+            # boolean/整数どちらでも動くように配慮
+            done_ids = Achievement.where(child: current_child)
+                                  .where(achieved: [true, 1])
+                                  .select(:milestone_id)
+            scope = scope.where.not(id: done_ids)
+          else
+            Rails.logger.warn("[tasks#index] skip only_unachieved: achievements table missing")
+          end
+        end
+      rescue => e
+        # 何か起きてもページは落とさない
+        Rails.logger.warn("[tasks#index] skip only_unachieved due to #{e.class}: #{e.message}")
       end
     end
 
