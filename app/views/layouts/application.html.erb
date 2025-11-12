@@ -1,21 +1,16 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <meta charset="utf-8" />
     <title>こどもすくすくカード</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <!-- Importmap があれば通常どおり -->
+    <%# --- どちらの方式でもTurboが入るように両方読む --- %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true, nonce: true %>
     <%= javascript_importmap_tags %>
-    <!-- Importmap に Turbo が無い構成でも必ず読み込む（Sprocketsのlogical path "turbo"） -->
-    <%= javascript_include_tag "turbo", defer: true, "data-turbo-track": "reload" %>
-
-    <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
   <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
