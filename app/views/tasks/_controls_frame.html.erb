@@ -1,3 +1,4 @@
+<%# タスク1枚分の“枠”。中身(controls)だけ差し替えられるよう必ず turbo-frame にする %>
 <%= turbo_frame_tag task_card_frame_id(milestone) do %>
-  <%= render "tasks/controls", milestone:, achievement: %>
+  <%= render "tasks/controls", milestone: milestone, achievement: achievement %>
 <% end %>

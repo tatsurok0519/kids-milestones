@@ -4,14 +4,10 @@ class AchievementsController < ApplicationController
   before_action :set_child_and_milestone
 
   # POST /achievements/upsert
-  # params:
-  #   milestone_id [req]
-  #   toggle or state: "working" | "achieved"
-  #   (dev) debug_reward=1  … 演出確認用の強制トースト
+  # params: milestone_id, toggle|state("working"|"achieved"), (dev) debug_reward
   def upsert
     state = (params[:state].presence || params[:toggle].presence).to_s
-
-    ach = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
+    ach   = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
 
     case state
     when "working"
@@ -28,12 +24,12 @@ class AchievementsController < ApplicationController
         ach.achieved_at ||= Time.current
       end
     else
-      return render_stream_error(:unprocessable_entity, "invalid_state")
+      return render_stream_error(:unprocessable_entity)
     end
 
     ach.save!
 
-    # --- ごほうび判定（失敗しても画面更新は継続）---
+    # ごほうび判定（失敗しても画面更新は継続）
     @new_rewards = []
     begin
       unlocked     = RewardUnlocker.call(@child)
@@ -47,47 +43,42 @@ class AchievementsController < ApplicationController
       @new_rewards = []
     end
 
-    # 開発用: 強制トースト
     if params[:debug_reward].present? && @new_rewards.blank?
       @new_rewards = [Reward.where(kind: %w[medal trophy special]).first].compact
     end
 
     respond_to do |format|
       format.turbo_stream do
-        # フレーム内の中身だけ更新（フレームは維持）
         render turbo_stream: turbo_stream.update(
           task_card_frame_id(@milestone),
           partial: "tasks/controls",
           locals: { milestone: @milestone, achievement: ach }
         )
       end
-
-      # 直叩きなど fallback
-      format.html do
-        redirect_back fallback_location: tasks_path, status: :see_other
-      end
+      # 直アクセス等は元の画面へ戻す
+      format.html { redirect_back fallback_location: tasks_path, status: :see_other }
     end
   rescue => e
     Rails.logger.error("[achievements#upsert] rescued #{e.class}: #{e.message}")
-    render_stream_error(:internal_server_error, "rescued")
+    render_stream_error(:internal_server_error)
   end
 
   private
 
   def set_child_and_milestone
-    @child =
-      if params[:child_id].present?
-        Child.find(params[:child_id])
-      else
-        current_child
-      end
+    @child = params[:child_id].present? ? Child.find(params[:child_id]) : current_child
     raise Pundit::NotAuthorizedError, "invalid child" unless @child
-
     @milestone = Milestone.find(params.require(:milestone_id))
   end
 
-  # 失敗時の共通応答（turbo/HTML両対応）
-  def render_stream_error(status, note)
+  def latest_achievement_silent
+    return nil unless @child && @milestone
+    Achievement.where(child_id: @child.id, milestone_id: @milestone.id).first
+  rescue
+    nil
+  end
+
+  def render_stream_error(status)
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: turbo_stream.update(
@@ -100,16 +91,7 @@ class AchievementsController < ApplicationController
           status: status
         )
       end
-      format.html do
-        redirect_back fallback_location: tasks_path, status: :see_other
-      end
+      format.html { redirect_back fallback_location: tasks_path, status: :see_other }
     end
-  end
-
-  def latest_achievement_silent
-    return nil unless @child && @milestone
-    Achievement.where(child_id: @child.id, milestone_id: @milestone.id).first
-  rescue
-    nil
   end
 end

@@ -1,47 +1,39 @@
-<%# === 状態 === %>
+<%# ボタン群本体（中身だけ差し替え対象） %>
 <% working  = achievement&.working %>
 <% achieved = achievement&.achieved %>
 
-<%# === 右上バッジ === %>
+<%# 右上バッジ %>
 <% if working %>
-  <%= asset_img "icons/try.png", alt:"", width:44, height:44,
-        style:"position:absolute; top:8px; right:8px; pointer-events:none;" %>
+  <%= asset_img "icons/try.png", alt: "", width: 44, height: 44,
+      style: "position:absolute; top:8px; right:8px; pointer-events:none;" %>
 <% elsif achieved %>
-  <%= asset_img "icons/hanamaru.png", alt:"", width:44, height:44,
-        style:"position:absolute; top:8px; right:8px; pointer-events:none;" %>
+  <%= asset_img "icons/hanamaru.png", alt: "", width: 44, height: 44,
+      style: "position:absolute; top:8px; right:8px; pointer-events:none;" %>
 <% end %>
-
-<%# === 共通: 元のURLの絞り込みパラメータを引き継ぐ === %>
-<%
-  q = request.query_parameters.symbolize_keys.slice(
-        :age_band, :category, :difficulty, :only_unachieved, :page
-      )
-%>
 
 <div style="margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
 
-  <%# --- がんばり中 --- %>
+  <% q = request.query_parameters.symbolize_keys.slice(:age_band, :category, :difficulty, :only_unachieved, :page) %>
+
   <%= button_to(
         achievements_upsert_path(format: :turbo_stream, milestone_id: milestone.id, **q),
         params: { toggle: "working" },
         method: :post,
-        form: { data: { turbo_frame: task_card_frame_id(milestone) } },
-        class: "btn btn-secondary #{'is-active' if working}",
-        aria: { pressed: working ? "true" : "false" }
+        form:   { data: { turbo: true, turbo_frame: task_card_frame_id(milestone) } },
+        class:  "btn btn-secondary #{'is-active' if working}",
+        aria:   { pressed: working ? "true" : "false" }
       ) do %>
     がんばり中
   <% end %>
 
-  <%# --- できた！ --- %>
   <%= button_to(
         achievements_upsert_path(format: :turbo_stream, milestone_id: milestone.id, **q),
         params: { toggle: "achieved" },
         method: :post,
-        form: { data: { turbo_frame: task_card_frame_id(milestone) } },
-        class: "btn btn-primary #{'is-active' if achieved}",
-        aria: { pressed: achieved ? "true" : "false" }
+        form:   { data: { turbo: true, turbo_frame: task_card_frame_id(milestone) } },
+        class:  "btn btn-primary #{'is-active' if achieved}",
+        aria:   { pressed: achieved ? "true" : "false" }
       ) do %>
     できた！
   <% end %>
-
 </div>
