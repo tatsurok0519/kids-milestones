@@ -8,17 +8,20 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <!-- CSS（Sprockets / Asset Pipeline） -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <%# --- ここが超重要：どちらか必ず当たるように“両方”出す --- %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
-    <%= (javascript_importmap_tags rescue nil) %>
+    <!-- ✅ Importmap で ES Modules を読み込む（Turbo / Stimulus / application.js） -->
+    <%= javascript_importmap_tags %>
 
-    <%# 画像の先読みなど（任意） %>
+    <!-- マーカー（確認用） -->
+    <!-- LAYOUT_MARKER:importmap-on -->
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
-  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe" data-controller="reward-animator">
+  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
+        data-controller="reward-animator">
+
     <%= render "shared/header" %>
     <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
     <%= render("shared/growth_policy_banner") unless content_for?(:hide_growth_banner) %>
@@ -40,6 +43,7 @@
         <%= render "shared/reward_toast", rewards: Reward.where(id: @reward_boot_ids) %>
       <% end %>
     </div>
+
     <div id="reward_animator" hidden aria-hidden="true"></div>
 
     <%= asset_img "illustrations/watering.png",
