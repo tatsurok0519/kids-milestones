@@ -10,35 +10,20 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <%# --- JSの読み込み ---
-        1) Importmap を使っている場合はそのまま読み込む
-        2) もし Turbo が Importmap でピンされていない構成でも、
-           Sprockets にある "turbo" を自動検出して読み込む（重複読み込みは避ける） %>
+    <!-- Importmap があれば通常どおり -->
     <%= javascript_importmap_tags %>
+    <!-- Importmap に Turbo が無い構成でも必ず読み込む（Sprocketsのlogical path "turbo"） -->
+    <%= javascript_include_tag "turbo", defer: true, "data-turbo-track": "reload" %>
 
-    <%# Sprockets に turbo.js がある時だけフォールバックで読み込む %>
-    <% if (Rails.application.assets_manifest.assets.keys.any? { |k| k.start_with?("turbo") }) rescue false %>
-      <script defer src="<%= asset_path("turbo.js") %>" data-turbo-track="reload"></script>
-    <% end %>
-
-    <%# 画面でよく使う画像のプリロード %>
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
   <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
         data-controller="reward-animator">
-
-    <!-- 共通ヘッダー -->
     <%= render "shared/header" %>
-
-    <!-- パンくず（設定があるときだけ） -->
     <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
-
-    <%# ===== 比べない育ちメッセージ バナー =====
-        ページ側で `content_for :hide_growth_banner` を埋めたら非表示 %>
     <%= render("shared/growth_policy_banner") unless content_for?(:hide_growth_banner) %>
 
-    <%# フラッシュ %>
     <% flash.each do |k, v| %>
       <div class="container" style="margin-top:1rem">
         <div class="flash <%= k %>"><%= v %></div>
@@ -49,17 +34,14 @@
       <%= yield %>
     </main>
 
-    <!-- フッター -->
     <%= render "shared/footer" %>
 
-    <!-- トーストレイヤ（サーバープリレンダー） -->
     <div id="toasts" class="toast-layer" role="status" aria-live="polite" aria-atomic="true">
       <% if @reward_boot_ids.present? %>
         <%= render "shared/reward_toast", rewards: Reward.where(id: @reward_boot_ids) %>
       <% end %>
     </div>
 
-    <!-- ★ 追加：アニメ起動用の不可視ターゲット -->
     <div id="reward_animator" hidden aria-hidden="true"></div>
 
     <%= asset_img "illustrations/watering.png",
