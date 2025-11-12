@@ -5,15 +5,18 @@ class AchievementsController < ApplicationController
   before_action  :set_child_and_milestone
 
   # POST /achievements/upsert
-  # params: milestone_id, toggle|state ("working"|"achieved"), (dev) debug_reward
+  # params: milestone_id, toggle|state("working"|"achieved"), (dev) debug_reward
   def upsert
     state = (params[:state].presence || params[:toggle].presence).to_s
     ach   = @child.achievements.find_or_initialize_by(milestone_id: @milestone.id)
 
     case state
     when "working"
-      ach.assign_attributes(working: !ach.working?, achieved: (ach.working? ? ach.achieved : false))
-      ach.achieved_at = nil unless ach.achieved?
+      if ach.working?
+        ach.assign_attributes(working: false)
+      else
+        ach.assign_attributes(working: true, achieved: false, achieved_at: nil)
+      end
     when "achieved"
       if ach.achieved?
         ach.assign_attributes(working: false, achieved: false, achieved_at: nil)
@@ -27,7 +30,7 @@ class AchievementsController < ApplicationController
 
     ach.save!
 
-    # ごほうび（失敗しても画面更新は継続）
+    # ごほうび判定（失敗しても画面更新は続行）
     @new_rewards = []
     begin
       unlocked     = RewardUnlocker.call(@child)
@@ -40,7 +43,11 @@ class AchievementsController < ApplicationController
       Rails.logger.error("[RewardUnlocker] #{e.class}: #{e.message}")
       @new_rewards = []
     end
-    @new_rewards = [Reward.where(kind: %w[medal trophy special]).first].compact if params[:debug_reward].present? && @new_rewards.blank?
+
+    # 開発確認用
+    if params[:debug_reward].present? && @new_rewards.blank?
+      @new_rewards = [Reward.where(kind: %w[medal trophy special]).first].compact
+    end
 
     render_card_html(status: :ok, note: "ok")
   end
@@ -72,19 +79,19 @@ class AchievementsController < ApplicationController
   def render_card_html(status:, note:)
     @milestone ||= Milestone.find_by(id: params[:milestone_id])
 
-    # Turbo が差し替える対象ID（ヘッダ優先 / デフォは task_card_xxx）
     frame_id = request.headers["Turbo-Frame"].presence ||
                task_card_frame_id(@milestone) ||
                "task_card_#{params[:milestone_id]}"
 
-    Rails.logger.info("[ach-upsert] status=#{status} note=#{note} hdr.Turbo-Frame=#{request.headers['Turbo-Frame']} frame_id=#{frame_id}")
+    Rails.logger.info("[ach-upsert] status=#{status} note=#{note} Turbo-Frame=#{request.headers['Turbo-Frame']} frame_id=#{frame_id}")
 
     if @milestone
+      # 部分テンプレ「tasks/card」は自分で <turbo-frame id="..."> を含みます
       render partial: "tasks/card",
              locals: { milestone: @milestone, achievement: latest_achievement_silent, new_rewards: @new_rewards },
              layout: false, status: status
     else
-      # milestone すら取得失敗時の保険：空フレームを返す
+      # milestone 取得すら失敗したときの最終保険
       html = view_context.tag.turbo_frame(id: frame_id) do
         view_context.content_tag(:div, "更新できませんでした", style: "padding:.6rem;")
       end
