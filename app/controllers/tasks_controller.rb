@@ -17,7 +17,7 @@ class TasksController < ApplicationController
   private_constant :DemoMilestone
 
   def index
-    Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :only_unachieved, :page)}")
+    Rails.logger.info("[tasks#index] params=#{params.to_unsafe_h.slice(:age_band, :category, :difficulty, :page)}")
 
     # 1) テーブル生存確認
     has_ms_table = data_source_exists_safely?("milestones")
@@ -67,7 +67,7 @@ class TasksController < ApplicationController
     # === フィルタUI選択肢（N+1関係なし、小さめクエリ） ===
     @categories   = safe { Milestone.distinct.order(:category).pluck(:category).compact } || []
     @difficulties = [1, 2, 3]
-    @only_unachieved = params[:only_unachieved] == "1"
+    # （未達成のみは廃止）
 
     # === カテゴリ・難易度 ===
     if params[:category].present?
@@ -85,28 +85,6 @@ class TasksController < ApplicationController
         else
           scope.where(difficulty: params[:difficulty])
         end
-    end
-
-    # === 未達成のみ（ログイン & 子ども選択時）===
-    if user_signed_in? && current_child && @only_unachieved
-      begin
-        if scope.respond_to?(:unachieved_for)
-          scope = scope.unachieved_for(current_child)
-        else
-          if data_source_exists_safely?("achievements")
-            # boolean/整数どちらでも動くように配慮
-            done_ids = Achievement.where(child: current_child)
-                                  .where(achieved: [true, 1])
-                                  .select(:milestone_id)
-            scope = scope.where.not(id: done_ids)
-          else
-            Rails.logger.warn("[tasks#index] skip only_unachieved: achievements table missing")
-          end
-        end
-      rescue => e
-        # 何か起きてもページは落とさない
-        Rails.logger.warn("[tasks#index] skip only_unachieved due to #{e.class}: #{e.message}")
-      end
     end
 
     # === 取得・ページング ===
