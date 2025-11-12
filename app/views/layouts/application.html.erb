@@ -8,20 +8,19 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <!-- CSS（Sprockets / Asset Pipeline） -->
+    <!-- CSS（Asset Pipeline） -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-    <!-- ✅ Importmap で ES Modules を読み込む（Turbo / Stimulus / application.js） -->
-    <%= javascript_importmap_tags %>
+    <!-- ★ 重要：Turbo を Sprockets 経由で“確実に”読み込む -->
+    <%= javascript_include_tag "turbo.min", defer: true %>
+    <%= javascript_include_tag "@hotwired--turbo-rails", defer: true %>
 
-    <!-- マーカー（確認用） -->
-    <!-- LAYOUT_MARKER:importmap-on -->
+    <!-- ※ importmap は一旦オフにします。後で直します。 -->
+    <!-- LAYOUT_MARKER:turbo-sprockets-fallback -->
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
-  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
-        data-controller="reward-animator">
-
+  <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe" data-controller="reward-animator">
     <%= render "shared/header" %>
     <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
     <%= render("shared/growth_policy_banner") unless content_for?(:hide_growth_banner) %>
