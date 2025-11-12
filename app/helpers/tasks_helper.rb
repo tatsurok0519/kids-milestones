@@ -1,11 +1,15 @@
 module TasksHelper
   include ActionView::RecordIdentifier
+
+  # ===== Turbo Frame ID（ここに統一） =====
   def task_card_frame_id(milestone)
     "task_card_#{milestone.id}"
   end
 
-  # ===== ヒント文の取得（既存ロジック） =====
+  # ===== ヒント文の取得（DB優先 → seeds YAML フォールバック） =====
   def milestone_hint_text(ms)
+    return "" unless ms
+
     if ms.respond_to?(:hint_text) && ms.hint_text.present?
       return ms.hint_text
     end
@@ -23,7 +27,7 @@ module TasksHelper
         {}
       end
     rescue => e
-      Rails.logger.warn("[tasks helper] YAML load failed: #{e.class}: #{e.message}")
+      Rails.logger.warn("[TasksHelper] YAML load failed: #{e.class}: #{e.message}")
       {}
     end
 
@@ -31,8 +35,8 @@ module TasksHelper
     (row && (row["hint_text"].presence || row["hint"].presence)) || ""
   end
 
-  # ====== 小イラスト対応表（タイトル => 画像パス） ======
-  # 画像は app/assets/images/task1.png ... task50.png として配置
+  # ====== 小イラスト対応表（タイトル => 画像ファイル名） ======
+  # 画像は app/assets/images/task1.png ... task100.png を想定
   TASK_SMALL_THUMBS = {
     "目で物を追う（トラッキング）"            => "task1.png",
     "うつ伏せで首を上げる（タミータイム）"    => "task2.png",
@@ -77,7 +81,7 @@ module TasksHelper
     "ごっこ遊び（ままごと）"                 => "task38.png",
     "手洗い（泡立て→すすぎ）"               => "task39.png",
     "3–6ピースのパズル"                      => "task40.png",
-    "3-6ピースのパズル"                      => "task40.png", # ハイフンゆれ対策
+    "3-6ピースのパズル"                      => "task40.png",
     "服の着脱の一部（袖）"                   => "task41.png",
     "ボールを蹴る"                           => "task42.png",
     "大きなボールを受ける"                   => "task43.png",
@@ -89,7 +93,7 @@ module TasksHelper
     "登場人物を指差しで説明"                 => "task49.png",
     "自分の名前を言う"                       => "task50.png",
 
-    # --- ここから追記（51〜100） ---
+    # 51〜100
     "片足立ち（2–3秒）"                 => "task51.png",
     "片足立ち（2-3秒）"                  => "task51.png",
     "ボールを投げて受ける（近距離）"     => "task52.png",
@@ -151,13 +155,13 @@ module TasksHelper
   # ===== キー正規化：空白除去 + ハイフン類の統一など =====
   def normalize_task_key(str)
     s = str.to_s
-    s = s.tr("　", " ")                 # 全角スペース→半角
-    s = s.tr("‐-–−", "-")              # ハイフン/ダッシュ類を統一
-    s = s.tr("~～", "〜")               # チルダ/全角波ダッシュを統一
-    s.gsub(/[[:space:]]+/, "")          # すべての空白を除去
+    s = s.tr("　", " ")        # 全角スペース→半角
+    s = s.tr("‐-–−", "-")     # ハイフン/ダッシュ類を統一
+    s = s.tr("~～", "〜")      # チルダ/全角波ダッシュを統一
+    s.gsub(/[[:space:]]+/, "") # すべての空白を除去
   end
 
-  # task から対応画像パスを返す（なければ nil）
+  # ===== 画像ファイル名の取得（なければ nil） =====
   def task_small_thumb_path(task)
     raw_key =
       if task.respond_to?(:slug) && task.slug.present?
@@ -170,5 +174,13 @@ module TasksHelper
 
     @__thumbs_norm ||= TASK_SMALL_THUMBS.transform_keys { |k| normalize_task_key(k) }
     @__thumbs_norm[normalize_task_key(raw_key)]
+  end
+
+  # ===== 表示用のタグ（存在しない時はプレースホルダへ） =====
+  # asset_img は ApplicationHelper のものを利用
+  def task_small_thumb_tag(task, alt: "", size: 72, placeholder: "illustrations/sun.png", **opts)
+    fname = task_small_thumb_path(task)
+    path  = fname || placeholder
+    asset_img path, alt: alt, width: size, height: size, **opts
   end
 end
