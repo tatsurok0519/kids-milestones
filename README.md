@@ -10,15 +10,15 @@
 
 # URL
 
-本番環境（Render）: https://kids-milestones.onrender.com
+本番環境（AWS）: http://35.74.176.51/
 
 
 # テスト用アカウント
 
-・Basic認証ID：tatuyosi
-・Basic認証パスワード：519323
-・メールアドレス：arrivederci0519@yahoo.co.jp
-・パスワード：tatsurok0519
+・Basic認証ID：admin
+・Basic認証パスワード：2222
+・メールアドレス：test@test.com
+・パスワード：aaaa1111
 
 
 # 利用方法
@@ -73,7 +73,7 @@ https://gyazo.com/90fa23ba99653741413ac66d46cca9c7
 ・フロントエンド: HTML, CSS, JavaScript 
 ・バックエンド: Ruby on Rails 7.1 / Ruby 3.2
 ・データベース: PostgreSQL（本番） / SQLite3（開発）
-・ホスティング/インフラ: Render
+・ホスティング/インフラ: Render, AWS
 ・バージョン管理・コミュニケーション: GitHub / Slack
 
 
@@ -104,4 +104,4 @@ http://localhost:3000
 
 
 # 制作時間
-120時間
+140時間
