@@ -1,7 +1,7 @@
 module TasksHelper
   include ActionView::RecordIdentifier
   def task_card_frame_id(milestone)
-    "card_#{dom_id(milestone)}"   # => 例: "card_milestone_25"
+    "task_card_#{milestone.id}"
   end
 
   # ===== ヒント文の取得（既存ロジック） =====

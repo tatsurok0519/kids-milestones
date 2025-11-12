@@ -26,7 +26,7 @@ Rails.application.routes.draw do
   post "achievements/upsert", to: "achievements#upsert", as: :achievements_upsert
 
   resource :achievements, only: [] do
-    post :upsert
+    post :upsert, on: :collection
   end
 
   # ごほうび既読

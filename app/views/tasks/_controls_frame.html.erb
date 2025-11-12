@@ -1,4 +1,3 @@
-<%# app/views/tasks/_controls_frame.html.erb %>
-<turbo-frame id="<%= dom_id(milestone, :controls) %>">
-  <%= render "tasks/controls", milestone: milestone, achievement: achievement %>
-</turbo-frame>
+<%= turbo_frame_tag task_card_frame_id(milestone) do %>
+  <%= render "tasks/controls", milestone:, achievement: %>
+<% end %>
