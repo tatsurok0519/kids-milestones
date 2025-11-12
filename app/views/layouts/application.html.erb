@@ -1,19 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
+    <meta charset="utf-8" />
     <title>こどもすくすくカード</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
 
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <%# --- JSの読み込み ---
+        1) Importmap を使っている場合はそのまま読み込む
+        2) もし Turbo が Importmap でピンされていない構成でも、
+           Sprockets にある "turbo" を自動検出して読み込む（重複読み込みは避ける） %>
     <%= javascript_importmap_tags %>
+
+    <%# Sprockets に turbo.js がある時だけフォールバックで読み込む %>
+    <% if (Rails.application.assets_manifest.assets.keys.any? { |k| k.start_with?("turbo") }) rescue false %>
+      <script defer src="<%= asset_path("turbo.js") %>" data-turbo-track="reload"></script>
+    <% end %>
+
+    <%# 画面でよく使う画像のプリロード %>
     <%= preload_link_tag asset_path("illustrations/sun.png"), as: "image" %>
   </head>
 
   <body class="bg-honey-gradient bg-honey-dots bg-fixed-safe"
         data-controller="reward-animator">
+
     <!-- 共通ヘッダー -->
     <%= render "shared/header" %>
 
@@ -21,9 +35,7 @@
     <%= render("shared/breadcrumbs") if defined?(breadcrumb_trail) && breadcrumb_trail.present? %>
 
     <%# ===== 比べない育ちメッセージ バナー =====
-        ※ レイアウトでは「表示するのがデフォルト」。
-           ページ側で `content_for :hide_growth_banner` を埋めたら非表示にする。
-           ランディングなどで小型版を個別に出す場合はこの仕組みを使う。 %>
+        ページ側で `content_for :hide_growth_banner` を埋めたら非表示 %>
     <%= render("shared/growth_policy_banner") unless content_for?(:hide_growth_banner) %>
 
     <%# フラッシュ %>
